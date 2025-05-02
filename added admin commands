@@ -1,0 +1,4 @@
+Added an administration panel with the following options:
+1) Subscriber statistics(channels, groups, users, bots)
+2) List of users and information about each user
+3) Advanced broadcast menu that includes filtering options: channels, groups, users, bots With support for all media types + inline buttons!
