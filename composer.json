@@ -1,5 +1,5 @@
 {
-    "name": "theisraelis/shabbat",
+    "name": "WizardLoop/shabbat",
     "description": "A robot for changing the Telegram group's permissions at the entrance and exit of Shabbat.",
     "require": {
         "danog/madelineproto": "^8"
@@ -7,13 +7,13 @@
     "license": "MIT License",
     "authors": [
         {
-            "name": "the israelis",
-            "telegram": "@the_israelis"
+            "name": "WizardLoop",
+            "telegram": "@WizardLoop"
         }
     ],
     "autoload": {
         "psr-0": {
-            "theisraelis\\shabbat\\": ""
+            "wizardloop\\shabbat\\": ""
         },
 	    "files": [
             "bot.php"
