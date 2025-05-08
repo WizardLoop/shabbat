@@ -1,0 +1,9 @@
+services:
+  bot:
+    build: .
+    restart: always
+    init: true
+    tty: true
+    volumes:
+      - ./app:/app
+    command: php /app/bot.php
