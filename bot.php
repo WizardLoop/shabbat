@@ -45,7 +45,7 @@ if (class_exists(API::class)) {
     require_once getcwd() .'/madeline.php';
 }
 
-class MyEventHandler extends SimpleEventHandler
+class Shabbat extends SimpleEventHandler
 {
 
     public const CLOSER = "הקבוצה שלנו שומרת שבת ותהיה סגורה עד צאת השבת 🕯
@@ -88,7 +88,7 @@ $txtbot = "היי <a href='mention:$senderid'>$first_name</a>, ברוך הבא �
 הרובוט שישמור את השבת בקבוצה שלך!
 
 🕯 <u>הרובוט בקוד פתוח בגיטהאב:</u>
-github.com/theisraelis/shabbat
+github.com/wizardloop/shabbat
 
 📣 <b>ערוץ העדכונים:</b> @shabbatNews";
 
@@ -131,7 +131,7 @@ $txtbot = "היי <a href='mention:$userid'>$first_name</a>, ברוך הבא �
 הרובוט שישמור את השבת בקבוצה שלך!
 
 🕯 <u>הרובוט בקוד פתוח בגיטהאב:</u>
-github.com/theisraelis/shabbat
+github.com/wizardloop/shabbat
 
 📣 <b>ערוץ העדכונים:</b> @shabbatNews";
 
@@ -157,214 +157,112 @@ $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
 $editer = $query->editText($message = "⌛️", $replyMarkup = null, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
 
-$client1 = HttpClientBuilder::buildDefault();
-$response1 = $client1->request(new Request("https://www.hebcal.com/shabbat?cfg=i2&geonameid=281184&ue=off&M=on&lg=he-x-NoNikud&tgt=_top")); //ירושלים
-$body1 = $response1->getBody()->buffer();
-$clean_text1 = strip_tags($body1); 
-$lines1 = explode("\n", $clean_text1);
-foreach ($lines1 as $line) {
+if (!function_exists('getZmanimForCities')) {
+    function getZmanimForCities() {
+        $geonameIds = [
+            'ירושלים' => 281184,
+            'חיפה' => 294801,
+            'תל אביב' => 293397,
+            'באר שבע' => 295530
+        ];
 
-    if (strpos($line, "פרשת") !== false) {
-$result31 = $line;
-}else{
-$result31 = null;	
+        $zmanim = "⌚️ <u><b>זמני כניסת ויציאת השבת:</b></u>\n\n";
+
+        $candleTimes = [];
+        $havdalahTimes = [];
+        $parasha = '';
+        $mevarchim = '';
+        $holiday = '';
+        $date = '';
+
+        foreach ($geonameIds as $location => $geonameId) {
+            $client = HttpClientBuilder::buildDefault();
+            $url = "https://www.hebcal.com/shabbat?cfg=json&geonameid=$geonameId&ue=off&M=on&lg=he-x-NoNikud&tgt=_top";
+
+            $response = $client->request(new Request($url));
+            $body = $response->getBody()->buffer();
+            $json = json_decode($body, true);
+
+            if (!$json || !isset($json['items'])) {
+                $zmanim .= "⚠️ לא ניתן היה לשלוף את זמני השבת עבור המיקום: $location\n";
+                continue;
+            }
+
+            $candles = $havdalah = $parasha = $holiday = $mevarchim = null;
+
+            foreach ($json['items'] as $item) {
+                switch ($item['category']) {
+                    case 'candles':
+                        $candles = $item;
+                        break;
+                    case 'havdalah':
+                        $havdalah = $item;
+                        break;
+                    case 'parashat':
+                        $parasha = $item;
+                        break;
+                    case 'mevarchim':
+                        $mevarchim = $item;
+                        break;
+                    case 'holiday':
+                        $holiday = $item;
+                        break;
+                }
+            }
+
+            $candleDate = isset($candles['date']) ? new \DateTime($candles['date']) : null;
+            $candleTime = $candleDate?->format('H:i') ?? 'לא ידוע';
+
+            $havdalahDate = isset($havdalah['date']) ? new \DateTime($havdalah['date']) : null;
+            $havdalahTime = $havdalahDate?->format('H:i') ?? 'לא ידוע';
+
+            if (empty($date) && isset($havdalah['date'])) {
+                $date = (new \DateTime($havdalah['date']))->format('d/m/Y');
+            }
+
+            $candleTimes[$location] = $candleTime;
+            $havdalahTimes[$location] = $havdalahTime;
+
+            if ($parasha) {
+                $parashaText = $parasha['hebrew'];
+            }
+
+            if ($mevarchim) {
+                $mevarchimText = $mevarchim['hebrew'];
+            }
+
+            if ($holiday) {
+                $holidayText = $holiday['hebrew'];
+            }
+        }
+
+        $zmanim .= "🗓 <u>תאריך:</u> $date\n";
+        if (isset($parashaText)) {
+            $zmanim .= "📖 <u>פרשת השבוע:</u> $parashaText\n";
+        }
+        if (isset($mevarchimText)) {
+            $zmanim .= "🌒 <u>מברכים:</u> $mevarchimText\n";
+        }
+        if (isset($holidayText)) {
+            $zmanim .= "🎉 <u>חג:</u> $holidayText\n";
+        }
+
+        $zmanim .= "\n🕯 <u>זמני כניסת השבת:</u>\n";
+        foreach ($candleTimes as $location => $time) {
+            $zmanim .= "$location: <code>$time</code>\n";
+        }
+
+        $zmanim .= "\n🍷 <u>זמני יציאת השבת:</u>\n";
+        foreach ($havdalahTimes as $location => $time) {
+            $zmanim .= "$location: <code>$time</code>\n";
+        }
+
+        return $zmanim;
+    }
 }
+$ShabatTimes = getZmanimForCities();
 
-    if (strpos($line, "שישי") !== false) {
-    if (strpos($line, "הדלקת נרות") !== false) {
-$result11 = $line;
-	}}
-
-    if (strpos($line, "שבת") !== false) {
-    if (strpos($line, "הבדלה") !== false) {
-$result21 = $line;
-	}}
-
-}
-
-$result11 = trim($result11);
-preg_match('/\d{2}:\d{2}/', $result11, $matches);
-$timein = $matches[0]; // כניסת שבת - ירושלים
-
-$result21 = trim($result21);
-preg_match('/\d{2}:\d{2}/', $result21, $matches);
-$timeout = $matches[0]; // יציאת שבת - ירושלים
-$resultline4 = strstr($result21, ',');
-$resultline4 = str_ireplace(",", "", $resultline4);
-if (preg_match('/^\s/', $resultline4)) {
-$resultline4 = ltrim($resultline4, ' ');
-}
-$resultline4 = rtrim($resultline4);
-
-if($result31 != null){ // פרשת השבוע
-$result31 = trim($result31);
-$updatedLine3 = str_ireplace("this week’s Torah portion is", "", $result31);
-if (preg_match('/^\s/', $updatedLine3)) {
-$updatedLine3 = ltrim($updatedLine3, ' ');
-}
-$updatedLine3 = rtrim($updatedLine3);
-$updatedLine3 = "$updatedLine3 | ";
-}else{
-$updatedLine3 = "שבת | ";
-}
-
-$numdate1 = "ינואר";
-$numdate2 = "פברואר";
-$numdate3 = "מרץ";
-$numdate4 = "אפריל";
-$numdate5 = "מאי";
-$numdate6 = "יוני";
-$numdate7 = "יולי";
-$numdate8 = "אוגוסט";
-$numdate9 = "ספטמבר";
-$numdate10 = "אוקטובר";
-$numdate11 = "נובמבר";
-$numdate12 = "דצמבר";
-
-$stringres4 = "$resultline4";
-$resultres4 = preg_replace('/\d/', '', $stringres4);
-$resultline4new = rtrim($resultres4);
-$resultres44 = str_replace(' ', '', $resultline4new);
-
-if($resultres44 == $numdate1){
-$hodesh = "01";
-}	
-if($resultres44 == $numdate2){
-$hodesh = "02";
-}	
-if($resultres44 == $numdate3){
-$hodesh = "03";
-}	
-if($resultres44 == $numdate4){
-$hodesh = "04";
-}	
-if($resultres44 == $numdate5){
-$hodesh = "05";
-}	
-if($resultres44 == $numdate6){
-$hodesh = "06";
-}	
-if($resultres44 == $numdate7){
-$hodesh = "07";
-}	
-if($resultres44 == $numdate8){
-$hodesh = "08";
-}	
-if($resultres44 == $numdate9){
-$hodesh = "09";
-}	
-if($resultres44 == $numdate10){
-$hodesh = "10";
-}	
-if($resultres44 == $numdate11){
-$hodesh = "11";
-}	
-if($resultres44 == $numdate12){
-$hodesh = "12";
-}	
-
-preg_match_all('!\d+!', $resultline4, $matches);
-$numbers = implode(' ', $matches[0]);
-$numbersout = $numbers; 
-$messageLength = mb_strlen((string)$numbersout);
-if($messageLength == 1){
-$numbersout = "0".$numbersout;
-}
-$lastTwoDigits = date('Y');
-$dateshabatout = "$numbersout/$hodesh/$lastTwoDigits";
-
-$client2 = HttpClientBuilder::buildDefault();
-$response2 = $client2->request(new Request("https://www.hebcal.com/shabbat?cfg=i2&geonameid=294801&ue=off&M=on&lg=he-x-NoNikud&tgt=_top")); // חיפה
-$body2 = $response2->getBody()->buffer();
-$clean_text2 = strip_tags($body2); 
-$lines2 = explode("\n", $clean_text2);
-foreach ($lines2 as $line) {
-	
-    if (strpos($line, "שישי") !== false) {
-    if (strpos($line, "הדלקת נרות") !== false) {
-$result12 = $line;
-	}}
-
-    if (strpos($line, "שבת") !== false) {
-    if (strpos($line, "הבדלה") !== false) {
-$result22 = $line;
-	}}
-
-}
-$result12 = trim($result12);
-$result22 = trim($result22);
-preg_match('/\d{2}:\d{2}/', $result12, $matches);
-$timeinzman2 = $matches[0]; 
-preg_match('/\d{2}:\d{2}/', $result22, $matches);
-$timeoutzman2 = $matches[0]; 
-
-$client3 = HttpClientBuilder::buildDefault();
-$response3 = $client3->request(new Request("https://www.hebcal.com/shabbat?cfg=i2&geonameid=293397&ue=off&M=on&lg=he-x-NoNikud&tgt=_top")); // תל אביב
-$body3 = $response3->getBody()->buffer();
-$clean_text3 = strip_tags($body3); 
-$lines3 = explode("\n", $clean_text3);
-foreach ($lines3 as $line) {
-
-    if (strpos($line, "שישי") !== false) {
-    if (strpos($line, "הדלקת נרות") !== false) {
-$result13 = $line;
-	}}
-
-    if (strpos($line, "שבת") !== false) {
-    if (strpos($line, "הבדלה") !== false) {
-$result23 = $line;
-	}}
-	
-	}
-$result13 = trim($result13);
-$result23 = trim($result23);
-preg_match('/\d{2}:\d{2}/', $result13, $matches);
-$timeinzman3 = $matches[0];
-preg_match('/\d{2}:\d{2}/', $result23, $matches);
-$timeoutzman3 = $matches[0];
-
-$client4 = HttpClientBuilder::buildDefault();
-$response4 = $client4->request(new Request("https://www.hebcal.com/shabbat?cfg=i2&geonameid=295530&ue=off&M=on&lg=he-x-NoNikud&tgt=_top")); // באר שבע
-$body4 = $response4->getBody()->buffer();
-$clean_text4 = strip_tags($body4); 
-$lines4 = explode("\n", $clean_text4);
-foreach ($lines4 as $line) {
-
-    if (strpos($line, "שישי") !== false) {
-    if (strpos($line, "הדלקת נרות") !== false) {
-$result14 = $line;
-	}}
-
-    if (strpos($line, "שבת") !== false) {
-    if (strpos($line, "הבדלה") !== false) {
-$result24 = $line;
-	}}
-	
-	}
-$result14 = trim($result14);
-$result24 = trim($result24);
-preg_match('/\d{2}:\d{2}/', $result14, $matches);
-$timeinzman4 = $matches[0];
-preg_match('/\d{2}:\d{2}/', $result24, $matches);
-$timeoutzman4 = $matches[0];
-
-$zmanim = "⌚️ <u><b>זמני כניסת ויציאת השבת:</b></u>
-
-🗓 $updatedLine3$dateshabatout
-
-🕯 <u>זמני כניסת השבת:</u>
-ירושלים: <code>$timein</code>
-חיפה: <code>$timeinzman2</code>
-תל אביב: <code>$timeinzman3</code>
-באר שבע: <code>$timeinzman4</code>
-
-🍷 <u>זמני יציאת השבת:</u>
-ירושלים: <code>$timeout</code>
-חיפה: <code>$timeoutzman2</code>
-תל אביב: <code>$timeoutzman3</code>
-באר שבע: <code>$timeoutzman4</code>"; 
-
-$editer2 = $query->editText($message = "$zmanim", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+$editer2 = $query->editText($message = $ShabatTimes, $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
 } catch (Throwable $e) {
 $this->messages->sendMessage(peer: $query->userId, message: $e->getMessage());
 }
@@ -481,212 +379,111 @@ $inputReplyToMessage = ['_' => 'inputReplyToMessage', 'reply_to_msg_id' => $mess
 $sentMessage = $this->messages->sendMessage(peer: $chatid, reply_to: $inputReplyToMessage, message: "⌛️", parse_mode: 'HTML');
 $sentMessage2 = $this->extractMessageId($sentMessage);
 
-$client1 = HttpClientBuilder::buildDefault();
-$response1 = $client1->request(new Request("https://www.hebcal.com/shabbat?cfg=i2&geonameid=281184&ue=off&M=on&lg=he-x-NoNikud&tgt=_top")); //ירושלים
-$body1 = $response1->getBody()->buffer();
-$clean_text1 = strip_tags($body1); 
-$lines1 = explode("\n", $clean_text1);
-foreach ($lines1 as $line) {
+if (!function_exists('getZmanimForCities')) {
+    function getZmanimForCities() {
+        $geonameIds = [
+            'ירושלים' => 281184,
+            'חיפה' => 294801,
+            'תל אביב' => 293397,
+            'באר שבע' => 295530
+        ];
 
-    if (strpos($line, "פרשת") !== false) {
-$result31 = $line;
-}else{
-$result31 = null;	
+        $zmanim = "⌚️ <u><b>זמני כניסת ויציאת השבת:</b></u>\n\n";
+
+        $candleTimes = [];
+        $havdalahTimes = [];
+        $parasha = '';
+        $mevarchim = '';
+        $holiday = '';
+        $date = '';
+
+        foreach ($geonameIds as $location => $geonameId) {
+            $client = HttpClientBuilder::buildDefault();
+            $url = "https://www.hebcal.com/shabbat?cfg=json&geonameid=$geonameId&ue=off&M=on&lg=he-x-NoNikud&tgt=_top";
+
+            $response = $client->request(new Request($url));
+            $body = $response->getBody()->buffer();
+            $json = json_decode($body, true);
+
+            if (!$json || !isset($json['items'])) {
+                $zmanim .= "⚠️ לא ניתן היה לשלוף את זמני השבת עבור המיקום: $location\n";
+                continue;
+            }
+
+            $candles = $havdalah = $parasha = $holiday = $mevarchim = null;
+
+            foreach ($json['items'] as $item) {
+                switch ($item['category']) {
+                    case 'candles':
+                        $candles = $item;
+                        break;
+                    case 'havdalah':
+                        $havdalah = $item;
+                        break;
+                    case 'parashat':
+                        $parasha = $item;
+                        break;
+                    case 'mevarchim':
+                        $mevarchim = $item;
+                        break;
+                    case 'holiday':
+                        $holiday = $item;
+                        break;
+                }
+            }
+
+            $candleDate = isset($candles['date']) ? new \DateTime($candles['date']) : null;
+            $candleTime = $candleDate?->format('H:i') ?? 'לא ידוע';
+
+            $havdalahDate = isset($havdalah['date']) ? new \DateTime($havdalah['date']) : null;
+            $havdalahTime = $havdalahDate?->format('H:i') ?? 'לא ידוע';
+
+            if (empty($date) && isset($havdalah['date'])) {
+                $date = (new \DateTime($havdalah['date']))->format('d/m/Y');
+            }
+
+            $candleTimes[$location] = $candleTime;
+            $havdalahTimes[$location] = $havdalahTime;
+
+            if ($parasha) {
+                $parashaText = $parasha['hebrew'];
+            }
+
+            if ($mevarchim) {
+                $mevarchimText = $mevarchim['hebrew'];
+            }
+
+            if ($holiday) {
+                $holidayText = $holiday['hebrew'];
+            }
+        }
+
+        $zmanim .= "🗓 <u>תאריך:</u> $date\n";
+        if (isset($parashaText)) {
+            $zmanim .= "📖 <u>פרשת השבוע:</u> $parashaText\n";
+        }
+        if (isset($mevarchimText)) {
+            $zmanim .= "🌒 <u>מברכים:</u> $mevarchimText\n";
+        }
+        if (isset($holidayText)) {
+            $zmanim .= "🎉 <u>חג:</u> $holidayText\n";
+        }
+
+        $zmanim .= "\n🕯 <u>זמני כניסת השבת:</u>\n";
+        foreach ($candleTimes as $location => $time) {
+            $zmanim .= "$location: <code>$time</code>\n";
+        }
+
+        $zmanim .= "\n🍷 <u>זמני יציאת השבת:</u>\n";
+        foreach ($havdalahTimes as $location => $time) {
+            $zmanim .= "$location: <code>$time</code>\n";
+        }
+
+        return $zmanim;
+    }
 }
+$ShabatTimes = getZmanimForCities();
 
-    if (strpos($line, "שישי") !== false) {
-    if (strpos($line, "הדלקת נרות") !== false) {
-$result11 = $line;
-	}}
-
-    if (strpos($line, "שבת") !== false) {
-    if (strpos($line, "הבדלה") !== false) {
-$result21 = $line;
-	}}
-
-}
-
-$result11 = trim($result11);
-preg_match('/\d{2}:\d{2}/', $result11, $matches);
-$timein = $matches[0]; // כניסת שבת - ירושלים
-
-$result21 = trim($result21);
-preg_match('/\d{2}:\d{2}/', $result21, $matches);
-$timeout = $matches[0]; // יציאת שבת - ירושלים
-$resultline4 = strstr($result21, ',');
-$resultline4 = str_ireplace(",", "", $resultline4);
-if (preg_match('/^\s/', $resultline4)) {
-$resultline4 = ltrim($resultline4, ' ');
-}
-$resultline4 = rtrim($resultline4);
-
-if($result31 != null){ // פרשת השבוע
-$result31 = trim($result31);
-$updatedLine3 = str_ireplace("this week’s Torah portion is", "", $result31);
-if (preg_match('/^\s/', $updatedLine3)) {
-$updatedLine3 = ltrim($updatedLine3, ' ');
-}
-$updatedLine3 = rtrim($updatedLine3);
-$updatedLine3 = "$updatedLine3 | ";
-}else{
-$updatedLine3 = "שבת | ";
-}
-
-$numdate1 = "ינואר";
-$numdate2 = "פברואר";
-$numdate3 = "מרץ";
-$numdate4 = "אפריל";
-$numdate5 = "מאי";
-$numdate6 = "יוני";
-$numdate7 = "יולי";
-$numdate8 = "אוגוסט";
-$numdate9 = "ספטמבר";
-$numdate10 = "אוקטובר";
-$numdate11 = "נובמבר";
-$numdate12 = "דצמבר";
-
-$stringres4 = "$resultline4";
-$resultres4 = preg_replace('/\d/', '', $stringres4);
-$resultline4new = rtrim($resultres4);
-$resultres44 = str_replace(' ', '', $resultline4new);
-
-if($resultres44 == $numdate1){
-$hodesh = "01";
-}	
-if($resultres44 == $numdate2){
-$hodesh = "02";
-}	
-if($resultres44 == $numdate3){
-$hodesh = "03";
-}	
-if($resultres44 == $numdate4){
-$hodesh = "04";
-}	
-if($resultres44 == $numdate5){
-$hodesh = "05";
-}	
-if($resultres44 == $numdate6){
-$hodesh = "06";
-}	
-if($resultres44 == $numdate7){
-$hodesh = "07";
-}	
-if($resultres44 == $numdate8){
-$hodesh = "08";
-}	
-if($resultres44 == $numdate9){
-$hodesh = "09";
-}	
-if($resultres44 == $numdate10){
-$hodesh = "10";
-}	
-if($resultres44 == $numdate11){
-$hodesh = "11";
-}	
-if($resultres44 == $numdate12){
-$hodesh = "12";
-}	
-
-preg_match_all('!\d+!', $resultline4, $matches);
-$numbers = implode(' ', $matches[0]);
-$numbersout = $numbers; 
-$messageLength = mb_strlen((string)$numbersout);
-if($messageLength == 1){
-$numbersout = "0".$numbersout;
-}
-$lastTwoDigits = date('Y');
-$dateshabatout = "$numbersout/$hodesh/$lastTwoDigits";
-
-$client2 = HttpClientBuilder::buildDefault();
-$response2 = $client2->request(new Request("https://www.hebcal.com/shabbat?cfg=i2&geonameid=294801&ue=off&M=on&lg=he-x-NoNikud&tgt=_top")); // חיפה
-$body2 = $response2->getBody()->buffer();
-$clean_text2 = strip_tags($body2); 
-$lines2 = explode("\n", $clean_text2);
-foreach ($lines2 as $line) {
-	
-    if (strpos($line, "שישי") !== false) {
-    if (strpos($line, "הדלקת נרות") !== false) {
-$result12 = $line;
-	}}
-
-    if (strpos($line, "שבת") !== false) {
-    if (strpos($line, "הבדלה") !== false) {
-$result22 = $line;
-	}}
-
-}
-$result12 = trim($result12);
-$result22 = trim($result22);
-preg_match('/\d{2}:\d{2}/', $result12, $matches);
-$timeinzman2 = $matches[0]; 
-preg_match('/\d{2}:\d{2}/', $result22, $matches);
-$timeoutzman2 = $matches[0]; 
-
-$client3 = HttpClientBuilder::buildDefault();
-$response3 = $client3->request(new Request("https://www.hebcal.com/shabbat?cfg=i2&geonameid=293397&ue=off&M=on&lg=he-x-NoNikud&tgt=_top")); // תל אביב
-$body3 = $response3->getBody()->buffer();
-$clean_text3 = strip_tags($body3); 
-$lines3 = explode("\n", $clean_text3);
-foreach ($lines3 as $line) {
-
-    if (strpos($line, "שישי") !== false) {
-    if (strpos($line, "הדלקת נרות") !== false) {
-$result13 = $line;
-	}}
-
-    if (strpos($line, "שבת") !== false) {
-    if (strpos($line, "הבדלה") !== false) {
-$result23 = $line;
-	}}
-	
-	}
-$result13 = trim($result13);
-$result23 = trim($result23);
-preg_match('/\d{2}:\d{2}/', $result13, $matches);
-$timeinzman3 = $matches[0];
-preg_match('/\d{2}:\d{2}/', $result23, $matches);
-$timeoutzman3 = $matches[0];
-
-$client4 = HttpClientBuilder::buildDefault();
-$response4 = $client4->request(new Request("https://www.hebcal.com/shabbat?cfg=i2&geonameid=295530&ue=off&M=on&lg=he-x-NoNikud&tgt=_top")); // באר שבע
-$body4 = $response4->getBody()->buffer();
-$clean_text4 = strip_tags($body4); 
-$lines4 = explode("\n", $clean_text4);
-foreach ($lines4 as $line) {
-
-    if (strpos($line, "שישי") !== false) {
-    if (strpos($line, "הדלקת נרות") !== false) {
-$result14 = $line;
-	}}
-
-    if (strpos($line, "שבת") !== false) {
-    if (strpos($line, "הבדלה") !== false) {
-$result24 = $line;
-	}}
-	
-	}
-$result14 = trim($result14);
-$result24 = trim($result24);
-preg_match('/\d{2}:\d{2}/', $result14, $matches);
-$timeinzman4 = $matches[0];
-preg_match('/\d{2}:\d{2}/', $result24, $matches);
-$timeoutzman4 = $matches[0];
-
-$zmanim = "⌚️ <u><b>זמני כניסת ויציאת השבת:</b></u>
-
-🗓 $updatedLine3$dateshabatout
-
-🕯 <u>זמני כניסת השבת:</u>
-ירושלים: <code>$timein</code>
-חיפה: <code>$timeinzman2</code>
-תל אביב: <code>$timeinzman3</code>
-באר שבע: <code>$timeinzman4</code>
-
-🍷 <u>זמני יציאת השבת:</u>
-ירושלים: <code>$timeout</code>
-חיפה: <code>$timeoutzman2</code>
-תל אביב: <code>$timeoutzman3</code>
-באר שבע: <code>$timeoutzman4</code>"; 
 
 $me = $this->getSelf();
 $me_username = $me['username'];
@@ -703,7 +500,7 @@ $keyboardButtonRow1 = ['_' => 'keyboardButtonRow', 'buttons' => [$keyboardButton
 $keyboardButtonRow2 = ['_' => 'keyboardButtonRow', 'buttons' => [$keyboardButtonUrl]];
 $bot_API_markup = ['_' => 'replyInlineMarkup', 'rows' => [$keyboardButtonRow1, $keyboardButtonRow2]];
 
-$this->messages->editMessage(peer: $message->chatId, id: $sentMessage2, message: "$zmanim", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+$this->messages->editMessage(peer: $message->chatId, id: $sentMessage2, message: "$ShabatTimes", reply_markup: $bot_API_markup, parse_mode: 'HTML');
 
 } catch (Throwable $e) {
 $this->messages->sendMessage(peer: $message->chatId, message: $e->getMessage());
@@ -714,212 +511,111 @@ $this->messages->sendMessage(peer: $message->chatId, message: $e->getMessage());
     {
 try {
 
-$client1 = HttpClientBuilder::buildDefault();
-$response1 = $client1->request(new Request("https://www.hebcal.com/shabbat?cfg=i2&geonameid=281184&ue=off&M=on&lg=he-x-NoNikud&tgt=_top")); //ירושלים
-$body1 = $response1->getBody()->buffer();
-$clean_text1 = strip_tags($body1); 
-$lines1 = explode("\n", $clean_text1);
-foreach ($lines1 as $line) {
+if (!function_exists('getZmanimForCities')) {
+    function getZmanimForCities() {
+        $geonameIds = [
+            'ירושלים' => 281184,
+            'חיפה' => 294801,
+            'תל אביב' => 293397,
+            'באר שבע' => 295530
+        ];
 
-    if (strpos($line, "פרשת") !== false) {
-$result31 = $line;
-}else{
-$result31 = null;	
+        $zmanim = "⌚️ <u><b>זמני כניסת ויציאת השבת:</b></u>\n\n";
+
+        $candleTimes = [];
+        $havdalahTimes = [];
+        $parasha = '';
+        $mevarchim = '';
+        $holiday = '';
+        $date = '';
+
+        foreach ($geonameIds as $location => $geonameId) {
+            $client = HttpClientBuilder::buildDefault();
+            $url = "https://www.hebcal.com/shabbat?cfg=json&geonameid=$geonameId&ue=off&M=on&lg=he-x-NoNikud&tgt=_top";
+
+            $response = $client->request(new Request($url));
+            $body = $response->getBody()->buffer();
+            $json = json_decode($body, true);
+
+            if (!$json || !isset($json['items'])) {
+                $zmanim .= "⚠️ לא ניתן היה לשלוף את זמני השבת עבור המיקום: $location\n";
+                continue;
+            }
+
+            $candles = $havdalah = $parasha = $holiday = $mevarchim = null;
+
+            foreach ($json['items'] as $item) {
+                switch ($item['category']) {
+                    case 'candles':
+                        $candles = $item;
+                        break;
+                    case 'havdalah':
+                        $havdalah = $item;
+                        break;
+                    case 'parashat':
+                        $parasha = $item;
+                        break;
+                    case 'mevarchim':
+                        $mevarchim = $item;
+                        break;
+                    case 'holiday':
+                        $holiday = $item;
+                        break;
+                }
+            }
+
+            $candleDate = isset($candles['date']) ? new \DateTime($candles['date']) : null;
+            $candleTime = $candleDate?->format('H:i') ?? 'לא ידוע';
+
+            $havdalahDate = isset($havdalah['date']) ? new \DateTime($havdalah['date']) : null;
+            $havdalahTime = $havdalahDate?->format('H:i') ?? 'לא ידוע';
+
+            if (empty($date) && isset($havdalah['date'])) {
+                $date = (new \DateTime($havdalah['date']))->format('d/m/Y');
+            }
+
+            $candleTimes[$location] = $candleTime;
+            $havdalahTimes[$location] = $havdalahTime;
+
+            if ($parasha) {
+                $parashaText = $parasha['hebrew'];
+            }
+
+            if ($mevarchim) {
+                $mevarchimText = $mevarchim['hebrew'];
+            }
+
+            if ($holiday) {
+                $holidayText = $holiday['hebrew'];
+            }
+        }
+
+        $zmanim .= "🗓 <u>תאריך:</u> $date\n";
+        if (isset($parashaText)) {
+            $zmanim .= "📖 <u>פרשת השבוע:</u> $parashaText\n";
+        }
+        if (isset($mevarchimText)) {
+            $zmanim .= "🌒 <u>מברכים:</u> $mevarchimText\n";
+        }
+        if (isset($holidayText)) {
+            $zmanim .= "🎉 <u>חג:</u> $holidayText\n";
+        }
+
+        $zmanim .= "\n🕯 <u>זמני כניסת השבת:</u>\n";
+        foreach ($candleTimes as $location => $time) {
+            $zmanim .= "$location: <code>$time</code>\n";
+        }
+
+        $zmanim .= "\n🍷 <u>זמני יציאת השבת:</u>\n";
+        foreach ($havdalahTimes as $location => $time) {
+            $zmanim .= "$location: <code>$time</code>\n";
+        }
+
+        return $zmanim;
+    }
 }
+$ShabatTimes = getZmanimForCities();
 
-    if (strpos($line, "שישי") !== false) {
-    if (strpos($line, "הדלקת נרות") !== false) {
-$result11 = $line;
-	}}
-
-    if (strpos($line, "שבת") !== false) {
-    if (strpos($line, "הבדלה") !== false) {
-$result21 = $line;
-	}}
-
-}
-
-$result11 = trim($result11);
-preg_match('/\d{2}:\d{2}/', $result11, $matches);
-$timein = $matches[0]; // כניסת שבת - ירושלים
-
-$result21 = trim($result21);
-preg_match('/\d{2}:\d{2}/', $result21, $matches);
-$timeout = $matches[0]; // יציאת שבת - ירושלים
-$resultline4 = strstr($result21, ',');
-$resultline4 = str_ireplace(",", "", $resultline4);
-if (preg_match('/^\s/', $resultline4)) {
-$resultline4 = ltrim($resultline4, ' ');
-}
-$resultline4 = rtrim($resultline4);
-
-if($result31 != null){ // פרשת השבוע
-$result31 = trim($result31);
-$updatedLine3 = str_ireplace("this week’s Torah portion is", "", $result31);
-if (preg_match('/^\s/', $updatedLine3)) {
-$updatedLine3 = ltrim($updatedLine3, ' ');
-}
-$updatedLine3 = rtrim($updatedLine3);
-$updatedLine3 = "$updatedLine3 | ";
-}else{
-$updatedLine3 = "שבת | ";
-}
-
-$numdate1 = "ינואר";
-$numdate2 = "פברואר";
-$numdate3 = "מרץ";
-$numdate4 = "אפריל";
-$numdate5 = "מאי";
-$numdate6 = "יוני";
-$numdate7 = "יולי";
-$numdate8 = "אוגוסט";
-$numdate9 = "ספטמבר";
-$numdate10 = "אוקטובר";
-$numdate11 = "נובמבר";
-$numdate12 = "דצמבר";
-
-$stringres4 = "$resultline4";
-$resultres4 = preg_replace('/\d/', '', $stringres4);
-$resultline4new = rtrim($resultres4);
-$resultres44 = str_replace(' ', '', $resultline4new);
-
-if($resultres44 == $numdate1){
-$hodesh = "01";
-}	
-if($resultres44 == $numdate2){
-$hodesh = "02";
-}	
-if($resultres44 == $numdate3){
-$hodesh = "03";
-}	
-if($resultres44 == $numdate4){
-$hodesh = "04";
-}	
-if($resultres44 == $numdate5){
-$hodesh = "05";
-}	
-if($resultres44 == $numdate6){
-$hodesh = "06";
-}	
-if($resultres44 == $numdate7){
-$hodesh = "07";
-}	
-if($resultres44 == $numdate8){
-$hodesh = "08";
-}	
-if($resultres44 == $numdate9){
-$hodesh = "09";
-}	
-if($resultres44 == $numdate10){
-$hodesh = "10";
-}	
-if($resultres44 == $numdate11){
-$hodesh = "11";
-}	
-if($resultres44 == $numdate12){
-$hodesh = "12";
-}	
-
-preg_match_all('!\d+!', $resultline4, $matches);
-$numbers = implode(' ', $matches[0]);
-$numbersout = $numbers; 
-$messageLength = mb_strlen((string)$numbersout);
-if($messageLength == 1){
-$numbersout = "0".$numbersout;
-}
-$lastTwoDigits = date('Y');
-$dateshabatout = "$numbersout/$hodesh/$lastTwoDigits";
-
-$client2 = HttpClientBuilder::buildDefault();
-$response2 = $client2->request(new Request("https://www.hebcal.com/shabbat?cfg=i2&geonameid=294801&ue=off&M=on&lg=he-x-NoNikud&tgt=_top")); // חיפה
-$body2 = $response2->getBody()->buffer();
-$clean_text2 = strip_tags($body2); 
-$lines2 = explode("\n", $clean_text2);
-foreach ($lines2 as $line) {
-	
-    if (strpos($line, "שישי") !== false) {
-    if (strpos($line, "הדלקת נרות") !== false) {
-$result12 = $line;
-	}}
-
-    if (strpos($line, "שבת") !== false) {
-    if (strpos($line, "הבדלה") !== false) {
-$result22 = $line;
-	}}
-
-}
-$result12 = trim($result12);
-$result22 = trim($result22);
-preg_match('/\d{2}:\d{2}/', $result12, $matches);
-$timeinzman2 = $matches[0]; 
-preg_match('/\d{2}:\d{2}/', $result22, $matches);
-$timeoutzman2 = $matches[0]; 
-
-$client3 = HttpClientBuilder::buildDefault();
-$response3 = $client3->request(new Request("https://www.hebcal.com/shabbat?cfg=i2&geonameid=293397&ue=off&M=on&lg=he-x-NoNikud&tgt=_top")); // תל אביב
-$body3 = $response3->getBody()->buffer();
-$clean_text3 = strip_tags($body3); 
-$lines3 = explode("\n", $clean_text3);
-foreach ($lines3 as $line) {
-
-    if (strpos($line, "שישי") !== false) {
-    if (strpos($line, "הדלקת נרות") !== false) {
-$result13 = $line;
-	}}
-
-    if (strpos($line, "שבת") !== false) {
-    if (strpos($line, "הבדלה") !== false) {
-$result23 = $line;
-	}}
-	
-	}
-$result13 = trim($result13);
-$result23 = trim($result23);
-preg_match('/\d{2}:\d{2}/', $result13, $matches);
-$timeinzman3 = $matches[0];
-preg_match('/\d{2}:\d{2}/', $result23, $matches);
-$timeoutzman3 = $matches[0];
-
-$client4 = HttpClientBuilder::buildDefault();
-$response4 = $client4->request(new Request("https://www.hebcal.com/shabbat?cfg=i2&geonameid=295530&ue=off&M=on&lg=he-x-NoNikud&tgt=_top")); // באר שבע
-$body4 = $response4->getBody()->buffer();
-$clean_text4 = strip_tags($body4); 
-$lines4 = explode("\n", $clean_text4);
-foreach ($lines4 as $line) {
-
-    if (strpos($line, "שישי") !== false) {
-    if (strpos($line, "הדלקת נרות") !== false) {
-$result14 = $line;
-	}}
-
-    if (strpos($line, "שבת") !== false) {
-    if (strpos($line, "הבדלה") !== false) {
-$result24 = $line;
-	}}
-	
-	}
-$result14 = trim($result14);
-$result24 = trim($result24);
-preg_match('/\d{2}:\d{2}/', $result14, $matches);
-$timeinzman4 = $matches[0];
-preg_match('/\d{2}:\d{2}/', $result24, $matches);
-$timeoutzman4 = $matches[0];
-
-$zmanim = "⌚️ <u><b>זמני כניסת ויציאת השבת:</b></u>
-
-🗓 $updatedLine3$dateshabatout
-
-🕯 <u>זמני כניסת השבת:</u>
-ירושלים: <code>$timein</code>
-חיפה: <code>$timeinzman2</code>
-תל אביב: <code>$timeinzman3</code>
-באר שבע: <code>$timeinzman4</code>
-
-🍷 <u>זמני יציאת השבת:</u>
-ירושלים: <code>$timeout</code>
-חיפה: <code>$timeoutzman2</code>
-תל אביב: <code>$timeoutzman3</code>
-באר שבע: <code>$timeoutzman4</code>"; 
 
 $me = $this->getSelf();
 $me_username = $me['username'];
@@ -939,7 +635,7 @@ $bot_API_markup = ['_' => 'replyInlineMarkup', 'rows' => [$keyboardButtonRow1, $
 $documentAttributeImageSize = ['_' => 'documentAttributeImageSize', 'w' => 475, 'h' => 475];
 $inputWebDocument = ['_' => 'inputWebDocument', 'url' => 'https://telegra.ph/file/0b06390cc0e5236a5bd05-0fc4534fa4021ecb33.jpg', 'size' => 98166, 'mime_type' => 'image/jpeg', 'attributes' => [$documentAttributeImageSize]];
 
-$botInlineMessageText = ['_' => 'inputBotInlineMessageText', 'message' => "$zmanim", 'parse_mode'=> 'HTML', 'reply_markup' => $bot_API_markup];
+$botInlineMessageText = ['_' => 'inputBotInlineMessageText', 'message' => "$ShabatTimes", 'parse_mode'=> 'HTML', 'reply_markup' => $bot_API_markup];
 $inputBotInlineResult = ['_' => 'botInlineResult', 'id' => '0', 'type' => 'article', 'title' => 'זמני כניסת השבת', 'description' => 'לחץ כאן לשיתוף זמני השבת!', 'thumb' => $inputWebDocument,'send_message' => $botInlineMessageText];
 		  
         $this->logger("Got query ".$update['query']);
@@ -2462,212 +2158,112 @@ $usersArray = explode("\n", $userstoasend);
 $usersArray = array_filter($usersArray);
 $userstoasend1 = ($usersArray);
 
-$client1 = HttpClientBuilder::buildDefault();
-$response1 = $client1->request(new Request("https://www.hebcal.com/shabbat?cfg=i2&geonameid=281184&ue=off&M=on&lg=he-x-NoNikud&tgt=_top")); //ירושלים
-$body1 = $response1->getBody()->buffer();
-$clean_text1 = strip_tags($body1); 
-$lines1 = explode("\n", $clean_text1);
-foreach ($lines1 as $line) {
+if (!function_exists('getZmanimForCities')) {
+    function getZmanimForCities() {
+        $geonameIds = [
+            'ירושלים' => 281184,
+            'חיפה' => 294801,
+            'תל אביב' => 293397,
+            'באר שבע' => 295530
+        ];
 
-    if (strpos($line, "פרשת") !== false) {
-$result31 = $line;
-}else{
-$result31 = null;	
+        $zmanim = "⌚️ <u><b>זמני כניסת ויציאת השבת:</b></u>\n\n";
+
+        $candleTimes = [];
+        $havdalahTimes = [];
+        $parasha = '';
+        $mevarchim = '';
+        $holiday = '';
+        $date = '';
+
+        foreach ($geonameIds as $location => $geonameId) {
+            $client = HttpClientBuilder::buildDefault();
+            $url = "https://www.hebcal.com/shabbat?cfg=json&geonameid=$geonameId&ue=off&M=on&lg=he-x-NoNikud&tgt=_top";
+
+            $response = $client->request(new Request($url));
+            $body = $response->getBody()->buffer();
+            $json = json_decode($body, true);
+
+            if (!$json || !isset($json['items'])) {
+                $zmanim .= "⚠️ לא ניתן היה לשלוף את זמני השבת עבור המיקום: $location\n";
+                continue;
+            }
+
+            $candles = $havdalah = $parasha = $holiday = $mevarchim = null;
+
+            foreach ($json['items'] as $item) {
+                switch ($item['category']) {
+                    case 'candles':
+                        $candles = $item;
+                        break;
+                    case 'havdalah':
+                        $havdalah = $item;
+                        break;
+                    case 'parashat':
+                        $parasha = $item;
+                        break;
+                    case 'mevarchim':
+                        $mevarchim = $item;
+                        break;
+                    case 'holiday':
+                        $holiday = $item;
+                        break;
+                }
+            }
+
+            $candleDate = isset($candles['date']) ? new \DateTime($candles['date']) : null;
+            $candleTime = $candleDate?->format('H:i') ?? 'לא ידוע';
+
+            $havdalahDate = isset($havdalah['date']) ? new \DateTime($havdalah['date']) : null;
+            $havdalahTime = $havdalahDate?->format('H:i') ?? 'לא ידוע';
+
+            if (empty($date) && isset($havdalah['date'])) {
+                $date = (new \DateTime($havdalah['date']))->format('d/m/Y');
+            }
+
+            $candleTimes[$location] = $candleTime;
+            $havdalahTimes[$location] = $havdalahTime;
+
+            if ($parasha) {
+                $parashaText = $parasha['hebrew'];
+            }
+
+            if ($mevarchim) {
+                $mevarchimText = $mevarchim['hebrew'];
+            }
+
+            if ($holiday) {
+                $holidayText = $holiday['hebrew'];
+            }
+        }
+
+        $zmanim .= "🗓 <u>תאריך:</u> $date\n";
+        if (isset($parashaText)) {
+            $zmanim .= "📖 <u>פרשת השבוע:</u> $parashaText\n";
+        }
+        if (isset($mevarchimText)) {
+            $zmanim .= "🌒 <u>מברכים:</u> $mevarchimText\n";
+        }
+        if (isset($holidayText)) {
+            $zmanim .= "🎉 <u>חג:</u> $holidayText\n";
+        }
+
+        $zmanim .= "\n🕯 <u>זמני כניסת השבת:</u>\n";
+        foreach ($candleTimes as $location => $time) {
+            $zmanim .= "$location: <code>$time</code>\n";
+        }
+
+        $zmanim .= "\n🍷 <u>זמני יציאת השבת:</u>\n";
+        foreach ($havdalahTimes as $location => $time) {
+            $zmanim .= "$location: <code>$time</code>\n";
+        }
+
+        return $zmanim;
+    }
 }
+$ShabatTimes = getZmanimForCities();
 
-    if (strpos($line, "שישי") !== false) {
-    if (strpos($line, "הדלקת נרות") !== false) {
-$result11 = $line;
-	}}
 
-    if (strpos($line, "שבת") !== false) {
-    if (strpos($line, "הבדלה") !== false) {
-$result21 = $line;
-	}}
-
-}
-
-$result11 = trim($result11);
-preg_match('/\d{2}:\d{2}/', $result11, $matches);
-$timein = $matches[0]; // כניסת שבת - ירושלים
-
-$result21 = trim($result21);
-preg_match('/\d{2}:\d{2}/', $result21, $matches);
-$timeout = $matches[0]; // יציאת שבת - ירושלים
-$resultline4 = strstr($result21, ',');
-$resultline4 = str_ireplace(",", "", $resultline4);
-if (preg_match('/^\s/', $resultline4)) {
-$resultline4 = ltrim($resultline4, ' ');
-}
-$resultline4 = rtrim($resultline4);
-
-if($result31 != null){ // פרשת השבוע
-$result31 = trim($result31);
-$updatedLine3 = str_ireplace("this week’s Torah portion is", "", $result31);
-if (preg_match('/^\s/', $updatedLine3)) {
-$updatedLine3 = ltrim($updatedLine3, ' ');
-}
-$updatedLine3 = rtrim($updatedLine3);
-$updatedLine3 = "$updatedLine3 | ";
-}else{
-$updatedLine3 = "שבת | ";
-}
-
-$numdate1 = "ינואר";
-$numdate2 = "פברואר";
-$numdate3 = "מרץ";
-$numdate4 = "אפריל";
-$numdate5 = "מאי";
-$numdate6 = "יוני";
-$numdate7 = "יולי";
-$numdate8 = "אוגוסט";
-$numdate9 = "ספטמבר";
-$numdate10 = "אוקטובר";
-$numdate11 = "נובמבר";
-$numdate12 = "דצמבר";
-
-$stringres4 = "$resultline4";
-$resultres4 = preg_replace('/\d/', '', $stringres4);
-$resultline4new = rtrim($resultres4);
-$resultres44 = str_replace(' ', '', $resultline4new);
-
-if($resultres44 == $numdate1){
-$hodesh = "01";
-}	
-if($resultres44 == $numdate2){
-$hodesh = "02";
-}	
-if($resultres44 == $numdate3){
-$hodesh = "03";
-}	
-if($resultres44 == $numdate4){
-$hodesh = "04";
-}	
-if($resultres44 == $numdate5){
-$hodesh = "05";
-}	
-if($resultres44 == $numdate6){
-$hodesh = "06";
-}	
-if($resultres44 == $numdate7){
-$hodesh = "07";
-}	
-if($resultres44 == $numdate8){
-$hodesh = "08";
-}	
-if($resultres44 == $numdate9){
-$hodesh = "09";
-}	
-if($resultres44 == $numdate10){
-$hodesh = "10";
-}	
-if($resultres44 == $numdate11){
-$hodesh = "11";
-}	
-if($resultres44 == $numdate12){
-$hodesh = "12";
-}	
-
-preg_match_all('!\d+!', $resultline4, $matches);
-$numbers = implode(' ', $matches[0]);
-$numbersout = $numbers; 
-$messageLength = mb_strlen((string)$numbersout);
-if($messageLength == 1){
-$numbersout = "0".$numbersout;
-}
-$lastTwoDigits = date('Y');
-$dateshabatout = "$numbersout/$hodesh/$lastTwoDigits";
-
-$client2 = HttpClientBuilder::buildDefault();
-$response2 = $client2->request(new Request("https://www.hebcal.com/shabbat?cfg=i2&geonameid=294801&ue=off&M=on&lg=he-x-NoNikud&tgt=_top")); // חיפה
-$body2 = $response2->getBody()->buffer();
-$clean_text2 = strip_tags($body2); 
-$lines2 = explode("\n", $clean_text2);
-foreach ($lines2 as $line) {
-	
-    if (strpos($line, "שישי") !== false) {
-    if (strpos($line, "הדלקת נרות") !== false) {
-$result12 = $line;
-	}}
-
-    if (strpos($line, "שבת") !== false) {
-    if (strpos($line, "הבדלה") !== false) {
-$result22 = $line;
-	}}
-
-}
-$result12 = trim($result12);
-$result22 = trim($result22);
-preg_match('/\d{2}:\d{2}/', $result12, $matches);
-$timeinzman2 = $matches[0]; 
-preg_match('/\d{2}:\d{2}/', $result22, $matches);
-$timeoutzman2 = $matches[0]; 
-
-$client3 = HttpClientBuilder::buildDefault();
-$response3 = $client3->request(new Request("https://www.hebcal.com/shabbat?cfg=i2&geonameid=293397&ue=off&M=on&lg=he-x-NoNikud&tgt=_top")); // תל אביב
-$body3 = $response3->getBody()->buffer();
-$clean_text3 = strip_tags($body3); 
-$lines3 = explode("\n", $clean_text3);
-foreach ($lines3 as $line) {
-
-    if (strpos($line, "שישי") !== false) {
-    if (strpos($line, "הדלקת נרות") !== false) {
-$result13 = $line;
-	}}
-
-    if (strpos($line, "שבת") !== false) {
-    if (strpos($line, "הבדלה") !== false) {
-$result23 = $line;
-	}}
-	
-	}
-$result13 = trim($result13);
-$result23 = trim($result23);
-preg_match('/\d{2}:\d{2}/', $result13, $matches);
-$timeinzman3 = $matches[0];
-preg_match('/\d{2}:\d{2}/', $result23, $matches);
-$timeoutzman3 = $matches[0];
-
-$client4 = HttpClientBuilder::buildDefault();
-$response4 = $client4->request(new Request("https://www.hebcal.com/shabbat?cfg=i2&geonameid=295530&ue=off&M=on&lg=he-x-NoNikud&tgt=_top")); // באר שבע
-$body4 = $response4->getBody()->buffer();
-$clean_text4 = strip_tags($body4); 
-$lines4 = explode("\n", $clean_text4);
-foreach ($lines4 as $line) {
-
-    if (strpos($line, "שישי") !== false) {
-    if (strpos($line, "הדלקת נרות") !== false) {
-$result14 = $line;
-	}}
-
-    if (strpos($line, "שבת") !== false) {
-    if (strpos($line, "הבדלה") !== false) {
-$result24 = $line;
-	}}
-	
-	}
-$result14 = trim($result14);
-$result24 = trim($result24);
-preg_match('/\d{2}:\d{2}/', $result14, $matches);
-$timeinzman4 = $matches[0];
-preg_match('/\d{2}:\d{2}/', $result24, $matches);
-$timeoutzman4 = $matches[0];
-
-$zmanim = "⌚️ <u><b>זמני כניסת ויציאת השבת:</b></u>
-
-🗓 $updatedLine3$dateshabatout
-
-🕯 <u>זמני כניסת השבת:</u>
-ירושלים: <code>$timein</code>
-חיפה: <code>$timeinzman2</code>
-תל אביב: <code>$timeinzman3</code>
-באר שבע: <code>$timeinzman4</code>
-
-🍷 <u>זמני יציאת השבת:</u>
-ירושלים: <code>$timeout</code>
-חיפה: <code>$timeoutzman2</code>
-תל אביב: <code>$timeoutzman3</code>
-באר שבע: <code>$timeoutzman4</code>"; 
 
 $me = $this->getSelf();
 $me_username = $me['username'];
@@ -2688,7 +2284,7 @@ $keyboardButtonRow1 = ['_' => 'keyboardButtonRow', 'buttons' => [$keyboardButton
 $keyboardButtonRow2 = ['_' => 'keyboardButtonRow', 'buttons' => [$keyboardButtonUrl]];
 $bot_API_markup = ['_' => 'replyInlineMarkup', 'rows' => [$keyboardButtonRow1, $keyboardButtonRow2]];
 
-$sendmoadaa1 = $this->messages->sendMessage(peer: $peer, message: $zmanim, reply_markup: $bot_API_markup, parse_mode: 'html');
+$sendmoadaa1 = $this->messages->sendMessage(peer: $peer, message: $ShabatTimes, reply_markup: $bot_API_markup, parse_mode: 'html');
 $this->sleep(0.1);
 }
 
@@ -2817,130 +2413,61 @@ continue;
     public function cron4(): void
     {
 try {
-$client1 = HttpClientBuilder::buildDefault();
-$response1 = $client1->request(new Request("https://www.hebcal.com/shabbat?cfg=i2&geonameid=281184&ue=off&M=on&lg=he-x-NoNikud&tgt=_top"));
-$body1 = $response1->getBody()->buffer();
-$clean_text1 = strip_tags($body1); 
-$lines1 = explode("\n", $clean_text1);
-foreach ($lines1 as $line) {
 
-    if (strpos($line, "שישי") !== false) {
-    if (strpos($line, "הדלקת נרות") !== false) {
-$result11 = $line;
-	}}
+    $client = HttpClientBuilder::buildDefault();
+    $url = "https://www.hebcal.com/shabbat?cfg=json&geonameid=281184&ue=off&M=on&lg=he-x-NoNikud&tgt=_top";
 
-    if (strpos($line, "שבת") !== false) {
-    if (strpos($line, "הבדלה") !== false) {
-$result21 = $line;
-	}}
+    $response = $client->request(new Request($url));
+    $body = $response->getBody()->buffer();
+    $json = json_decode($body, true);
 
+    if (!$json || !isset($json['items'])) {
+// "⚠️ לא ניתן היה לשלוף את זמני השבת עבור המיקום.";
+    }
 
-}
-$result11 = trim($result11);
-$result21 = trim($result21);
+    $candles = null;
+    $havdalah = null;
+    $parasha = null;
+    $holiday = null;
+    $mevarchim = null;
 
-preg_match('/\d{2}:\d{2}/', $result11, $matches);
-$timein = $matches[0];
-preg_match('/\d{2}:\d{2}/', $result21, $matches);
-$timeout = $matches[0];
+    foreach ($json['items'] as $item) {
+        switch ($item['category']) {
+            case 'candles':
+                $candles = $item;
+                break;
+            case 'havdalah':
+                $havdalah = $item;
+                break;
+            case 'parashat':
+                $parasha = $item;
+                break;
+            case 'mevarchim':
+                $mevarchim = $item;
+                break;
+            case 'holiday':
+                $holiday = $item;
+                break;
+        }
+    }
 
-$resultline4 = strstr($result21, ',');
-$resultline4 = str_ireplace(",", "", $resultline4);
-if (preg_match('/^\s/', $resultline4)) {
-$resultline4 = ltrim($resultline4, ' ');
-}
-$resultline4 = rtrim($resultline4);
-$resultline4new89 = strstr($result11, ',');
-$resultline4new89 = str_ireplace(",", "", $resultline4new89);
-if (preg_match('/^\s/', $resultline4new89)) {
-$resultline4new89 = ltrim($resultline4new89, ' ');
-}
-$resultline4new89 = rtrim($resultline4new89);
+    // Parse candle lighting
+    $candleDate = isset($candles['date']) ? new \DateTime($candles['date']) : null;
+    $candleTime = $candleDate?->format('H:i') ?? 'לא ידוע';
+    $candleDay = $candleDate?->format('d/m/Y') ?? '---';
 
-$numdate1 = "ינואר";
-$numdate2 = "פברואר";
-$numdate3 = "מרץ";
-$numdate4 = "אפריל";
-$numdate5 = "מאי";
-$numdate6 = "יוני";
-$numdate7 = "יולי";
-$numdate8 = "אוגוסט";
-$numdate9 = "ספטמבר";
-$numdate10 = "אוקטובר";
-$numdate11 = "נובמבר";
-$numdate12 = "דצמבר";
+    // Parse havdalah
+    $havdalahDate = isset($havdalah['date']) ? new \DateTime($havdalah['date']) : null;
+    $havdalahTime = $havdalahDate?->format('H:i') ?? 'לא ידוע';
+    $havdalahDay = $havdalahDate?->format('d/m/Y') ?? '---';
 
-$stringres4 = "$resultline4";
-$resultres4 = preg_replace('/\d/', '', $stringres4);
-$resultline4new = rtrim($resultres4);
-$resultres44 = str_replace(' ', '', $resultline4new);
+    // Get location title
+    $locationTitle = $json['location']['title'] ?? 'מיקום לא ידוע';
 
-if($resultres44 == $numdate1){
-$hodesh = "01";
-}	
-if($resultres44 == $numdate2){
-$hodesh = "02";
-}	
-if($resultres44 == $numdate3){
-$hodesh = "03";
-}	
-if($resultres44 == $numdate4){
-$hodesh = "04";
-}	
-if($resultres44 == $numdate5){
-$hodesh = "05";
-}	
-if($resultres44 == $numdate6){
-$hodesh = "06";
-}	
-if($resultres44 == $numdate7){
-$hodesh = "07";
-}	
-if($resultres44 == $numdate8){
-$hodesh = "08";
-}	
-if($resultres44 == $numdate9){
-$hodesh = "09";
-}	
-if($resultres44 == $numdate10){
-$hodesh = "10";
-}	
-if($resultres44 == $numdate11){
-$hodesh = "11";
-}	
-if($resultres44 == $numdate12){
-$hodesh = "12";
-}	
-
-preg_match_all('!\d+!', $resultline4, $matches);
-$numbers = implode(' ', $matches[0]);
-
-preg_match_all('!\d+!', $resultline4new89, $matches);
-$numbers2 = implode(' ', $matches[0]);
-
-$numbersin = $numbers2;
-$numbersout = $numbers; 
-$messageLength = mb_strlen((string)$numbersout);
-if($messageLength == 1){
-$numbersout = "0".$numbersout;
-}
-$messageLength = mb_strlen((string)$numbersin);
-if($messageLength == 1){
-$numbersin = "0".$numbersin;
-}
-
-$lastTwoDigits = date('Y');
-
-$dateshabatin = "$numbersin/$hodesh/$lastTwoDigits";
-$timeshabatin = $timein;
-
-$dateshabatout = "$numbersout/$hodesh/$lastTwoDigits";
-$timeshabatout = $timeout;
-
-Amp\File\write(__DIR__."/"."systemtimein.txt",$timeshabatin);
-Amp\File\write(__DIR__."/"."systemdatein.txt",$dateshabatin);
-Amp\File\write(__DIR__."/"."systemtimeout.txt",$timeshabatout);
-Amp\File\write(__DIR__."/"."systemdateout.txt",$dateshabatout);
+Amp\File\write(__DIR__."/"."systemtimein.txt",$candleTime);
+Amp\File\write(__DIR__."/"."systemdatein.txt",$candleDay);
+Amp\File\write(__DIR__."/"."systemtimeout.txt",$havdalahTime);
+Amp\File\write(__DIR__."/"."systemdateout.txt",$havdalahDay);
 } catch (Throwable $e) {
 }
 }
@@ -5387,7 +4914,7 @@ $query->answer($message = "בקרוב מאוד זה יפעל 💡", $alert = tru
 if (file_exists(getcwd() ."/bot.madeline")) {
   try {
 $BOT_TOKEN = parse_ini_file(getcwd() ."/".'.env')['BOT_TOKEN'];
-$my = MyEventHandler::startAndLoopBot(getcwd() .'/bot.madeline', $BOT_TOKEN);
+$my = Shabbat::startAndLoopBot(getcwd() .'/bot.madeline', $BOT_TOKEN);
 } catch (Throwable $e) {
 $error = $e->getMessage();
 if(preg_match("/SIGINT received/",$error)){
@@ -5419,7 +4946,7 @@ $API_HASH = parse_ini_file(getcwd() ."/".'.env')['API_HASH'];
 $BOT_TOKEN = parse_ini_file(getcwd() ."/".'.env')['BOT_TOKEN'];
 $settings = new Settings;
 $settings->setAppInfo((new \danog\MadelineProto\Settings\AppInfo)->setApiId((int)$API_ID)->setApiHash($API_HASH));
-$my = MyEventHandler::startAndLoopBot(getcwd() .'/bot.madeline', $BOT_TOKEN, $settings);
+$my = Shabbat::startAndLoopBot(getcwd() .'/bot.madeline', $BOT_TOKEN, $settings);
 } catch (Throwable $e) {
 $error = $e->getMessage();
 if(preg_match("/SIGINT received/",$error)){
@@ -5444,7 +4971,7 @@ $API_HASH = parse_ini_file(getcwd() ."/".'.env')['API_HASH'];
 $BOT_TOKEN = parse_ini_file(getcwd() ."/".'.env')['BOT_TOKEN'];
 $settings = new Settings;
 $settings->setAppInfo((new \danog\MadelineProto\Settings\AppInfo)->setApiId((int)$API_ID)->setApiHash($API_HASH));
-$my = MyEventHandler::startAndLoopBot(getcwd() .'/bot.madeline', $BOT_TOKEN, $settings);
+$my = Shabbat::startAndLoopBot(getcwd() .'/bot.madeline', $BOT_TOKEN, $settings);
 } catch (Throwable $e) {
 $error = $e->getMessage();
 if(preg_match("/SIGINT received/",$error)){
@@ -5460,4 +4987,3 @@ echo "\n".$error."\n";
  }
 }
 }
-
