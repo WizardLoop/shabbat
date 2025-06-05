@@ -5,5 +5,6 @@ services:
     init: true
     tty: true
     volumes:
-      - ./app:/app
-    command: php /app/bot.php
+      - ./:/app  
+    working_dir: / 
+    command: php bot.php
