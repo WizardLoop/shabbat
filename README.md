@@ -1,7 +1,7 @@
 # ShabatRobot
 
 ## Description
-A robot for changing the Telegram group's permissions at the entrance and exit of Shabbat.
+A robot for changing the Telegram group's permissions at the entrance and exit of Shabbat. 🕯
 
 _You can check our bot [here](https://t.me/shabatRobot)._
 ##
