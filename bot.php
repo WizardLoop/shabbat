@@ -1073,6 +1073,10 @@ $this->messages->sendMessage(peer: $message->chatId, message: "$txtbot", reply_m
 $error = $e->getMessage();
 $sentMessage = $this->messages->sendMessage(peer: $message->chatId, message: $error);
 }
+
+    if (!file_exists(__DIR__."/"."data/$senderid")) {
+mkdir(__DIR__."/"."data/$senderid");
+}
 Amp\File\write(__DIR__."/"."data/$senderid/groupid.txt", "$chatid");
 }
 }
