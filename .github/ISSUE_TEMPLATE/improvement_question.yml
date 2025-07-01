@@ -1,0 +1,14 @@
+name: "❓ Improvement / Question"
+description: "Suggest an improvement or ask a question"
+labels: [question]
+body:
+  - type: textarea
+    attributes:
+      label: "Improvement or Question"
+      description: "Describe your suggestion or question."
+      placeholder: "Your suggestion/question"
+  - type: textarea
+    attributes:
+      label: "Context"
+      description: "Where in the project do you want to see this?"
+      placeholder: "Relevant files, code, or context"
