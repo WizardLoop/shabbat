@@ -1,0 +1,34 @@
+name: "🐞 Bug report"
+description: "Report a reproducible bug"
+labels: [bug]
+body:
+  - type: textarea
+    attributes:
+      label: "Describe the bug"
+      description: "A clear and concise description of what the bug is."
+      placeholder: "Bug description"
+  - type: textarea
+    attributes:
+      label: "Steps to Reproduce"
+      description: "What steps did you take that led to the bug?"
+      placeholder: "1. Go to ...\n2. Click ...\n3. See error"
+  - type: textarea
+    attributes:
+      label: "Expected behavior"
+      description: "What did you expect to happen?"
+      placeholder: "Expected behavior"
+  - type: textarea
+    attributes:
+      label: "Screenshots/Logs"
+      description: "Add any screenshots or logs to help explain your problem."
+  - type: input
+    attributes:
+      label: "Bot Version / Commit"
+      description: "What version or commit are you using?"
+  - type: dropdown
+    attributes:
+      label: "Environment"
+      options:
+        - Self-hosted Linux
+        - Windows
+        - Other
