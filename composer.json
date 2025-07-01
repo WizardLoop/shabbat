@@ -1,22 +1,23 @@
 {
-    "name": "WizardLoop/shabbat",
-    "description": "A robot for changing the Telegram group's permissions at the entrance and exit of Shabbat.",
-    "require": {
-        "danog/madelineproto": "^8"
-    },
-    "license": "MIT License",
-    "authors": [
-        {
-            "name": "WizardLoop",
-            "telegram": "@WizardLoop"
-        }
-    ],
-    "autoload": {
-        "psr-0": {
-            "wizardloop\\shabbat\\": ""
-        },
-	    "files": [
-            "bot.php"
-        ]
+  "name": "wizardloop/shabbat",
+  "description": "A robot for changing the Telegram group's permissions at the entrance and exit of Shabbat.",
+  "require": {
+    "danog/madelineproto": "^8",
+    "wizardloop/envloader": "^1.0"
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "WizardLoop",
+      "email": "contact@wizardloop.com"
     }
+  ],
+  "autoload": {
+    "psr-4": {
+      "WizardLoop\\Shabbat\\": "src/"
+    },
+    "files": [
+      "bot.php"
+    ]
+  }
 }
