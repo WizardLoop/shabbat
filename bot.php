@@ -1,15 +1,18 @@
 <?php declare(strict_types=1);
+require_once __DIR__ . '/vendor/autoload.php';
 
 /**
  * Copyright theisraelis (C)
- * This file is Written by theisraelis!
+ * This file is Written by @WizardLoop!
  *
- * @author    theisraelis 
- * @copyright theisraelis
+ * @author    WizardLoop 
+ * @copyright WizardLoop
  * @license   https://opensource.org/license/mit MIT License
- * @link theisraelis => https://t.me/the_israelis | israelisBots => https://t.me/israelisBots
+ * @link WizardLoop => https://WizardLoop.t.me 
  */
- 
+
+use WizardLoop\EnvLoader\EnvLoader;
+EnvLoader::load();
 use danog\MadelineProto\Broadcast\Filter;
 use danog\MadelineProto\Broadcast\Progress;
 use danog\MadelineProto\Broadcast\Status;
@@ -56,9 +59,7 @@ class Shabbat extends SimpleEventHandler
 
     public function getReportPeers()
     {
-$ADMIN = parse_ini_file(getcwd()."/".'.env')['ADMIN'];
-$ADMIN = array_map('trim', explode(',', $ADMIN));
-        return $ADMIN;
+return array_map('trim', explode(',', $_ENV['ADMIN']));
     }
 
  #[FilterIncoming]
@@ -4917,8 +4918,7 @@ $query->answer($message = "בקרוב מאוד זה יפעל 💡", $alert = tru
 
 if (file_exists(getcwd() ."/bot.madeline")) {
   try {
-$BOT_TOKEN = parse_ini_file(getcwd() ."/".'.env')['BOT_TOKEN'];
-$my = Shabbat::startAndLoopBot(getcwd() .'/bot.madeline', $BOT_TOKEN);
+$my = Shabbat::startAndLoopBot(getcwd() .'/bot.madeline', $_ENV['BOT_TOKEN']);
 } catch (Throwable $e) {
 $error = $e->getMessage();
 if(preg_match("/SIGINT received/",$error)){
@@ -4945,12 +4945,9 @@ unlink($file);
 }
 rmdir(getcwd() .'/bot.madeline');
   try {
-$API_ID = parse_ini_file(getcwd() ."/".'.env')['API_ID'];
-$API_HASH = parse_ini_file(getcwd() ."/".'.env')['API_HASH'];
-$BOT_TOKEN = parse_ini_file(getcwd() ."/".'.env')['BOT_TOKEN'];
 $settings = new Settings;
-$settings->setAppInfo((new \danog\MadelineProto\Settings\AppInfo)->setApiId((int)$API_ID)->setApiHash($API_HASH));
-$my = Shabbat::startAndLoopBot(getcwd() .'/bot.madeline', $BOT_TOKEN, $settings);
+$settings->setAppInfo((new \danog\MadelineProto\Settings\AppInfo)->setApiId((int)$_ENV['API_ID'])->setApiHash($_ENV['API_HASH']));
+$my = Shabbat::startAndLoopBot(getcwd() .'/bot.madeline', $_ENV['BOT_TOKEN'], $settings);
 } catch (Throwable $e) {
 $error = $e->getMessage();
 if(preg_match("/SIGINT received/",$error)){
@@ -4970,12 +4967,9 @@ echo "\n".$error."\n";
 }
 }else{
   try {
-$API_ID = parse_ini_file(getcwd() ."/".'.env')['API_ID'];
-$API_HASH = parse_ini_file(getcwd() ."/".'.env')['API_HASH'];
-$BOT_TOKEN = parse_ini_file(getcwd() ."/".'.env')['BOT_TOKEN'];
 $settings = new Settings;
-$settings->setAppInfo((new \danog\MadelineProto\Settings\AppInfo)->setApiId((int)$API_ID)->setApiHash($API_HASH));
-$my = Shabbat::startAndLoopBot(getcwd() .'/bot.madeline', $BOT_TOKEN, $settings);
+$settings->setAppInfo((new \danog\MadelineProto\Settings\AppInfo)->setApiId((int)$_ENV['API_ID'])->setApiHash($_ENV['API_HASH']));
+$my = Shabbat::startAndLoopBot(getcwd() .'/bot.madeline', $_ENV['BOT_TOKEN'], $settings);
 } catch (Throwable $e) {
 $error = $e->getMessage();
 if(preg_match("/SIGINT received/",$error)){
