@@ -16,7 +16,6 @@
 
 - 🕯 **Automatic Shabbat Mode:** Restricts group permissions at Shabbat entrance, restores at exit
 - 🔔 **Customizable Messages:** Set your own "Shabbat" and "Motzei Shabbat" messages
-- 🌍 **Supports any location/timezone:** Configure for your city (Israel or worldwide)
 - 👑 **Admin Panel:** Only admins can change settings or override
 - 📦 **Zero dependencies:** Just MadelineProto & EnvLoader
 
