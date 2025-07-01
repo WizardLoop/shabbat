@@ -1,30 +1,33 @@
-# ShabatRobot
+# ✡️🕯️ Shabbat Bot
 
-## Description
-A robot for changing the Telegram group's permissions at the entrance and exit of Shabbat. 🕯
+**WizardLoop Shabbat Bot** is an automated Telegram bot that changes group permissions at the entrance and exit of Shabbat, helping admins manage group activity and maintain Shabbat observance.
 
-_You can check our bot [here](https://t.me/shabatRobot)._
-##
-# Installation
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Made by WizardLoop](https://img.shields.io/badge/Made%20by-WizardLoop-blue)](https://github.com/WizardLoop)
+[![Telegram Contact](https://img.shields.io/badge/contact-%40WizardLoop-blue?logo=telegram)](https://t.me/WizardLoop)
 
-1. **Clone the Repository** 
+---
+
+> ✨ Let your group rest on Shabbat! Automate muting/unmuting group chats every week, hands free.
+
+---
+
+## 🚀 Features
+
+- 🕯 **Automatic Shabbat Mode:** Restricts group permissions at Shabbat entrance, restores at exit
+- 🔔 **Customizable Messages:** Set your own "Shabbat" and "Motzei Shabbat" messages
+- 🌍 **Supports any location/timezone:** Configure for your city (Israel or worldwide)
+- 👑 **Admin Panel:** Only admins can change settings or override
+- 📦 **Zero dependencies:** Just MadelineProto & EnvLoader
+
+---
+
+## 📦 Installation
+
 ```bash
-git clone https://github.com/theisraelis/Shabbat.git
-```
-
-2. **Configure Environment Variables**  
-   Rename the example `.env.example` file to `.env`:
-   ```bash
-   mv .env.example .env
-   ```
-   Then, edit the `.env` file to add your `BOT_TOKEN`, `API_ID`, and `API_HASH`:
-   ```
-   API_ID=your_api_id_here
-   API_HASH=your_api_hash_here
-   BOT_TOKEN=your_bot_token_here
-   ADMIN=your_username_or_id_here
-   ```
-
-3. **Run the Bot**  
-##
-Don't forget to install the [required dependencies](https://docs.madelineproto.xyz/docs/REQUIREMENTS.html) for MadelineProto.
+git clone https://github.com/WizardLoop/shabbat.git
+cd shabbat
+composer install
+cp .env.example .env
+# Fill your API credentials and settings in .env
+php bot.php
