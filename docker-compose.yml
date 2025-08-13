@@ -1,10 +1,10 @@
 services:
-  bot:
+  shabbat:
     build: .
     restart: always
     init: true
     tty: true
+    working_dir: /app
     volumes:
-      - ./:/  
-    working_dir: / 
-    command: php bot.php
+      - ./:/app
+    command: php /app/bot.php
