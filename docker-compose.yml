@@ -7,4 +7,4 @@ services:
     working_dir: /app
     volumes:
       - ./:/app
-    command: php /app/bot.php
+    command: php /app/run.php
