@@ -7,16 +7,12 @@
   "license": "MIT",
   "authors": [
     {
-      "name": "WizardLoop",
-      "email": "contact@wizardloop.com"
+      "name": "WizardLoop"
     }
   ],
   "autoload": {
     "psr-4": {
-      "WizardLoop\\Shabbat\\": "src/"
-    },
-    "files": [
-      "bot.php"
-    ]
+      "WizardLoop\\Shabbat\\": ""
+    }
   }
 }
