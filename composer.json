@@ -2,7 +2,7 @@
   "name": "wizardloop/shabbat",
   "description": "A robot for changing the Telegram group's permissions at the entrance and exit of Shabbat.",
   "require": {
-    "danog/madelineproto": "^8"
+    "danog/madelineproto": "^8.4"
   },
   "license": "MIT",
   "authors": [
