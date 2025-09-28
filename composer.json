@@ -3,7 +3,6 @@
   "description": "A robot for changing the Telegram group's permissions at the entrance and exit of Shabbat.",
   "type": "project",
   "require": {
-    "php": "^8.2",
     "danog/madelineproto": "^8.6"
   },
   "license": "MIT",
