@@ -4,7 +4,7 @@
   "type": "project",
   "require": {
     "php": "^8.2",
-    "danog/madelineproto": "^8.4"
+    "danog/madelineproto": "^8.6"
   },
   "license": "MIT",
   "authors": [
