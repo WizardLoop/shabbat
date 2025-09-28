@@ -9,6 +9,12 @@
  * @link wizardloop => https://wizardloop.t.me 
  */
 
+$autoload = __DIR__.'/vendor/autoload.php';
+if (!file_exists($autoload)) {
+    die("Autoload file not found. Please run 'composer install'.");
+}
+require_once $autoload;
+
 use danog\MadelineProto\Broadcast\Filter;
 use danog\MadelineProto\Broadcast\Progress;
 use danog\MadelineProto\Broadcast\Status;
@@ -34,16 +40,6 @@ use Amp\File;
 use Amp\Http\Client\HttpClientBuilder;
 use Amp\Http\Client\Request;
 
-if (class_exists(API::class)) {
-} elseif (file_exists(getcwd() .'/vendor/autoload.php')) {
-    require_once getcwd() .'/vendor/autoload.php';
-} else {
-    if (!file_exists(getcwd() .'/madeline.php')) {
-        copy('https://phar.madelineproto.xyz/madeline.php', getcwd() .'/madeline.php');
-    }
-    require_once getcwd() .'/madeline.php';
-}
-
 class Shabbat extends SimpleEventHandler
 {
 
@@ -55,9 +51,7 @@ class Shabbat extends SimpleEventHandler
 
     public function getReportPeers()
     {
-$ADMIN = parse_ini_file(getcwd()."/".'.env')['ADMIN'];
-$ADMIN = array_map('trim', explode(',', $ADMIN));
-        return $ADMIN;
+return array_map('trim', explode(',', parse_ini_file(__DIR__.'/.env')['ADMIN']));
     }
 
  #[FilterIncoming]
@@ -87,9 +81,7 @@ $txtbot = "היי <a href='mention:$senderid'>$first_name</a>, ברוך הבא �
 הרובוט שישמור את השבת בקבוצה שלך!
 
 🕯 <u>הרובוט בקוד פתוח בגיטהאב:</u>
-github.com/wizardloop/shabbat
-
-📣 <b>ערוץ העדכונים:</b> @shabbatNews";
+github.com/wizardloop/shabbat";
 
 $bot_API_markup[] = [['text'=>"זמני כניסת השבת 🕯",'callback_data'=>"זמנישבת"]];
 $bot_API_markup[] = [['text'=>"הוסף אותי לקבוצה ➕",'url'=>"https://t.me/$me_username?startgroup&admin=restrict_members"]];
@@ -99,14 +91,14 @@ $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 $inputReplyToMessage = ['_' => 'inputReplyToMessage', 'reply_to_msg_id' => $messageid];
 $this->messages->sendMessage(no_webpage: true, peer: $message->senderId, reply_to: $inputReplyToMessage, message: "$txtbot", reply_markup: $bot_API_markup, parse_mode: 'HTML');
 
-    if (!file_exists(getcwd()."/data")) {
-mkdir(getcwd()."/data");
+    if (!file_exists(__DIR__."/data")) {
+mkdir(__DIR__."/data");
 }
-    if (!file_exists(getcwd()."/data/$senderid")) {
-mkdir(getcwd()."/data/$senderid");
+    if (!file_exists(__DIR__."/data/$senderid")) {
+mkdir(__DIR__."/data/$senderid");
 }
-    if (file_exists(getcwd()."/data/$senderid/grs1.txt")) {
-unlink(getcwd()."/data/$senderid/grs1.txt");
+    if (file_exists(__DIR__."/data/$senderid/grs1.txt")) {
+unlink(__DIR__."/data/$senderid/grs1.txt");
 }
 } catch (Throwable $e) {
 }
@@ -130,9 +122,7 @@ $txtbot = "היי <a href='mention:$userid'>$first_name</a>, ברוך הבא �
 הרובוט שישמור את השבת בקבוצה שלך!
 
 🕯 <u>הרובוט בקוד פתוח בגיטהאב:</u>
-github.com/wizardloop/shabbat
-
-📣 <b>ערוץ העדכונים:</b> @shabbatNews";
+github.com/wizardloop/shabbat";
 
 $bot_API_markup[] = [['text'=>"זמני כניסת השבת 🕯",'callback_data'=>"זמנישבת"]];
 $bot_API_markup[] = [['text'=>"הוסף אותי לקבוצה ➕",'url'=>"https://t.me/$me_username?startgroup&admin=restrict_members"]];
@@ -140,13 +130,13 @@ $bot_API_markup[] = [['text'=>"📖 כל הפקודות 💡",'callback_data'=>"
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
 $query->editText($message = "$txtbot", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = true, $scheduleDate = NULL);
-    if (file_exists(getcwd()."/"."data/$userid/grs1.txt")) {
-unlink(getcwd()."/"."data/$userid/grs1.txt");
+    if (file_exists(__DIR__."/"."data/$userid/grs1.txt")) {
+unlink(__DIR__."/"."data/$userid/grs1.txt");
 }
 } catch (Throwable $e) {
 }
 }
-	
+
 #[FilterButtonQueryData('זמנישבת')]
 public function ShabbatTimes(callbackQuery $query)
 {	
@@ -159,107 +149,124 @@ $editer = $query->editText($message = "⌛️", $replyMarkup = null, ParseMode::
 if (!function_exists('getZmanimForCities')) {
     function getZmanimForCities() {
         $geonameIds = [
-            'ירושלים' => 281184,
-            'חיפה' => 294801,
-            'תל אביב' => 293397,
-            'באר שבע' => 295530
+            'ירושלים'   => 281184,
+            'חיפה'      => 294801,
+            'תל אביב'  => 293397,
+            'באר שבע'  => 295530,
         ];
 
         $zmanim = "⌚️ <u><b>זמני כניסת ויציאת השבת:</b></u>\n\n";
 
-        $candleTimes = [];
+        $candleTimes   = [];
         $havdalahTimes = [];
-        $parasha = '';
-        $mevarchim = '';
-        $holiday = '';
-        $date = '';
+        $holidays      = []; // [title => [date, candles[loc], havdalah[loc]]]
+        $date          = '';
+        $parashaText   = '';
 
         foreach ($geonameIds as $location => $geonameId) {
             $client = HttpClientBuilder::buildDefault();
-            $url = "https://www.hebcal.com/shabbat?cfg=json&geonameid=$geonameId&ue=off&M=on&lg=he-x-NoNikud&tgt=_top";
-
+            $url = "https://www.hebcal.com/shabbat?cfg=json&geonameid=$geonameId&ue=off&M=on&lg=he-x-NoNikud";
             $response = $client->request(new Request($url));
             $body = $response->getBody()->buffer();
             $json = json_decode($body, true);
 
             if (!$json || !isset($json['items'])) {
-                $zmanim .= "⚠️ לא ניתן היה לשלוף את זמני השבת עבור המיקום: $location\n";
+                $zmanim .= "⚠️ לא ניתן היה לשלוף את זמני השבת עבור: $location\n";
                 continue;
             }
 
-            $candles = $havdalah = $parasha = $holiday = $mevarchim = null;
+            $candles  = null;
+            $havdalah = null;
 
             foreach ($json['items'] as $item) {
                 switch ($item['category']) {
                     case 'candles':
-                        $candles = $item;
+                        $holidayName = $item['memo'] ?? null;
+                        if ($holidayName && isset($holidays[$holidayName])) {
+                            $holidays[$holidayName]['candles'][$location] = (new \DateTime($item['date']))->format('H:i');
+                        } else {
+                            $candles = $item; // שבת
+                        }
                         break;
+
                     case 'havdalah':
-                        $havdalah = $item;
+                        $holidayName = $item['memo'] ?? null;
+                        if ($holidayName && isset($holidays[$holidayName])) {
+                            $holidays[$holidayName]['havdalah'][$location] = (new \DateTime($item['date']))->format('H:i');
+                        } else {
+                            $havdalah = $item; // שבת
+                        }
                         break;
+
                     case 'parashat':
-                        $parasha = $item;
+                        $parashaText = $item['hebrew'];
                         break;
-                    case 'mevarchim':
-                        $mevarchim = $item;
-                        break;
+
                     case 'holiday':
-                        $holiday = $item;
+                        if ($location === 'ירושלים') {
+                            $hDate  = substr($item['date'],0,10);
+                            $hTitle = $item['hebrew'];
+                            $holidays[$hTitle]['date'] = $hDate;
+                        }
                         break;
                 }
             }
 
-            $candleDate = isset($candles['date']) ? new \DateTime($candles['date']) : null;
-            $candleTime = $candleDate?->format('H:i') ?? 'לא ידוע';
-
-            $havdalahDate = isset($havdalah['date']) ? new \DateTime($havdalah['date']) : null;
-            $havdalahTime = $havdalahDate?->format('H:i') ?? 'לא ידוע';
+            // זמני שבת רגילים
+            $candleTimes[$location]   = isset($candles['date']) ? (new \DateTime($candles['date']))->format('H:i') : 'לא ידוע';
+            $havdalahTimes[$location] = isset($havdalah['date']) ? (new \DateTime($havdalah['date']))->format('H:i') : 'לא ידוע';
 
             if (empty($date) && isset($havdalah['date'])) {
                 $date = (new \DateTime($havdalah['date']))->format('d/m/Y');
             }
-
-            $candleTimes[$location] = $candleTime;
-            $havdalahTimes[$location] = $havdalahTime;
-
-            if ($parasha) {
-                $parashaText = $parasha['hebrew'];
-            }
-
-            if ($mevarchim) {
-                $mevarchimText = $mevarchim['hebrew'];
-            }
-
-            if ($holiday) {
-                $holidayText = $holiday['hebrew'];
-            }
         }
 
+        // תאריך ופרשה
         $zmanim .= "🗓 <u>תאריך:</u> $date\n";
-        if (isset($parashaText)) {
+        if ($parashaText) {
             $zmanim .= "📖 <u>פרשת השבוע:</u> $parashaText\n";
         }
-        if (isset($mevarchimText)) {
-            $zmanim .= "🌒 <u>מברכים:</u> $mevarchimText\n";
-        }
-        if (isset($holidayText)) {
-            $zmanim .= "🎉 <u>חג:</u> $holidayText\n";
+
+        // זמני שבת
+        $zmanim .= "\n🕯 <u>כניסת שבת:</u>\n";
+        foreach ($candleTimes as $loc => $time) {
+            $zmanim .= "$loc: <code>$time</code>\n";
         }
 
-        $zmanim .= "\n🕯 <u>זמני כניסת השבת:</u>\n";
-        foreach ($candleTimes as $location => $time) {
-            $zmanim .= "$location: <code>$time</code>\n";
+        $zmanim .= "\n🍷 <u>יציאת שבת:</u>\n";
+        foreach ($havdalahTimes as $loc => $time) {
+            $zmanim .= "$loc: <code>$time</code>\n";
         }
 
-        $zmanim .= "\n🍷 <u>זמני יציאת השבת:</u>\n";
-        foreach ($havdalahTimes as $location => $time) {
-            $zmanim .= "$location: <code>$time</code>\n";
+        // חגים + זמנים שלהם
+        if ($holidays) {
+            uasort($holidays, fn($a,$b) => strtotime($a['date'] ?? '') <=> strtotime($b['date'] ?? ''));
+            $zmanim .= "\n🎉 <u>חגים קרובים:</u>\n";
+            foreach ($holidays as $title => $info) {
+                $hDateFormatted = isset($info['date']) ? (new \DateTime($info['date']))->format('d/m/Y') : '---';
+                $zmanim .= "• $title ($hDateFormatted)\n";
+
+                if (!empty($info['candles'])) {
+                    $zmanim .= "   🕯 כניסה:\n";
+                    foreach ($info['candles'] as $loc => $time) {
+                        $zmanim .= "   $loc: <code>$time</code>\n";
+                    }
+                }
+                if (!empty($info['havdalah'])) {
+                    $zmanim .= "   🍷 יציאה:\n";
+                    foreach ($info['havdalah'] as $loc => $time) {
+                        $zmanim .= "   $loc: <code>$time</code>\n";
+                    }
+                }
+            }
         }
 
         return $zmanim;
     }
 }
+
 $ShabatTimes = getZmanimForCities();
+
 
 $editer2 = $query->editText($message = $ShabatTimes, $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
 } catch (Throwable $e) {
@@ -297,6 +304,10 @@ $txtbot = "<b>(הרובוט הזה עובד רק בסופר קבוצה)</b>
 
 אתה יכול להשתמש בסימנים: /, !, . כדי להפעיל כל פקודה.
 
+<i>טיפ: רוצה שאני רק אשלח את זמני השבת מבלי לסגור את הקבוצה? כתוב /add > הפעל התראות שבת > תסיר לי הרשאות ניהול(שאני לא יוכל לסגור את הקבוצה, אפשר גם כחבר רגיל בקבוצה ללא אדמין)</i>
+
+<b>[בקרוב יהיה פעיל גם בחגים]</b>
+
 זכור: אתה צריך להשתמש בפקודות בתוך הקבוצה, אלא אם כן הם תוכננו במיוחד עבור כל צ'אט (ראה 'פקודות לכל המשתמשים').";
 
 $me = $this->getSelf();
@@ -325,11 +336,8 @@ $txtbot = "💡 <b>רשימת פקודות זמינות:</b>
 כמו כן באפשרותכם להגדיר הודעה מותאמת אישית שתשלח בערב שבת כשהקבוצה נסגרת!
 והודעה מותאמת אישית שתשלח במוצאי שבת כשהקבוצה נפתחת!
 
-<b>*בקרוב תמיכה במדיה וכפתורים מוטבעים להודעה מותאמת אישית.</b>
-
 <b>הקבוצה תיסגר לפי זמן:</b> ירושלים 
-(10 דק' לפני כניסת השבת.)
-<b>בקרוב --></b> בחירת איזור זמן ⌚️
+⌚️ 10 דק' לפני כניסת השבת.
 
 <i>פקודות אלו יש לשלוח בקבוצה בלבד</i>";
 
@@ -350,11 +358,16 @@ $me_username = '@'.$me['username'];
 
 $txtbot = "💡 <b>רשימת פקודות זמינות:</b>
 /shabat - הצגת זמני כניסת ויציאת השבת.
+(ניתן גם לכתוב /shabbat )
 /stats - כמה קבוצות שומרות שבת 📊
 /donate - תמיכה ברובוט ⭐️
 
 <b>ניתן גם להשתמש במצב אינליין:</b>
 <code>$me_username shabat</code>
+או:
+<code>$me_username shabbat</code>
+או:
+<code>$me_username שבת</code>
 
 <i>פקודות אלו ניתן לשלוח בכל צ'אט</i>";
 
@@ -366,7 +379,7 @@ $query->editText($message = "$txtbot", $replyMarkup = $bot_API_markup, ParseMode
 }
 }
 
-    #[FilterCommandCaseInsensitive('shabat')]
+	#[FiltersOr(new FilterCommandCaseInsensitive('shabat'), new FilterCommandCaseInsensitive('shabbat'))]
     public function shabatCommand(Incoming $message): void
     {
 try {
@@ -381,108 +394,123 @@ $sentMessage2 = $this->extractMessageId($sentMessage);
 if (!function_exists('getZmanimForCities')) {
     function getZmanimForCities() {
         $geonameIds = [
-            'ירושלים' => 281184,
-            'חיפה' => 294801,
-            'תל אביב' => 293397,
-            'באר שבע' => 295530
+            'ירושלים'   => 281184,
+            'חיפה'      => 294801,
+            'תל אביב'  => 293397,
+            'באר שבע'  => 295530,
         ];
 
         $zmanim = "⌚️ <u><b>זמני כניסת ויציאת השבת:</b></u>\n\n";
 
-        $candleTimes = [];
+        $candleTimes   = [];
         $havdalahTimes = [];
-        $parasha = '';
-        $mevarchim = '';
-        $holiday = '';
-        $date = '';
+        $holidays      = []; // [title => [date, candles[loc], havdalah[loc]]]
+        $date          = '';
+        $parashaText   = '';
 
         foreach ($geonameIds as $location => $geonameId) {
             $client = HttpClientBuilder::buildDefault();
-            $url = "https://www.hebcal.com/shabbat?cfg=json&geonameid=$geonameId&ue=off&M=on&lg=he-x-NoNikud&tgt=_top";
-
+            $url = "https://www.hebcal.com/shabbat?cfg=json&geonameid=$geonameId&ue=off&M=on&lg=he-x-NoNikud";
             $response = $client->request(new Request($url));
             $body = $response->getBody()->buffer();
             $json = json_decode($body, true);
 
             if (!$json || !isset($json['items'])) {
-                $zmanim .= "⚠️ לא ניתן היה לשלוף את זמני השבת עבור המיקום: $location\n";
+                $zmanim .= "⚠️ לא ניתן היה לשלוף את זמני השבת עבור: $location\n";
                 continue;
             }
 
-            $candles = $havdalah = $parasha = $holiday = $mevarchim = null;
+            $candles  = null;
+            $havdalah = null;
 
             foreach ($json['items'] as $item) {
                 switch ($item['category']) {
                     case 'candles':
-                        $candles = $item;
+                        $holidayName = $item['memo'] ?? null;
+                        if ($holidayName && isset($holidays[$holidayName])) {
+                            $holidays[$holidayName]['candles'][$location] = (new \DateTime($item['date']))->format('H:i');
+                        } else {
+                            $candles = $item; // שבת
+                        }
                         break;
+
                     case 'havdalah':
-                        $havdalah = $item;
+                        $holidayName = $item['memo'] ?? null;
+                        if ($holidayName && isset($holidays[$holidayName])) {
+                            $holidays[$holidayName]['havdalah'][$location] = (new \DateTime($item['date']))->format('H:i');
+                        } else {
+                            $havdalah = $item; // שבת
+                        }
                         break;
+
                     case 'parashat':
-                        $parasha = $item;
+                        $parashaText = $item['hebrew'];
                         break;
-                    case 'mevarchim':
-                        $mevarchim = $item;
-                        break;
+
                     case 'holiday':
-                        $holiday = $item;
+                        if ($location === 'ירושלים') {
+                            $hDate  = substr($item['date'],0,10);
+                            $hTitle = $item['hebrew'];
+                            $holidays[$hTitle]['date'] = $hDate;
+                        }
                         break;
                 }
             }
 
-            $candleDate = isset($candles['date']) ? new \DateTime($candles['date']) : null;
-            $candleTime = $candleDate?->format('H:i') ?? 'לא ידוע';
-
-            $havdalahDate = isset($havdalah['date']) ? new \DateTime($havdalah['date']) : null;
-            $havdalahTime = $havdalahDate?->format('H:i') ?? 'לא ידוע';
+            // זמני שבת רגילים
+            $candleTimes[$location]   = isset($candles['date']) ? (new \DateTime($candles['date']))->format('H:i') : 'לא ידוע';
+            $havdalahTimes[$location] = isset($havdalah['date']) ? (new \DateTime($havdalah['date']))->format('H:i') : 'לא ידוע';
 
             if (empty($date) && isset($havdalah['date'])) {
                 $date = (new \DateTime($havdalah['date']))->format('d/m/Y');
             }
-
-            $candleTimes[$location] = $candleTime;
-            $havdalahTimes[$location] = $havdalahTime;
-
-            if ($parasha) {
-                $parashaText = $parasha['hebrew'];
-            }
-
-            if ($mevarchim) {
-                $mevarchimText = $mevarchim['hebrew'];
-            }
-
-            if ($holiday) {
-                $holidayText = $holiday['hebrew'];
-            }
         }
 
+        // תאריך ופרשה
         $zmanim .= "🗓 <u>תאריך:</u> $date\n";
-        if (isset($parashaText)) {
+        if ($parashaText) {
             $zmanim .= "📖 <u>פרשת השבוע:</u> $parashaText\n";
         }
-        if (isset($mevarchimText)) {
-            $zmanim .= "🌒 <u>מברכים:</u> $mevarchimText\n";
-        }
-        if (isset($holidayText)) {
-            $zmanim .= "🎉 <u>חג:</u> $holidayText\n";
+
+        // זמני שבת
+        $zmanim .= "\n🕯 <u>כניסת שבת:</u>\n";
+        foreach ($candleTimes as $loc => $time) {
+            $zmanim .= "$loc: <code>$time</code>\n";
         }
 
-        $zmanim .= "\n🕯 <u>זמני כניסת השבת:</u>\n";
-        foreach ($candleTimes as $location => $time) {
-            $zmanim .= "$location: <code>$time</code>\n";
+        $zmanim .= "\n🍷 <u>יציאת שבת:</u>\n";
+        foreach ($havdalahTimes as $loc => $time) {
+            $zmanim .= "$loc: <code>$time</code>\n";
         }
 
-        $zmanim .= "\n🍷 <u>זמני יציאת השבת:</u>\n";
-        foreach ($havdalahTimes as $location => $time) {
-            $zmanim .= "$location: <code>$time</code>\n";
+        // חגים + זמנים שלהם
+        if ($holidays) {
+            uasort($holidays, fn($a,$b) => strtotime($a['date'] ?? '') <=> strtotime($b['date'] ?? ''));
+            $zmanim .= "\n🎉 <u>חגים קרובים:</u>\n";
+            foreach ($holidays as $title => $info) {
+                $hDateFormatted = isset($info['date']) ? (new \DateTime($info['date']))->format('d/m/Y') : '---';
+                $zmanim .= "• $title ($hDateFormatted)\n";
+
+                if (!empty($info['candles'])) {
+                    $zmanim .= "   🕯 כניסה:\n";
+                    foreach ($info['candles'] as $loc => $time) {
+                        $zmanim .= "   $loc: <code>$time</code>\n";
+                    }
+                }
+                if (!empty($info['havdalah'])) {
+                    $zmanim .= "   🍷 יציאה:\n";
+                    foreach ($info['havdalah'] as $loc => $time) {
+                        $zmanim .= "   $loc: <code>$time</code>\n";
+                    }
+                }
+            }
         }
 
         return $zmanim;
     }
 }
-$ShabatTimes = getZmanimForCities();
 
+$ShabatTimes = getZmanimForCities();
 
 $me = $this->getSelf();
 $me_username = $me['username'];
@@ -494,10 +522,8 @@ $inlineQueryPeerTypeMegagroup = ['_' => 'inlineQueryPeerTypeMegagroup'];
 $inlineQueryPeerTypeBroadcast = ['_' => 'inlineQueryPeerTypeBroadcast'];
 
 $keyboardButtonSwitchInline = ['_' => 'keyboardButtonSwitchInline', 'same_peer' => false, 'text' => 'לשיתוף זמני השבת 🕯', 'query' => 'shabat', 'peer_types' => [$inlineQueryPeerTypePM, $inlineQueryPeerTypeChat, $inlineQueryPeerTypeBotPM, $inlineQueryPeerTypeMegagroup, $inlineQueryPeerTypeBroadcast]];
-$keyboardButtonUrl = ['_' => 'keyboardButtonUrl', 'text' => '📣 לערוץ העדכונים 📣', 'url' => 'https://t.me/shabbatnews'];
 $keyboardButtonRow1 = ['_' => 'keyboardButtonRow', 'buttons' => [$keyboardButtonSwitchInline]];
-$keyboardButtonRow2 = ['_' => 'keyboardButtonRow', 'buttons' => [$keyboardButtonUrl]];
-$bot_API_markup = ['_' => 'replyInlineMarkup', 'rows' => [$keyboardButtonRow1, $keyboardButtonRow2]];
+$bot_API_markup = ['_' => 'replyInlineMarkup', 'rows' => [$keyboardButtonRow1]];
 
 $this->messages->editMessage(peer: $message->chatId, id: $sentMessage2, message: "$ShabatTimes", reply_markup: $bot_API_markup, parse_mode: 'HTML');
 
@@ -513,108 +539,123 @@ try {
 if (!function_exists('getZmanimForCities')) {
     function getZmanimForCities() {
         $geonameIds = [
-            'ירושלים' => 281184,
-            'חיפה' => 294801,
-            'תל אביב' => 293397,
-            'באר שבע' => 295530
+            'ירושלים'   => 281184,
+            'חיפה'      => 294801,
+            'תל אביב'  => 293397,
+            'באר שבע'  => 295530,
         ];
 
         $zmanim = "⌚️ <u><b>זמני כניסת ויציאת השבת:</b></u>\n\n";
 
-        $candleTimes = [];
+        $candleTimes   = [];
         $havdalahTimes = [];
-        $parasha = '';
-        $mevarchim = '';
-        $holiday = '';
-        $date = '';
+        $holidays      = []; // [title => [date, candles[loc], havdalah[loc]]]
+        $date          = '';
+        $parashaText   = '';
 
         foreach ($geonameIds as $location => $geonameId) {
             $client = HttpClientBuilder::buildDefault();
-            $url = "https://www.hebcal.com/shabbat?cfg=json&geonameid=$geonameId&ue=off&M=on&lg=he-x-NoNikud&tgt=_top";
-
+            $url = "https://www.hebcal.com/shabbat?cfg=json&geonameid=$geonameId&ue=off&M=on&lg=he-x-NoNikud";
             $response = $client->request(new Request($url));
             $body = $response->getBody()->buffer();
             $json = json_decode($body, true);
 
             if (!$json || !isset($json['items'])) {
-                $zmanim .= "⚠️ לא ניתן היה לשלוף את זמני השבת עבור המיקום: $location\n";
+                $zmanim .= "⚠️ לא ניתן היה לשלוף את זמני השבת עבור: $location\n";
                 continue;
             }
 
-            $candles = $havdalah = $parasha = $holiday = $mevarchim = null;
+            $candles  = null;
+            $havdalah = null;
 
             foreach ($json['items'] as $item) {
                 switch ($item['category']) {
                     case 'candles':
-                        $candles = $item;
+                        $holidayName = $item['memo'] ?? null;
+                        if ($holidayName && isset($holidays[$holidayName])) {
+                            $holidays[$holidayName]['candles'][$location] = (new \DateTime($item['date']))->format('H:i');
+                        } else {
+                            $candles = $item; // שבת
+                        }
                         break;
+
                     case 'havdalah':
-                        $havdalah = $item;
+                        $holidayName = $item['memo'] ?? null;
+                        if ($holidayName && isset($holidays[$holidayName])) {
+                            $holidays[$holidayName]['havdalah'][$location] = (new \DateTime($item['date']))->format('H:i');
+                        } else {
+                            $havdalah = $item; // שבת
+                        }
                         break;
+
                     case 'parashat':
-                        $parasha = $item;
+                        $parashaText = $item['hebrew'];
                         break;
-                    case 'mevarchim':
-                        $mevarchim = $item;
-                        break;
+
                     case 'holiday':
-                        $holiday = $item;
+                        if ($location === 'ירושלים') {
+                            $hDate  = substr($item['date'],0,10);
+                            $hTitle = $item['hebrew'];
+                            $holidays[$hTitle]['date'] = $hDate;
+                        }
                         break;
                 }
             }
 
-            $candleDate = isset($candles['date']) ? new \DateTime($candles['date']) : null;
-            $candleTime = $candleDate?->format('H:i') ?? 'לא ידוע';
-
-            $havdalahDate = isset($havdalah['date']) ? new \DateTime($havdalah['date']) : null;
-            $havdalahTime = $havdalahDate?->format('H:i') ?? 'לא ידוע';
+            // זמני שבת רגילים
+            $candleTimes[$location]   = isset($candles['date']) ? (new \DateTime($candles['date']))->format('H:i') : 'לא ידוע';
+            $havdalahTimes[$location] = isset($havdalah['date']) ? (new \DateTime($havdalah['date']))->format('H:i') : 'לא ידוע';
 
             if (empty($date) && isset($havdalah['date'])) {
                 $date = (new \DateTime($havdalah['date']))->format('d/m/Y');
             }
-
-            $candleTimes[$location] = $candleTime;
-            $havdalahTimes[$location] = $havdalahTime;
-
-            if ($parasha) {
-                $parashaText = $parasha['hebrew'];
-            }
-
-            if ($mevarchim) {
-                $mevarchimText = $mevarchim['hebrew'];
-            }
-
-            if ($holiday) {
-                $holidayText = $holiday['hebrew'];
-            }
         }
 
+        // תאריך ופרשה
         $zmanim .= "🗓 <u>תאריך:</u> $date\n";
-        if (isset($parashaText)) {
+        if ($parashaText) {
             $zmanim .= "📖 <u>פרשת השבוע:</u> $parashaText\n";
         }
-        if (isset($mevarchimText)) {
-            $zmanim .= "🌒 <u>מברכים:</u> $mevarchimText\n";
-        }
-        if (isset($holidayText)) {
-            $zmanim .= "🎉 <u>חג:</u> $holidayText\n";
+
+        // זמני שבת
+        $zmanim .= "\n🕯 <u>כניסת שבת:</u>\n";
+        foreach ($candleTimes as $loc => $time) {
+            $zmanim .= "$loc: <code>$time</code>\n";
         }
 
-        $zmanim .= "\n🕯 <u>זמני כניסת השבת:</u>\n";
-        foreach ($candleTimes as $location => $time) {
-            $zmanim .= "$location: <code>$time</code>\n";
+        $zmanim .= "\n🍷 <u>יציאת שבת:</u>\n";
+        foreach ($havdalahTimes as $loc => $time) {
+            $zmanim .= "$loc: <code>$time</code>\n";
         }
 
-        $zmanim .= "\n🍷 <u>זמני יציאת השבת:</u>\n";
-        foreach ($havdalahTimes as $location => $time) {
-            $zmanim .= "$location: <code>$time</code>\n";
+        // חגים + זמנים שלהם
+        if ($holidays) {
+            uasort($holidays, fn($a,$b) => strtotime($a['date'] ?? '') <=> strtotime($b['date'] ?? ''));
+            $zmanim .= "\n🎉 <u>חגים קרובים:</u>\n";
+            foreach ($holidays as $title => $info) {
+                $hDateFormatted = isset($info['date']) ? (new \DateTime($info['date']))->format('d/m/Y') : '---';
+                $zmanim .= "• $title ($hDateFormatted)\n";
+
+                if (!empty($info['candles'])) {
+                    $zmanim .= "   🕯 כניסה:\n";
+                    foreach ($info['candles'] as $loc => $time) {
+                        $zmanim .= "   $loc: <code>$time</code>\n";
+                    }
+                }
+                if (!empty($info['havdalah'])) {
+                    $zmanim .= "   🍷 יציאה:\n";
+                    foreach ($info['havdalah'] as $loc => $time) {
+                        $zmanim .= "   $loc: <code>$time</code>\n";
+                    }
+                }
+            }
         }
 
         return $zmanim;
     }
 }
-$ShabatTimes = getZmanimForCities();
 
+$ShabatTimes = getZmanimForCities();
 
 $me = $this->getSelf();
 $me_username = $me['username'];
@@ -626,10 +667,8 @@ $inlineQueryPeerTypeMegagroup = ['_' => 'inlineQueryPeerTypeMegagroup'];
 $inlineQueryPeerTypeBroadcast = ['_' => 'inlineQueryPeerTypeBroadcast'];
 
 $keyboardButtonSwitchInline = ['_' => 'keyboardButtonSwitchInline', 'same_peer' => false, 'text' => 'לשיתוף זמני השבת 🕯', 'query' => 'shabat', 'peer_types' => [$inlineQueryPeerTypePM, $inlineQueryPeerTypeChat, $inlineQueryPeerTypeBotPM, $inlineQueryPeerTypeMegagroup, $inlineQueryPeerTypeBroadcast]];
-$keyboardButtonUrl = ['_' => 'keyboardButtonUrl', 'text' => '📣 לערוץ העדכונים 📣', 'url' => 'https://t.me/shabbatnews'];
 $keyboardButtonRow1 = ['_' => 'keyboardButtonRow', 'buttons' => [$keyboardButtonSwitchInline]];
-$keyboardButtonRow2 = ['_' => 'keyboardButtonRow', 'buttons' => [$keyboardButtonUrl]];
-$bot_API_markup = ['_' => 'replyInlineMarkup', 'rows' => [$keyboardButtonRow1, $keyboardButtonRow2]];
+$bot_API_markup = ['_' => 'replyInlineMarkup', 'rows' => [$keyboardButtonRow1]];
 
 $documentAttributeImageSize = ['_' => 'documentAttributeImageSize', 'w' => 475, 'h' => 475];
 $inputWebDocument = ['_' => 'inputWebDocument', 'url' => 'https://telegra.ph/file/0b06390cc0e5236a5bd05-0fc4534fa4021ecb33.jpg', 'size' => 98166, 'mime_type' => 'image/jpeg', 'attributes' => [$documentAttributeImageSize]];
@@ -642,7 +681,7 @@ $inputBotInlineResult = ['_' => 'botInlineResult', 'id' => '0', 'type' => 'artic
             $result = ['query_id' => $update['query_id'], 'results' => [$inputBotInlineResult], 'cache_time' => 0];
 
 
-            if ($update['query'] === 'shabat') {
+            if ($update['query'] === 'shabat' || $update['query'] === 'shabbat' || $update['query'] === 'שבת') {
 $this->messages->setInlineBotResults($result);
             } else {
 $this->messages->setInlineBotResults($result);
@@ -668,7 +707,9 @@ public function closecommand(callbackQuery $query)
 {
 	try {
 $this->messages->deleteMessages(revoke: true, id: [$query->messageId]); 
-} catch (Throwable $e) {}
+} catch (Throwable $e) {
+$query->answer($message = "אני לא יכול לסגור את ההודעה, סגור אותה בעצמך..", $alert = false, $url = null, $cacheTime = 0);		
+}
 }
 
     #[FilterCommandCaseInsensitive('add')]
@@ -699,9 +740,15 @@ $this->messages->sendMessage(peer: $message->chatId, message: "$txtbot", parse_m
 
 if($type == "supergroup"){
 
+if($message->senderId == $message->chatId){
+$txtbot = "<b>הינך מנהל אנונימי.</b>
+רק מנהל לא אנונימי יכול להוסיף את הקבוצה לבסיס נתונים!";
+$this->messages->sendMessage(peer: $message->chatId, message: "$txtbot", parse_mode: 'HTML');
+}else{
+
 try {
-$channelpart = $this->channels->getParticipant(['channel' => $chatid, 'participant' => $message->senderId ]);
-if(isset($channelpart['participant']['_'])&& ($channelpart['participant']['_'] == 'channelParticipantAdmin' or $channelpart['participant']['_'] == 'channelParticipantCreator'))  $isadmin = true;
+$channelpart = $this->channels->getParticipant(['channel' => $message->chatId, 'participant' => $message->senderId]);
+if(isset($channelpart['participant']['_'])&& ($channelpart['participant']['_'] == 'channelParticipantAdmin' || $channelpart['participant']['_'] == 'channelParticipantCreator'))  $isadmin = true;
 else $isadmin = false;
 } catch (Throwable $e) {
 $isadmin = false;
@@ -711,7 +758,7 @@ if($isadmin != false){
 	
 try {
 $channelpart2 = $this->channels->getParticipant(['channel' => $chatid, 'participant' => $me_id ]);
-if(isset($channelpart2['participant']['_'])&& ($channelpart2['participant']['_'] == 'channelParticipantAdmin' or $channelpart2['participant']['_'] == 'channelParticipantCreator'))  $isadmin2 = true;
+if(isset($channelpart2['participant']['_'])&& ($channelpart2['participant']['_'] == 'channelParticipantAdmin' || $channelpart2['participant']['_'] == 'channelParticipantCreator'))  $isadmin2 = true;
 else $isadmin2 = false;	
 } catch (Throwable $e) {
 $isadmin2 = false;
@@ -732,8 +779,9 @@ if($admrgh != null){
 
 if (file_exists(__DIR__."/"."data/DBgroups.txt")) {
 $filex = Amp\File\read(__DIR__."/"."data/DBgroups.txt");  
-$user1 = explode("\n",$filex);
-if(!in_array($chatid,$user1)){
+$user1 = array_map('trim', explode("\n", $filex));
+
+if (!in_array((string)$chatid, $user1, true)) {
 if($filex != null){
 $filex = $filex."\n"; 
 Amp\File\write(__DIR__."/"."data/DBgroups.txt", "$filex"."$chatid");
@@ -753,7 +801,7 @@ mkdir(__DIR__."/"."data/$chatid");
 }
 }
 }
-if(in_array($chatid,$user1)){
+if (in_array((string)$chatid, $user1, true)) {
 $txtbot = "<b>הקבוצה כבר בבסיס נתונים!</b>";
 $this->messages->sendMessage(peer: $message->chatId, message: "$txtbot", parse_mode: 'HTML');
 }	
@@ -785,7 +833,7 @@ $txtbot = "<b>אינך מנהל או יוצר בקבוצה.</b>
 $this->messages->sendMessage(peer: $message->chatId, message: "$txtbot", parse_mode: 'HTML');
 }
 
-
+}
 
 }
 } catch (Throwable $e) {
@@ -822,6 +870,12 @@ $this->messages->sendMessage(peer: $message->chatId, message: "$txtbot", parse_m
 
 if($type == "supergroup"){
 
+if($message->senderId == $message->chatId){
+$txtbot = "<b>הינך מנהל אנונימי.</b>
+רק מנהל לא אנונימי יכול להוסיף את הקבוצה לבסיס נתונים!";
+$this->messages->sendMessage(peer: $message->chatId, message: "$txtbot", parse_mode: 'HTML');
+}else{
+	
 try {
 $channelpart = $this->channels->getParticipant(['channel' => $chatid, 'participant' => $message->senderId ]);
 if(isset($channelpart['participant']['_'])&& ($channelpart['participant']['_'] == 'channelParticipantAdmin' or $channelpart['participant']['_'] == 'channelParticipantCreator'))  $isadmin = true;
@@ -851,22 +905,8 @@ try {
 $channelpart2 = $this->channels->getParticipant(['channel' => $chatid, 'participant' => $me_id ]);
 if(isset($channelpart2['participant']['_'])&& ($channelpart2['participant']['_'] == 'channelParticipantAdmin' or $channelpart2['participant']['_'] == 'channelParticipantCreator'))  $isadmin2 = true;
 else $isadmin2 = false;	
-}catch (\danog\MadelineProto\Exception $e) {
-$estring = (string) $e;
-if(preg_match("/USER_NOT_PARTICIPANT/",$estring)){
+} catch (Throwable $e) {
 $isadmin2 = false;
-}else{
-$isadmin2 = false;
-}
-
-} catch (\danog\MadelineProto\RPCErrorException $e) {
-$estring = (string) $e;
-
-    if ($e->rpc === 'USER_NOT_PARTICIPANT') {
-$isadmin2 = false;
-}else{
-$isadmin2 = false;
-}
 }
 
 
@@ -885,8 +925,9 @@ if($admrgh != null){
 
 if (file_exists(__DIR__."/"."data/DBgroups.txt")) {
 $filex = Amp\File\read(__DIR__."/"."data/DBgroups.txt");  
-$user1 = explode("\n",$filex);
-if(in_array($chatid,$user1)){
+$user1 = array_map('trim', explode("\n", $filex));
+
+if (in_array((string)$chatid, $user1, true)) {
 $filex = Amp\File\read(__DIR__."/"."data/DBgroups.txt");  
 $chatidstring = (string) $chatid;
 $result = str_replace($chatidstring,"",$filex);
@@ -910,7 +951,7 @@ unlink(__DIR__."/"."data/$chatidstring/msgclosermotan.txt");
 
 
 }
-if(!in_array($chatid,$user1)){
+if (!in_array((string)$chatid, $user1, true)) {
 $txtbot = "<b>הקבוצה כבר הוסרה מבסיס נתונים!</b>";
 $this->messages->sendMessage(peer: $message->chatId, message: "$txtbot", parse_mode: 'HTML');
 }	
@@ -941,6 +982,7 @@ $this->messages->sendMessage(peer: $message->chatId, message: "$txtbot", parse_m
 
 }
 
+}
 
 } catch (Throwable $e) {
 $error = $e->getMessage();
@@ -978,26 +1020,19 @@ $this->messages->sendMessage(peer: $message->chatId, message: "$txtbot", parse_m
 
 
 if($type == "supergroup"){
+
+if($message->senderId == $message->chatId){
+$txtbot = "<b>הינך מנהל אנונימי.</b>
+רק מנהל לא אנונימי יכול להוסיף את הקבוצה לבסיס נתונים!";
+$this->messages->sendMessage(peer: $message->chatId, message: "$txtbot", parse_mode: 'HTML');
+}else{
+	
 try {
 $channelpart = $this->channels->getParticipant(['channel' => $chatid, 'participant' => $message->senderId ]);
 if(isset($channelpart['participant']['_'])&& ($channelpart['participant']['_'] == 'channelParticipantAdmin' or $channelpart['participant']['_'] == 'channelParticipantCreator'))  $isadmin = true;
 else $isadmin = false;
-}catch (\danog\MadelineProto\Exception $e) {
-$estring = (string) $e;
-if(preg_match("/USER_NOT_PARTICIPANT/",$estring)){
+} catch (Throwable $e) {
 $isadmin = false;
-}else{
-$isadmin = false;
-}
-
-} catch (\danog\MadelineProto\RPCErrorException $e) {
-$estring = (string) $e;
-
-    if ($e->rpc === 'USER_NOT_PARTICIPANT') {
-$isadmin = false;
-}else{
-$isadmin = false;
-}
 }
 
 if($isadmin != false){
@@ -1037,13 +1072,16 @@ if($admrgh != null){
 
 if (file_exists(__DIR__."/"."data/DBgroups.txt")) {
 $filex = Amp\File\read(__DIR__."/"."data/DBgroups.txt");  
-$user1 = explode("\n",$filex);
-if(!in_array($chatid,$user1)){
+$user1 = array_map('trim', explode("\n", $filex));
+
+if (!in_array((string)$chatid, $user1, true)) {
 $txtbot = "<b>הקבוצה לא נוספה לבסיס נתונים!</b>
 שלח את הפקודה <code>/add</code>";
 $this->messages->sendMessage(peer: $message->chatId, message: "$txtbot", parse_mode: 'HTML');
 }
-if(in_array($chatid,$user1)){
+
+if (in_array((string)$chatid, $user1, true)) {
+	
 $txtbot2 = "<b>התאם אישית את הרובוט בקבוצה:</b>";
 if (!file_exists(__DIR__."/"."data/$chatid/alertshabat.txt")) {
 $bot_API_markup[] = [['text'=>"OFF ❌",'callback_data'=>"שלחזמני"],['text'=>"זמני כניסת שבת",'callback_data'=>"הסברזמנישבת"]];
@@ -1057,8 +1095,8 @@ $bot_API_markup[] = [['text'=>"OFF ❌",'callback_data'=>"הודעותלפניו
 if (file_exists(__DIR__."/"."data/$chatid/alertshabat2.txt")) {
 $bot_API_markup[] = [['text'=>"ON ✅",'callback_data'=>"הודעותלפניואחרי1"],['text'=>"הודעות לפני ואחרי שבת",'callback_data'=>"הסברהודעותלפאח"]];
 }
-$bot_API_markup[] = [['text'=>"הגדר הודעה שתשלח לפני שבת ✏️",'callback_data'=>"הודעתסגירה"]];
-$bot_API_markup[] = [['text'=>"הגדר הודעה שתשלח במוצאי שבת ✏️",'callback_data'=>"הודעתפתיחה"]];
+$bot_API_markup[] = [['text'=>"הודעה לפני שבת ✏️",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup[] = [['text'=>"הודעה במוצאי שבת ✏️",'callback_data'=>"הודעתפתיחה"]];
 $bot_API_markup[] = [['text'=>"↪️ החזר לברירת מחדל",'callback_data'=>"החזרברירתמחדל"]];
 $bot_API_markup[] = [['text'=>"סגור ✖️",'callback_data'=>"סגור"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
@@ -1081,8 +1119,7 @@ Amp\File\write(__DIR__."/"."data/$senderid/groupid.txt", "$chatid");
 }
 
 if (!file_exists(__DIR__."/"."data/DBgroups.txt")) {
-$txtbot = "<b>הקבוצה לא נוספה לבסיס נתונים!</b>
-שלח את הפקודה <code>/add</code>";
+$txtbot = "<b>הקבוצה לא נוספה לבסיס נתונים!</b>\nשלח את הפקודה <code>/add</code>";
 $this->messages->sendMessage(peer: $message->chatId, message: "$txtbot", parse_mode: 'HTML');
 }
 }
@@ -1101,6 +1138,8 @@ $this->messages->sendMessage(peer: $message->chatId, message: "$txtbot", parse_m
 }
 
 
+
+}
 
 }
 
@@ -1142,6 +1181,8 @@ $first_name = "null";
 
 if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
 $filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
+}else{
+$filex = "NULL";  	
 }
 
 $txtbot = "<b>התאם אישית את הרובוט בקבוצה:</b>";
@@ -1157,11 +1198,10 @@ $bot_API_markup[] = [['text'=>"OFF ❌",'callback_data'=>"הודעותלפניו
 if (file_exists(__DIR__."/"."data/$filex/alertshabat2.txt")) {
 $bot_API_markup[] = [['text'=>"ON ✅",'callback_data'=>"הודעותלפניואחרי1"],['text'=>"הודעות לפני ואחרי שבת",'callback_data'=>"הסברהודעותלפאח"]];
 }
-$bot_API_markup[] = [['text'=>"הגדר הודעה שתשלח לפני שבת ✏️",'callback_data'=>"הודעתסגירה"]];
-$bot_API_markup[] = [['text'=>"הגדר הודעה שתשלח במוצאי שבת ✏️",'callback_data'=>"הודעתפתיחה"]];
+$bot_API_markup[] = [['text'=>"הודעה לפני שבת ✏️",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup[] = [['text'=>"הודעה במוצאי שבת ✏️",'callback_data'=>"הודעתפתיחה"]];
 $bot_API_markup[] = [['text'=>"↪️ החזר לברירת מחדל",'callback_data'=>"החזרברירתמחדל"]];
 $bot_API_markup[] = [['text'=>"סגור ✖️",'callback_data'=>"סגור"]];
-//$bot_API_markup[] = [['text'=>"הגדרות זמני סגירה ⌚️",'callback_data'=>"לאפעילכרגע"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
 $query->editText($message = "$txtbot", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
@@ -1180,8 +1220,39 @@ $first_name = $User_Full['User']['first_name']?? null;
 if($first_name == null){
 $first_name = "null";
 }
+
+$txtbot = "<b>האם הינך בטוח?</b>
+בלחיצה על כן, ההגדרות יאופסו!
+(פעולה זו לא ניתנת לשחזור)";
+
+$bot_API_markup[] = [['text'=>"כן, אני בטוח!",'callback_data'=>"החזרברירתמחדלאישור"]];
+$bot_API_markup[] = [['text'=>"ביטול",'callback_data'=>"חזרהלהגדרות"]];
+
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$query->editText($message = "$txtbot", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+
+} catch (Throwable $e) {}
+}
+   #[FilterButtonQueryData('החזרברירתמחדלאישור')]
+public function defaultset1(callbackQuery $query)
+{
+try {
+$userid = $query->userId;   
+$chatid = $query->chatId; 
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+$txtbot = "<b>ההגדרות אופסו לברירת מחדל</b> ⚙️";
+$bot_API_markup[] = [['text'=>"חזרה להגדרות",'callback_data'=>"חזרהלהגדרות"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$query->editText($message = "$txtbot", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+
 if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
 $filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
+
 if (file_exists(__DIR__."/"."data/$filex/alertshabat.txt")) {
 unlink(__DIR__."/"."data/$filex/alertshabat.txt");
 }
@@ -1194,13 +1265,40 @@ unlink(__DIR__."/"."data/$filex/msgclosermotan2.txt");
 if (file_exists(__DIR__."/"."data/$filex/msgclosermotan.txt")) {
 unlink(__DIR__."/"."data/$filex/msgclosermotan.txt");
 }
+
+### הודעת פתיחה ####
+if (file_exists(__DIR__."/"."data/$filex/MsgOpenerMedia.txt")) {
+unlink(__DIR__."/"."data/$filex/MsgOpenerMedia.txt");  
 }
-$txtbot = "<b>ההגדרות אופסו לברירת מחדל</b> ⚙️";
-$bot_API_markup[] = [['text'=>"חזרה להגדרות",'callback_data'=>"חזרהלהגדרות"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-$query->editText($message = "$txtbot", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
-} catch (Throwable $e) {
+if (file_exists(__DIR__."/"."data/$filex/MsgOpener.txt")) {
+unlink(__DIR__."/"."data/$filex/MsgOpener.txt"); 
 }
+if (file_exists(__DIR__."/"."data/$filex/MsgOpener2.txt")) {
+unlink(__DIR__."/"."data/$filex/MsgOpener2.txt");  	
+}
+if (file_exists(__DIR__."/"."data/$filex/MsgOpenerButtons.txt")) {
+unlink(__DIR__."/"."data/$filex/MsgOpenerButtons.txt");  
+}
+####################
+
+### הודעת סגירה ####
+if (file_exists(__DIR__."/"."data/$filex/MsgCloserMedia.txt")) {
+unlink(__DIR__."/"."data/$filex/MsgCloserMedia.txt");  
+}
+if (file_exists(__DIR__."/"."data/$filex/MsgCloser.txt")) {
+unlink(__DIR__."/"."data/$filex/MsgCloser.txt"); 	
+}
+if (file_exists(__DIR__."/"."data/$filex/MsgCloser2.txt")) {
+unlink(__DIR__."/"."data/$filex/MsgCloser2.txt");  	
+}
+if (file_exists(__DIR__."/"."data/$filex/MsgCloserButtons.txt")) {
+unlink(__DIR__."/"."data/$filex/MsgCloserButtons.txt");  
+}
+####################
+
+}
+
+} catch (Throwable $e) {}
 }
 
  #[FilterButtonQueryData('הסברזמנישבת')]
@@ -1293,7 +1391,8 @@ Amp\File\write(__DIR__."/"."data/$filex/alertshabat2.txt", "on");
 $bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהלהגדרות"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
-$query->editText($message = "<b>הקבוצה תקבל מידי יום שישי הודעה שתשלח בערב שבת ובצאת שבת!</b> ✅", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+$query->editText($message = "<b>הקבוצה תקבל מידי יום שישי הודעה שתשלח בערב שבת ובצאת שבת!</b> ✅
+(כאשר הקבוצה נסגרת ונפתחת)", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
 } catch (Throwable $e) {
 }
 }
@@ -1337,87 +1436,57 @@ if($first_name == null){
 $first_name = "null";
 }
 
-if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
-$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
-if (file_exists(__DIR__."/"."data/$filex/msgclosermotan2.txt")) {
-$filex2 = Amp\File\read(__DIR__."/"."data/$filex/msgclosermotan2.txt");  	
-$CLOSER = self::OPENER;
-$TXTSGRIGA = "<b>הוגדרה הודעת פתיחה ✔️</b>";
-}
-if (!file_exists(__DIR__."/"."data/$filex/msgclosermotan2.txt")) {
-$CLOSER = self::OPENER;
-$TXTSGRIGA = "<b>לא הוגדרה הודעת פתיחה ✖️ </b>";
-}
-}
-
-
-$bot_API_markup[] = [['text'=>"הצג הודעה 👁",'callback_data'=>"הצגהודעתפתיחה"]];
-$bot_API_markup[] = [['text'=>"הגדר הודעה ➕",'callback_data'=>"הגדרהודעתפתיחה"]];
+$bot_API_markup[] = [['text'=>"מדיה 🖼",'callback_data'=>"הגדרמדיה_1"],['text'=>"👀 צפה",'callback_data'=>"צפהבמדיה_1"]];
+$bot_API_markup[] = [['text'=>"טקסט 🔤",'callback_data'=>"הגדרטקסט_1"],['text'=>"👀 צפה",'callback_data'=>"צפהבטקסט_1"]];
+$bot_API_markup[] = [['text'=>"כפתורים ⌨️",'callback_data'=>"הגדרכפתורים_1"],['text'=>"👀 צפה",'callback_data'=>"צפהבכפתורים_1"]];
+$bot_API_markup[] = [['text'=>"תצוגה מקדימה מלאה 👁",'callback_data'=>"תצוגהמקדימהפתיחה_1"]];
 $bot_API_markup[] = [['text'=>"חזרה להגדרות",'callback_data'=>"חזרהלהגדרות"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
-$query->editText($message = "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת כשהקבוצה נפתחת!
-----------
-$TXTSGRIGA
-----------
-ברירת מחדל: 
-<code>$CLOSER</code>", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+$query->editText($message = "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת כשהקבוצה נפתחת!", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
     if (file_exists(__DIR__."/"."data/$userid/grs1.txt")) {
 unlink(__DIR__."/"."data/$userid/grs1.txt");
 }
-} catch (Throwable $e) {
-}
+} catch (Throwable $e) {}
 }
 
-  #[FilterButtonQueryData('הודעתסגירה')]
-public function CloseMessage(callbackQuery $query)
+  #[FilterButtonQueryData('חזרההודעתפתיחה')]
+public function OpenMessage2(callbackQuery $query)
 {
 try {
 $userid = $query->userId;   
 $chatid = $query->chatId; 
+$msgqutryid = $query->messageId;
 $User_Full = $this->getInfo($userid);
 $first_name = $User_Full['User']['first_name']?? null;
 if($first_name == null){
 $first_name = "null";
 }
 
-if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
-$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
-if (file_exists(__DIR__."/"."data/$filex/msgclosermotan.txt")) {
-$filex2 = Amp\File\read(__DIR__."/"."data/$filex/msgclosermotan.txt");  	
-$CLOSER = self::CLOSER;
-$TXTSGRIGA = "<b>הוגדרה הודעת סגירה ✔️</b>";
-}
-if (!file_exists(__DIR__."/"."data/$filex/msgclosermotan.txt")) {
-$CLOSER = self::CLOSER;
-$TXTSGRIGA = "<b>לא הוגדרה הודעת סגירה ✖️ </b>";
-}
-}
-
-$bot_API_markup[] = [['text'=>"הצג הודעה 👁",'callback_data'=>"הצגהודעתסגירה"]];
-$bot_API_markup[] = [['text'=>"הגדר הודעה ➕",'callback_data'=>"הגדרהודעתסגירה"]];
+$bot_API_markup[] = [['text'=>"מדיה 🖼",'callback_data'=>"הגדרמדיה_1"],['text'=>"👀 צפה",'callback_data'=>"צפהבמדיה_1"]];
+$bot_API_markup[] = [['text'=>"טקסט 🔤",'callback_data'=>"הגדרטקסט_1"],['text'=>"👀 צפה",'callback_data'=>"צפהבטקסט_1"]];
+$bot_API_markup[] = [['text'=>"כפתורים ⌨️",'callback_data'=>"הגדרכפתורים_1"],['text'=>"👀 צפה",'callback_data'=>"צפהבכפתורים_1"]];
+$bot_API_markup[] = [['text'=>"תצוגה מקדימה מלאה 👁",'callback_data'=>"תצוגהמקדימהפתיחה_1"]];
 $bot_API_markup[] = [['text'=>"חזרה להגדרות",'callback_data'=>"חזרהלהגדרות"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
-$query->editText($message = "כאן תוכל להגדיר הודעת סגירה מותאמת אישית שתשלח בערב שבת כשהקבוצה נסגרת!
-----------
-$TXTSGRIGA
-----------
-ברירת מחדל: 
-<code>$CLOSER</code>", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת כשהקבוצה נפתחת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
+} catch (Throwable $e) {}
+
     if (file_exists(__DIR__."/"."data/$userid/grs1.txt")) {
 unlink(__DIR__."/"."data/$userid/grs1.txt");
 }
-} catch (Throwable $e) {
-}
+} catch (Throwable $e) {}
 }
 
-  #[FilterButtonQueryData('הצגהודעתפתיחה')]
-public function ViewOpen(callbackQuery $query)
+#[FilterButtonQueryData('הגדרטקסט_1')] 
+public function GroupTextSet1(callbackQuery $query)
 {
-try {
-$userid = $query->userId;   
-$chatid = $query->chatId; 
+	try {
+$userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
 $first_name = $User_Full['User']['first_name']?? null;
 if($first_name == null){
@@ -1426,31 +1495,49 @@ $first_name = "null";
 
 if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
 $filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
+}else{
+$filex = "null"; 	
 }
 
-
-if (!file_exists(__DIR__."/"."data/$filex/msgclosermotan2.txt")) {
-$query->answer($message = "לא הוגדרה הודעת פתיחה ✖️", $alert = true, $url = null, $cacheTime = 0);
+if (file_exists(__DIR__."/"."data/$filex/MsgOpener.txt")) {	
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתפתיחה"],['text'=>"🗑 הסר את הטקסט",'callback_data'=>"מחקטקסט_1"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+}else{
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתפתיחה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 }
-if (file_exists(__DIR__."/"."data/$filex/msgclosermotan2.txt")) {
-$txtcloser = Amp\File\read(__DIR__."/"."data/$filex/msgclosermotan2.txt"); 
 
-$bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"הודעתפתיחה"]];
+$query->editText($message = "<b>שלח את הודעת הפתיחה:</b>
+<i>עד 1024 תווים, ניתן להשתמש בכל סיגנונות העיצוב.</i>
+", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'opener_text_1');
+$msgqutryid = $query->messageId;
+Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
+} catch (Throwable $e) {}
+}
+
+#[FilterButtonQueryData('מחקטקסט_1')] 
+public function RemoveText1(callbackQuery $query)
+{
+	try {
+$userid = $query->userId;    
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+$bot_API_markup[] = [['text'=>"לא ❌",'callback_data'=>"הגדרטקסט_1"],['text'=>"כן ✅",'callback_data'=>"מחקטקסט_1אישור"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
-$query->editText($message = "$txtcloser", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
-
+$query->editText($message = "האם אתה באמת בטוח שאתה רוצה למחוק את הטקסט של הודעת הפתיחה?", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+} catch (Throwable $e) {}
 }
-} catch (Throwable $e) {
-}
-}
- 
-  #[FilterButtonQueryData('הצגהודעתסגירה')]
-public function ViewClose(callbackQuery $query)
+#[FilterButtonQueryData('מחקטקסט_1אישור')] 
+public function RemoveText1_1(callbackQuery $query)
 {
-try {
-$userid = $query->userId;   
-$chatid = $query->chatId; 
+	try {
+$userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
 $first_name = $User_Full['User']['first_name']?? null;
 if($first_name == null){
@@ -1459,78 +1546,313 @@ $first_name = "null";
 
 if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
 $filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
+}else{
+$filex = "null"; 	
 }
 
-
-if (!file_exists(__DIR__."/"."data/$filex/msgclosermotan.txt")) {
-$query->answer($message = "לא הוגדרה הודעת סגירה ✖️", $alert = true, $url = null, $cacheTime = 0);
+if (file_exists(__DIR__."/"."data/$filex/MsgOpener.txt")) {	
+unlink(__DIR__."/"."data/$filex/MsgOpener.txt");
 }
-if (file_exists(__DIR__."/"."data/$filex/msgclosermotan.txt")) {
-$txtcloser = Amp\File\read(__DIR__."/"."data/$filex/msgclosermotan.txt"); 
+if (file_exists(__DIR__."/"."data/$filex/MsgOpener2.txt")) {	
+unlink(__DIR__."/"."data/$filex/MsgOpener2.txt");
+}
 
-$bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"הודעתפתיחה"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
-$query->editText($message = "$txtcloser", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
-
-}
-} catch (Throwable $e) {
-}
+$query->editText($message = "<b>הטקסט הוסר</b> 🗑", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+} catch (Throwable $e) {}
 }
 
-  #[FilterButtonQueryData('הגדרהודעתפתיחה')]
-public function OpenMessageSet(callbackQuery $query)
+#[FilterButtonQueryData('צפהבטקסט_1')] 
+public function GroupTextView1(callbackQuery $query)
 {
-try {
-$userid = $query->userId;   
-$chatid = $query->chatId; 
+	try {
+$userid = $query->userId;    
+$msgqutryid = $query->messageId;
 $User_Full = $this->getInfo($userid);
 $first_name = $User_Full['User']['first_name']?? null;
 if($first_name == null){
 $first_name = "null";
 }
 
-$bot_API_markup[] = [['text'=>"ביטול",'callback_data'=>"הודעתפתיחה"]];
+if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
+$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
+}else{
+$filex = "null"; 	
+}
+
+if (file_exists(__DIR__."/"."data/$filex/MsgOpener.txt")) {
+$TXT = Amp\File\read(__DIR__."/"."data/$filex/MsgOpener.txt"); 
+if($TXT != null){
+if (file_exists(__DIR__."/"."data/$filex/MsgOpener2.txt")) {
+$ENT = json_decode(Amp\File\read(__DIR__."/"."data/$filex/MsgOpener2.txt"),true);  
+}else{
+$ENT = null; 	
+}
+
+$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"הודעתפתיחה"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-
-$query->editText($message = "<b>שלח לי את הודעת הפתיחה שתרצה להגדיר:</b>", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
-$msgqutryid = $query->messageId;
-Amp\File\write(__DIR__."/"."data/$userid/messagetodelete.txt", "$msgqutryid");
-Amp\File\write(__DIR__."/"."data/$userid/grs1.txt", 'txtsgira2');
-} catch (Throwable $e) {
+$this->messages->editMessage(no_webpage: true, peer: $userid, id: $msgqutryid, message: $TXT, reply_markup: $bot_API_markup, entities: $ENT);
+}else{
+$query->answer($message = "ההודעה לא מוגדרת.", $alert = true, $url = null, $cacheTime = 0);
 }
+}else{
+$query->answer($message = "ההודעה לא מוגדרת.", $alert = true, $url = null, $cacheTime = 0);
+}
+} catch (Throwable $e) {}
 }
 
-  #[FilterButtonQueryData('הגדרהודעתסגירה')]
-public function CloseMessageSet(callbackQuery $query)
+#[FilterButtonQueryData('הגדרמדיה_1')] 
+public function GroupMsgMedia1(callbackQuery $query)
 {
-try {
-$userid = $query->userId;   
-$chatid = $query->chatId; 
+	try {
+$userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
 $first_name = $User_Full['User']['first_name']?? null;
 if($first_name == null){
 $first_name = "null";
 }
 
-$bot_API_markup[] = [['text'=>"ביטול",'callback_data'=>"הודעתסגירה"]];
+if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
+$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
+}else{
+$filex = "null"; 	
+}
+
+if (file_exists(__DIR__."/"."data/$filex/MsgOpenerMedia.txt")) {	
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתפתיחה"],['text'=>"🗑 הסר את המדיה",'callback_data'=>"מחקמדיה_1"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+}else{
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתפתיחה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+}
+
+$query->editText($message = "<b>שלח את המדיה החדשה לפתיחה:</b>
+<i>מדיה מותרת: תמונות, סרטונים, קבצים, מדבקות, קובצי GIF, אודיו, הודעות קוליות, סרטונים עגולים ועוד..(כל סוגי המדיה הנתמכים)</i>
+", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'opener_media_1');
+$msgqutryid = $query->messageId;
+Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
+} catch (Throwable $e) {}
+}
+
+#[FilterButtonQueryData('צפהבמדיה_1')] 
+public function GroupMsgMediaView1(callbackQuery $query)
+{
+	try {
+$userid = $query->userId;    
+$msgqutryid = $query->messageId;
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
+$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
+}else{
+$filex = "null"; 	
+}
+
+if (file_exists(__DIR__."/"."data/$filex/MsgOpenerMedia.txt")) {
+$MEDIA = Amp\File\read(__DIR__."/"."data/$filex/MsgOpenerMedia.txt");  
+
+$bot_API_markup[] = [['text'=>"🔙 חזרה 🔙",'callback_data'=>"חזרההודעתפתיחה"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
-$query->editText($message = "<b>שלח לי את הודעת הסגירה שתרצה להגדיר:</b>", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
-$msgqutryid = $query->messageId;
-Amp\File\write(__DIR__."/"."data/$userid/messagetodelete.txt", "$msgqutryid");
-Amp\File\write(__DIR__."/"."data/$userid/grs1.txt", 'txtsgira');
+			try {
+$sentMessage = $this->messages->sendMedia(peer: $userid, media: $MEDIA, reply_markup: $bot_API_markup);
 } catch (Throwable $e) {
+$sentMessage = $this->messages->sendMessage(peer: $userid, message: $e->getMessage(), reply_markup: $bot_API_markup);
+}
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
+} catch (Throwable $e) {}
+
+}else{
+$query->answer($message = "ההודעה לא מוגדרת.", $alert = true, $url = null, $cacheTime = 0);
+}
+
+} catch (Throwable $e) {}
+}
+
+#[FilterButtonQueryData('מחקמדיה_1')] 
+public function RemoveMedia1(callbackQuery $query)
+{
+	try {
+$userid = $query->userId;    
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+$bot_API_markup[] = [['text'=>"לא ❌",'callback_data'=>"הגדרמדיה_1"],['text'=>"כן ✅",'callback_data'=>"מחקמדיה_1אישור"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+$query->editText($message = "האם אתה באמת בטוח שאתה רוצה למחוק את המדיה של הודעת הפתיחה?", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+} catch (Throwable $e) {}
+}
+#[FilterButtonQueryData('מחקמדיה_1אישור')] 
+public function RemoveMedia1_1(callbackQuery $query)
+{
+	try {
+$userid = $query->userId;    
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
+$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
+}else{
+$filex = "null"; 	
+}
+
+if (file_exists(__DIR__."/"."data/$filex/MsgOpenerMedia.txt")) {
+unlink(__DIR__."/"."data/$filex/MsgOpenerMedia.txt");  
+}
+
+$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"הודעתפתיחה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+$query->editText($message = "<b>המדיה הוסרה</b> 🗑", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+} catch (Throwable $e) {}
+}
+
+#[FilterButtonQueryData('צפהבכפתורים_1')] 
+public function buttonsmanageviewgroup1(callbackQuery $query)
+{
+	try {
+$userid = $query->userId;    
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+$username = $User_Full['User']['username']?? null;
+
+if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
+$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
+}else{
+$filex = "null"; 	
+}
+
+    if (file_exists(__DIR__."/"."data/$filex/MsgOpenerButtons.txt")) {
+$BUTTONS = Amp\File\read(__DIR__."/"."data/$filex/MsgOpenerButtons.txt");  
+$input = $BUTTONS;
+
+$pattern = '/(.+?)\s*-\s*(http[^\s]+)/i';
+preg_match_all($pattern, $input, $matches, PREG_SET_ORDER);
+//$output = [];
+foreach ($matches as $index => $match) {
+    $buttonText = trim($match[1]);
+    $buttonUrl = trim($match[2]);
+
+//	$output[] = "$buttonText - $buttonUrl";
+$bot_API_markup[] = [['text'=>"$buttonText",'url'=>"$buttonUrl"]];
 }
 }
- 
-    #[Handler] 
-    public function HandleMessageSet(Incoming & PrivateMessage $message): void
+
+$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"הודעתפתיחה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+$query->editText($message = "צפייה בכפתורים:", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+} catch (Throwable $e) {
+$query->editText($message = $e->getMessage(), $replyMarkup = $bot_API_markup, $noWebpage = false, $scheduleDate = NULL);
+}
+}
+
+#[FilterButtonQueryData('הגדרכפתורים_1')] 
+public function GroupMsgButtonSet1(callbackQuery $query)
+{
+	try {
+$userid = $query->userId;    
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
+$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
+}else{
+$filex = "null"; 	
+}
+
+if (file_exists(__DIR__."/"."data/$filex/MsgOpenerButtons.txt")) {	
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתפתיחה"],['text'=>"🗑 הסר כפתורים",'callback_data'=>"מחקכפתורים_1"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+}else{
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתפתיחה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+}
+
+$query->editText($message = "<b>שלח את הכפתורים שתרצה להוסיף בפורמט הבא:</b>
+<pre>Button text 1 - http://www.example.com/ \nButton text 2 - http://www.example2.com/</pre>
+", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'opener_buttons_1');
+$msgqutryid = $query->messageId;
+Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
+} catch (Throwable $e) {}
+}
+
+#[FilterButtonQueryData('מחקכפתורים_1')] 
+public function RemoveButtons1(callbackQuery $query)
+{
+	try {
+$userid = $query->userId;    
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+$bot_API_markup[] = [['text'=>"לא ❌",'callback_data'=>"הגדרכפתורים_1"],['text'=>"כן ✅",'callback_data'=>"מחקכפתורים_1אישור"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+$query->editText($message = "האם אתה באמת בטוח שאתה רוצה למחוק את הכפתורים של הודעת הפתיחה?", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+} catch (Throwable $e) {}
+}
+#[FilterButtonQueryData('מחקכפתורים_1אישור')] 
+public function RemoveButtons1_1(callbackQuery $query)
+{
+	try {
+$userid = $query->userId;    
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
+$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
+}else{
+$filex = "null"; 	
+}
+
+if (file_exists(__DIR__."/"."data/$filex/MsgOpenerButtons.txt")) {
+unlink(__DIR__."/"."data/$filex/MsgOpenerButtons.txt");  
+}
+
+$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"הודעתפתיחה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+$query->editText($message = "<b>הכפתורים הוסרו</b> 🗑", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+} catch (Throwable $e) {}
+}
+
+    #[Handler]
+    public function HandleGroupMsgSet1(Incoming & PrivateMessage $message): void
     {
-try {
+		try {
 $messagetext = $message->message;
 $entities = $message->entities;
 $messagefile = $message->media;
+$grouped_id = $message->groupedId;
 $messageid = $message->id;
 $senderid = $message->senderId;
 $User_Full = $this->getInfo($message->senderId);
@@ -1547,148 +1869,105 @@ if($username == null){
 $username = "null";
 }
 
-    if (file_exists(__DIR__."/"."data/$senderid/grs1.txt")) {
-$mediax1 = Amp\File\read(__DIR__."/"."data/$senderid/grs1.txt");    
+if(!preg_match('/^\/([Ss]tart)/',$messagetext)){  
 
-if($mediax1 == "txtsgira"){
-    
-if(!preg_match('/^\/([Ss]tart)/',$messagetext)){   
- 
-if($messagetext == null){
+    if (file_exists(__DIR__."/data/$senderid/grs1.txt")) {
+$check = Amp\File\read(__DIR__."/data/$senderid/grs1.txt");    
+
+if (file_exists(__DIR__."/"."data/$senderid/groupid.txt")) {
+$filex = Amp\File\read(__DIR__."/"."data/$senderid/groupid.txt");  
+}else{
+$filex = "null"; 	
+}
+
+if($check == "opener_text_1"){ 
+
+if($grouped_id != null){
+$bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"הודעתפתיחה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$this->messages->sendMessage(peer: $senderid, message: "<b>נא לשלוח הודעת טקסט בלבד!</b>", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$messageid]); 
+} catch (Throwable $e) {}
 
  if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
 $filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
-try {
+
+			try {
 $this->messages->deleteMessages(revoke: true, id: [$filexmsgid]); 
-}catch (\danog\MadelineProto\Exception $e) {
-$estring = (string) $e;
-if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
-}
+} catch (Throwable $e) {}
 
-} catch (\danog\MadelineProto\RPCErrorException $e) {
-    if ($e->rpc === 'MESSAGE_DELETE_FORBIDDEN') {	
 }
-}
+}else{
+	
+if($messagefile){
 
-unlink(__DIR__."/data/$senderid/messagetodelete.txt");
-}
- 
-$bot_API_markup[] = [['text'=>"ביטול",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"הודעתפתיחה"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$this->messages->sendMessage(peer: $senderid, message: "<b>נא לשלוח הודעת טקסט בלבד!</b>", reply_markup: $bot_API_markup, parse_mode: 'HTML');
 
-$sentMessage = $this->messages->sendMessage(peer: $senderid, message: "<b>נא לשלוח הודעת טקסט בלבד!</b>", reply_markup: $bot_API_markup, parse_mode: 'HTML');
-$sentMessage2 = $this->extractMessageId($sentMessage);
-Amp\File\write(__DIR__."/data/$senderid/messagetodelete.txt", "$sentMessage2");
-
-try {
+			try {
 $this->messages->deleteMessages(revoke: true, id: [$messageid]); 
+} catch (Throwable $e) {}
 
-}catch (\danog\MadelineProto\Exception $e) {
-$estring = (string) $e;
-if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
-}
+ if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
+$filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
 
-} catch (\danog\MadelineProto\RPCErrorException $e) {
-    if ($e->rpc === 'MESSAGE_DELETE_FORBIDDEN') {	
-}
-}
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$filexmsgid]); 
+} catch (Throwable $e) {}
 
 }
 
-if($messagetext != null){
+}
+
+if(!$messagefile){
 $messageLength = mb_strlen($messagetext);
 
 if($messageLength > 1024) {
 
+$bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"הודעתפתיחה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$this->messages->sendMessage(peer: $senderid, message: "<b>נא לשלוח טקסט עד 1024 תווים</b>
+כמות התווים ששלחת: $messageLength", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$messageid]); 
+} catch (Throwable $e) {}
+
  if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
 $filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
-try {
+			try {
 $this->messages->deleteMessages(revoke: true, id: [$filexmsgid]); 
-}catch (\danog\MadelineProto\Exception $e) {
-$estring = (string) $e;
-if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
-}
+} catch (Throwable $e) {}
 
-} catch (\danog\MadelineProto\RPCErrorException $e) {
-    if ($e->rpc === 'MESSAGE_DELETE_FORBIDDEN') {	
-}
-}
-
-unlink(__DIR__."/data/$senderid/messagetodelete.txt");
-}
- 
-$bot_API_markup[] = [['text'=>"ביטול",'callback_data'=>"הודעתסגירה"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-
-$sentMessage = $this->messages->sendMessage(peer: $senderid, message: "<b>נא לשלוח טקסט עד 1024 תווים</b>
-כמות התווים ששלחת: $messageLength", reply_markup: $bot_API_markup, parse_mode: 'HTML');
-$sentMessage2 = $this->extractMessageId($sentMessage);
-Amp\File\write(__DIR__."/data/$senderid/messagetodelete.txt", "$sentMessage2");
-
-try {
-$this->messages->deleteMessages(revoke: true, id: [$messageid]); 
-
-}catch (\danog\MadelineProto\Exception $e) {
-$estring = (string) $e;
-if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
-}
-
-} catch (\danog\MadelineProto\RPCErrorException $e) {
-    if ($e->rpc === 'MESSAGE_DELETE_FORBIDDEN') {	
-}
 }
 
 } 
 else 
 {
-unlink(__DIR__."/"."data/$senderid/grs1.txt");
+unlink(__DIR__."/data/$senderid/grs1.txt");
 
-if (file_exists(__DIR__."/"."data/$senderid/groupid.txt")) {
-$filex = Amp\File\read(__DIR__."/"."data/$senderid/groupid.txt");  
-if (file_exists(__DIR__."/"."data/$filex/msgclosermotan.txt")) {
-unlink(__DIR__."/"."data/$filex/msgclosermotan.txt");  	
-}
-$htmlmessage = $this->entitiesToHtml($messagetext, $entities, true);
-Amp\File\write(__DIR__."/"."data/$filex/msgclosermotan.txt", "$htmlmessage");
-}
+$bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"הודעתפתיחה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$this->messages->sendMessage(peer: $senderid, message: "<b>ההודעה נשמרה בהצלחה! ✔️</b>", reply_markup: $bot_API_markup, parse_mode: 'HTML');
 
-$bot_API_markup = ['inline_keyboard' => 
-    [
-        [
-['text'=>"חזרה",'callback_data'=>"הודעתסגירה"]
-        ]
-    ]
-];
-$sentMessage = $this->messages->sendMessage(peer: $message->senderId, message: "<b>הודעת הסגירה הוגדרה!</b> ✔️", reply_markup: $bot_API_markup, parse_mode: 'HTML');
-try {
+			try {
 $this->messages->deleteMessages(revoke: true, id: [$messageid]); 
+} catch (Throwable $e) {}
 
-}catch (\danog\MadelineProto\Exception $e) {
-$estring = (string) $e;
-if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
-}
-
-} catch (\danog\MadelineProto\RPCErrorException $e) {
-    if ($e->rpc === 'MESSAGE_DELETE_FORBIDDEN') {	
-}
-}
  if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
 $filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
-try {
+			try {
 $this->messages->deleteMessages(revoke: true, id: [$filexmsgid]); 
-}catch (\danog\MadelineProto\Exception $e) {
-$estring = (string) $e;
-if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
+} catch (Throwable $e) {}
+
 }
 
-} catch (\danog\MadelineProto\RPCErrorException $e) {
-    if ($e->rpc === 'MESSAGE_DELETE_FORBIDDEN') {	
-}
-}
+Amp\File\write(__DIR__."/"."data/$filex/MsgOpener.txt", $messagetext);
+Amp\File\write(__DIR__."/"."data/$filex/MsgOpener2.txt", json_encode(array_map(static fn($e) => $e->toMTProto(),$entities,)));
 
-unlink(__DIR__."/data/$senderid/messagetodelete.txt");
-}
- 
 }
 
 
@@ -1698,43 +1977,32 @@ unlink(__DIR__."/data/$senderid/messagetodelete.txt");
 
 }
 
-
-
 }
 
-if($mediax1 == "txtsgira2"){
-    
-if(!preg_match('/^\/([Ss]tart)/',$messagetext)){   
+if($check == "opener_media_1"){
  
-if($messagetext == null){
-
- if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
-$filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
-try {
-$this->messages->deleteMessages(revoke: true, id: [$filexmsgid]); 
-}catch (\danog\MadelineProto\Exception $e) {
-$estring = (string) $e;
-if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
-}
-
-} catch (\danog\MadelineProto\RPCErrorException $e) {
-    if ($e->rpc === 'MESSAGE_DELETE_FORBIDDEN') {	
-}
-}
-
-unlink(__DIR__."/data/$senderid/messagetodelete.txt");
-}
- 
-$bot_API_markup[] = [['text'=>"ביטול",'callback_data'=>"הודעתפתיחה"]];
+if($grouped_id != null){
+$bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"הודעתפתיחה"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$this->messages->sendMessage(peer: $senderid, message: "<b>אין תמיכה באלבומים!</b>", reply_markup: $bot_API_markup, parse_mode: 'HTML');
 
-$sentMessage = $this->messages->sendMessage(peer: $senderid, message: "<b>נא לשלוח הודעת טקסט בלבד!</b>", reply_markup: $bot_API_markup, parse_mode: 'HTML');
-$sentMessage2 = $this->extractMessageId($sentMessage);
-Amp\File\write(__DIR__."/data/$senderid/messagetodelete.txt", "$sentMessage2");
-
-try {
+			try {
 $this->messages->deleteMessages(revoke: true, id: [$messageid]); 
+} catch (Throwable $e) {}
 
+ if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
+$filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$filexmsgid]); 
+} catch (Throwable $e) {}
+
+}
+}else{
+	
+if(!$messagefile){
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$messageid]); 
 }catch (\danog\MadelineProto\Exception $e) {
 $estring = (string) $e;
 if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
@@ -1745,16 +2013,9 @@ if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
 }
 }
 
-}
-
-if($messagetext != null){
-$messageLength = mb_strlen($messagetext);
-
-if($messageLength > 1024) {
-
  if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
 $filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
-try {
+			try {
 $this->messages->deleteMessages(revoke: true, id: [$filexmsgid]); 
 }catch (\danog\MadelineProto\Exception $e) {
 $estring = (string) $e;
@@ -1766,99 +2027,1081 @@ if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
 }
 }
 
-unlink(__DIR__."/data/$senderid/messagetodelete.txt");
 }
- 
-$bot_API_markup[] = [['text'=>"ביטול",'callback_data'=>"הודעתפתיחה"]];
+
+$bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"הודעתפתיחה"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$this->messages->sendMessage(peer: $senderid, message: "<b>נא לשלוח מדיה בלבד!</b>", reply_markup: $bot_API_markup, parse_mode: 'HTML');
 
-$sentMessage = $this->messages->sendMessage(peer: $senderid, message: "<b>נא לשלוח טקסט עד 1024 תווים</b>
-כמות התווים ששלחת: $messageLength", reply_markup: $bot_API_markup, parse_mode: 'HTML');
-$sentMessage2 = $this->extractMessageId($sentMessage);
-Amp\File\write(__DIR__."/data/$senderid/messagetodelete.txt", "$sentMessage2");
+}
 
-try {
+if($messagefile){
+
+unlink(__DIR__."/data/$senderid/grs1.txt");
+
+$bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"הודעתפתיחה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$this->messages->sendMessage(peer: $senderid, message: "<b>המדיה נשמרה בהצלחה! ✔️</b>", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+			try {
 $this->messages->deleteMessages(revoke: true, id: [$messageid]); 
+} catch (Throwable $e) {}
 
-}catch (\danog\MadelineProto\Exception $e) {
-$estring = (string) $e;
-if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
-}
-
-} catch (\danog\MadelineProto\RPCErrorException $e) {
-    if ($e->rpc === 'MESSAGE_DELETE_FORBIDDEN') {	
-}
-}
-
-} 
-else 
-{
-unlink(__DIR__."/"."data/$senderid/grs1.txt");
-
-if (file_exists(__DIR__."/"."data/$senderid/groupid.txt")) {
-$filex = Amp\File\read(__DIR__."/"."data/$senderid/groupid.txt");  
-if (file_exists(__DIR__."/"."data/$filex/msgclosermotan2.txt")) {
-unlink(__DIR__."/"."data/$filex/msgclosermotan2.txt");  	
-}
-$htmlmessage = $this->entitiesToHtml($messagetext, $entities, true);
-Amp\File\write(__DIR__."/"."data/$filex/msgclosermotan2.txt", "$htmlmessage");
-}
-
-$bot_API_markup = ['inline_keyboard' => 
-    [
-        [
-['text'=>"חזרה",'callback_data'=>"הודעתפתיחה"]
-        ]
-    ]
-];
-$sentMessage = $this->messages->sendMessage(peer: $message->senderId, message: "<b>הודעת הפתיחה הוגדרה!</b> ✔️", reply_markup: $bot_API_markup, parse_mode: 'HTML');
-try {
-$this->messages->deleteMessages(revoke: true, id: [$messageid]); 
-
-}catch (\danog\MadelineProto\Exception $e) {
-$estring = (string) $e;
-if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
-}
-
-} catch (\danog\MadelineProto\RPCErrorException $e) {
-    if ($e->rpc === 'MESSAGE_DELETE_FORBIDDEN') {	
-}
-}
  if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
 $filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
-try {
+			try {
 $this->messages->deleteMessages(revoke: true, id: [$filexmsgid]); 
-}catch (\danog\MadelineProto\Exception $e) {
-$estring = (string) $e;
-if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
+} catch (Throwable $e) {}
+
 }
 
-} catch (\danog\MadelineProto\RPCErrorException $e) {
-    if ($e->rpc === 'MESSAGE_DELETE_FORBIDDEN') {	
-}
-}
-
-unlink(__DIR__."/data/$senderid/messagetodelete.txt");
-}
- 
+$botApiFileId = $message->media->botApiFileId;
+Amp\File\write(__DIR__."/"."data/$filex/MsgOpenerMedia.txt", $botApiFileId);
 }
 
 
 	
 }
 
+}
+
+if($check == "opener_buttons_1"){
+ 
+if(!function_exists("isTextInCorrectFormat")){
+function isTextInCorrectFormat($messagetext) {
+    // Split the text into lines
+    $lines = explode("\n", $messagetext);
+    
+    // Define the regex pattern for matching each line
+    $pattern = "/^[^:]* - (https?:\/\/[^\s]+)$/i";
+    
+    foreach ($lines as $line) {
+        // Trim leading and trailing whitespace
+        $line = trim($line);
+        
+        // Check if the line matches the pattern
+        if (!preg_match($pattern, $line)) {
+            return false; // Found a line that doesn't match
+        }
+    }
+    
+    return true; // All lines match the pattern
+}
+}
+
+
+if (isTextInCorrectFormat($messagetext)) {
+unlink(__DIR__."/data/$senderid/grs1.txt");
+
+Amp\File\write(__DIR__."/"."data/$filex/MsgOpenerButtons.txt", $messagetext);
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$messageid]); 
+} catch (Throwable $e) {}
+
+ if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
+$filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
+$bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"הודעתפתיחה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$Updates = $this->messages->editMessage(peer: $senderid, id: $filexmsgid, message: "<b>הכפתורים נשמרו בהצלחה! ✔️</b>", reply_markup: $bot_API_markup, parse_mode: 'HTML');
 
 }
 
 
+} else {
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$messageid]); 
+} catch (Throwable $e) {}
+
+ if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
+$filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
+$bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"הודעתפתיחה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+			try {
+$Updates = $this->messages->editMessage(peer: $senderid, id: $filexmsgid, message: "<b>נא שלח את הכפתורים שתרצה להוסיף בפורמט הנכון!</b>", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+} catch (Throwable $e) {}
+
+
+}
+}
+
 
 }
 
 }
+}
+} catch (Throwable $e) {}
+}
+
+#[FilterButtonQueryData('תצוגהמקדימהפתיחה_1')] 
+public function view_welcomeMessage_full(callbackQuery $query)
+{
+	try {
+$userid = $query->userId;    
+$msgqutryid = $query->messageId;
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
+$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
+}else{
+$filex = "null"; 	
+}
+
+if (file_exists(__DIR__."/"."data/$filex/MsgOpenerMedia.txt")) {
+$MEDIA = Amp\File\read(__DIR__."/"."data/$filex/MsgOpenerMedia.txt");  
+}else{
+$MEDIA = null; 	
+}
+if (file_exists(__DIR__."/"."data/$filex/MsgOpener.txt")) {
+$TXT = Amp\File\read(__DIR__."/"."data/$filex/MsgOpener.txt"); 
+}else{
+$TXT = null; 	
+}
+if (file_exists(__DIR__."/"."data/$filex/MsgOpener2.txt")) {
+$ENT = json_decode(Amp\File\read(__DIR__."/"."data/$filex/MsgOpener2.txt"),true);  
+}else{
+$ENT = null; 	
+}
+if (file_exists(__DIR__."/"."data/$filex/MsgOpenerButtons.txt")) {
+$BUTTONS = Amp\File\read(__DIR__."/"."data/$filex/MsgOpenerButtons.txt");  
+
+$input = $BUTTONS;
+
+$pattern = '/(.+?)\s*-\s*(http[^\s]+)/i';
+
+preg_match_all($pattern, $input, $matches, PREG_SET_ORDER);
+
+$output = [];
+
+foreach ($matches as $index => $match) {
+    $buttonText = trim($match[1]);
+    $buttonUrl = trim($match[2]);
+
+$output[] = "$buttonText - $buttonUrl";
+$bot_API_markup_welcome[] = [['text'=>"$buttonText",'url'=>"$buttonUrl"]];
+}
+
+$bot_API_markup_welcome = [ 'inline_keyboard'=> $bot_API_markup_welcome,];
+
+}else{
+$bot_API_markup_welcome = null;
+}
+
+$bot_API_markup[] = [['text'=>"מדיה 🖼",'callback_data'=>"הגדרמדיה_1"],['text'=>"👀 צפה",'callback_data'=>"צפהבמדיה_1"]];
+$bot_API_markup[] = [['text'=>"טקסט 🔤",'callback_data'=>"הגדרטקסט_1"],['text'=>"👀 צפה",'callback_data'=>"צפהבטקסט_1"]];
+$bot_API_markup[] = [['text'=>"כפתורים ⌨️",'callback_data'=>"הגדרכפתורים_1"],['text'=>"👀 צפה",'callback_data'=>"צפהבכפתורים_1"]];
+$bot_API_markup[] = [['text'=>"תצוגה מקדימה מלאה 👁",'callback_data'=>"תצוגהמקדימהפתיחה_1"]];
+$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"חזרהלהגדרות"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+if($MEDIA != null){
+
+if($TXT != null){
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
+} catch (Throwable $e) {}
+
+$this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖➖");
+$this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
+$sentMessage = $this->messages->sendMedia(peer: $userid, message: "$TXT",  entities: $ENT, media: $MEDIA, reply_markup: $bot_API_markup_welcome);
+
+$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת כשהקבוצה נפתחת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+}else{
+	
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
+} catch (Throwable $e) {}
+
+$OPENER = self::OPENER;
+$this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖➖");
+$this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
+$sentMessage = $this->messages->sendMedia(peer: $userid, message: $OPENER, media: $MEDIA, reply_markup: $bot_API_markup_welcome);	
+
+$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת כשהקבוצה נפתחת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+}
+
+}else{
+
+if($TXT != null){
+	
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
+} catch (Throwable $e) {}
+
+$this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖➖");
+$this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
+$sentMessage = $this->messages->sendMessage(peer: $userid, message: "$TXT", entities: $ENT, reply_markup: $bot_API_markup_welcome);
+
+$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת כשהקבוצה נפתחת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+}else{
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
+} catch (Throwable $e) {}
+
+$OPENER = self::OPENER;
+$this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖➖");
+$this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
+$sentMessage = $this->messages->sendMessage(peer: $userid, message: $OPENER);
+
+$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת כשהקבוצה נפתחת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+}
+
+
+}
+
+} catch (Throwable $e) {}
+}
+
+  #[FilterButtonQueryData('הודעתסגירה')]
+public function CloseMessage(callbackQuery $query)
+{
+try {
+$userid = $query->userId;   
+$chatid = $query->chatId; 
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+$bot_API_markup[] = [['text'=>"מדיה 🖼",'callback_data'=>"הגדרמדיה_2"],['text'=>"👀 צפה",'callback_data'=>"צפהבמדיה_2"]];
+$bot_API_markup[] = [['text'=>"טקסט 🔤",'callback_data'=>"הגדרטקסט_2"],['text'=>"👀 צפה",'callback_data'=>"צפהבטקסט_2"]];
+$bot_API_markup[] = [['text'=>"כפתורים ⌨️",'callback_data'=>"הגדרכפתורים_2"],['text'=>"👀 צפה",'callback_data'=>"צפהבכפתורים_2"]];
+$bot_API_markup[] = [['text'=>"תצוגה מקדימה מלאה 👁",'callback_data'=>"תצוגהמקדימהפתיחה_2"]];
+$bot_API_markup[] = [['text'=>"חזרה להגדרות",'callback_data'=>"חזרהלהגדרות"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+$query->editText($message = "כאן תוכל להגדיר הודעת סגירה מותאמת אישית שתשלח בערב שבת כשהקבוצה נסגרת!", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+    if (file_exists(__DIR__."/"."data/$userid/grs1.txt")) {
+unlink(__DIR__."/"."data/$userid/grs1.txt");
+}
+} catch (Throwable $e) {}
+}
+
+  #[FilterButtonQueryData('חזרההודעתסגירה')]
+public function CloseMessage2(callbackQuery $query)
+{
+try {
+$userid = $query->userId;   
+$chatid = $query->chatId; 
+$msgqutryid = $query->messageId;
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+$bot_API_markup[] = [['text'=>"מדיה 🖼",'callback_data'=>"הגדרמדיה_2"],['text'=>"👀 צפה",'callback_data'=>"צפהבמדיה_2"]];
+$bot_API_markup[] = [['text'=>"טקסט 🔤",'callback_data'=>"הגדרטקסט_2"],['text'=>"👀 צפה",'callback_data'=>"צפהבטקסט_2"]];
+$bot_API_markup[] = [['text'=>"כפתורים ⌨️",'callback_data'=>"הגדרכפתורים_2"],['text'=>"👀 צפה",'callback_data'=>"צפהבכפתורים_2"]];
+$bot_API_markup[] = [['text'=>"תצוגה מקדימה מלאה 👁",'callback_data'=>"תצוגהמקדימהפתיחה_2"]];
+$bot_API_markup[] = [['text'=>"חזרה להגדרות",'callback_data'=>"חזרהלהגדרות"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת סגירה מותאמת אישית שתשלח בערב שבת כשהקבוצה נסגרת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
+} catch (Throwable $e) {}
+
+    if (file_exists(__DIR__."/"."data/$userid/grs1.txt")) {
+unlink(__DIR__."/"."data/$userid/grs1.txt");
+}
+} catch (Throwable $e) {}
+}
+
+#[FilterButtonQueryData('הגדרטקסט_2')] 
+public function GroupTextSet2(callbackQuery $query)
+{
+	try {
+$userid = $query->userId;    
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
+$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
+}else{
+$filex = "null"; 	
+}
+
+if (file_exists(__DIR__."/"."data/$filex/MsgCloser.txt")) {	
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתסגירה"],['text'=>"🗑 הסר את הטקסט",'callback_data'=>"מחקטקסט_2"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+}else{
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+}
+
+$query->editText($message = "<b>שלח את הודעת הסגירה:</b>
+<i>עד 1024 תווים, ניתן להשתמש בכל סיגנונות העיצוב.</i>
+", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'opener_text_2');
+$msgqutryid = $query->messageId;
+Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
+} catch (Throwable $e) {}
+}
+
+#[FilterButtonQueryData('מחקטקסט_2')] 
+public function RemoveText2(callbackQuery $query)
+{
+	try {
+$userid = $query->userId;    
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+$bot_API_markup[] = [['text'=>"לא ❌",'callback_data'=>"הגדרטקסט_2"],['text'=>"כן ✅",'callback_data'=>"מחקטקסט_2אישור"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+$query->editText($message = "האם אתה באמת בטוח שאתה רוצה למחוק את הטקסט של הודעת הסגירה?", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+} catch (Throwable $e) {}
+}
+#[FilterButtonQueryData('מחקטקסט_2אישור')] 
+public function RemoveText2_1(callbackQuery $query)
+{
+	try {
+$userid = $query->userId;    
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
+$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
+}else{
+$filex = "null"; 	
+}
+
+if (file_exists(__DIR__."/"."data/$filex/MsgCloser.txt")) {	
+unlink(__DIR__."/"."data/$filex/MsgCloser.txt");
+}
+if (file_exists(__DIR__."/"."data/$filex/MsgCloser2.txt")) {	
+unlink(__DIR__."/"."data/$filex/MsgCloser2.txt");
+}
+
+$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+$query->editText($message = "<b>הטקסט הוסר</b> 🗑", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+} catch (Throwable $e) {}
+}
+
+#[FilterButtonQueryData('צפהבטקסט_2')] 
+public function GroupTextView2(callbackQuery $query)
+{
+	try {
+$userid = $query->userId;    
+$msgqutryid = $query->messageId;
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
+$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
+}else{
+$filex = "null"; 	
+}
+
+if (file_exists(__DIR__."/"."data/$filex/MsgCloser.txt")) {
+$TXT = Amp\File\read(__DIR__."/"."data/$filex/MsgCloser.txt"); 
+if($TXT != null){
+if (file_exists(__DIR__."/"."data/$filex/MsgCloser2.txt")) {
+$ENT = json_decode(Amp\File\read(__DIR__."/"."data/$filex/MsgCloser2.txt"),true);  
+}else{
+$ENT = null; 	
+}
+
+$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$this->messages->editMessage(no_webpage: true, peer: $userid, id: $msgqutryid, message: $TXT, reply_markup: $bot_API_markup, entities: $ENT);
+}else{
+$query->answer($message = "ההודעה לא מוגדרת.", $alert = true, $url = null, $cacheTime = 0);
+}
+}else{
+$query->answer($message = "ההודעה לא מוגדרת.", $alert = true, $url = null, $cacheTime = 0);
+}
+} catch (Throwable $e) {}
+}
+
+#[FilterButtonQueryData('הגדרמדיה_2')] 
+public function GroupMsgMedia2(callbackQuery $query)
+{
+	try {
+$userid = $query->userId;    
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
+$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
+}else{
+$filex = "null"; 	
+}
+
+if (file_exists(__DIR__."/"."data/$filex/MsgCloserMedia.txt")) {	
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתסגירה"],['text'=>"🗑 הסר את המדיה",'callback_data'=>"מחקמדיה_2"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+}else{
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+}
+
+$query->editText($message = "<b>שלח את המדיה החדשה לסגירה:</b>
+<i>מדיה מותרת: תמונות, סרטונים, קבצים, מדבקות, קובצי GIF, אודיו, הודעות קוליות, סרטונים עגולים ועוד..(כל סוגי המדיה הנתמכים)</i>
+", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'opener_media_2');
+$msgqutryid = $query->messageId;
+Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
+} catch (Throwable $e) {}
+}
+
+#[FilterButtonQueryData('צפהבמדיה_2')] 
+public function GroupMsgMediaView2(callbackQuery $query)
+{
+	try {
+$userid = $query->userId;    
+$msgqutryid = $query->messageId;
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
+$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
+}else{
+$filex = "null"; 	
+}
+
+if (file_exists(__DIR__."/"."data/$filex/MsgCloserMedia.txt")) {
+$MEDIA = Amp\File\read(__DIR__."/"."data/$filex/MsgCloserMedia.txt");  
+
+$bot_API_markup[] = [['text'=>"🔙 חזרה 🔙",'callback_data'=>"חזרההודעתסגירה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+			try {
+$sentMessage = $this->messages->sendMedia(peer: $userid, media: $MEDIA, reply_markup: $bot_API_markup);
 } catch (Throwable $e) {
+$sentMessage = $this->messages->sendMessage(peer: $userid, message: $e->getMessage(), reply_markup: $bot_API_markup);
+}
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
+} catch (Throwable $e) {}
+
+}else{
+$query->answer($message = "ההודעה לא מוגדרת.", $alert = true, $url = null, $cacheTime = 0);
+}
+
+} catch (Throwable $e) {}
+}
+
+#[FilterButtonQueryData('מחקמדיה_2')] 
+public function RemoveMedia2(callbackQuery $query)
+{
+	try {
+$userid = $query->userId;    
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+$bot_API_markup[] = [['text'=>"לא ❌",'callback_data'=>"הגדרמדיה_2"],['text'=>"כן ✅",'callback_data'=>"מחקמדיה_2אישור"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+$query->editText($message = "האם אתה באמת בטוח שאתה רוצה למחוק את המדיה של הודעת הסגירה?", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+} catch (Throwable $e) {}
+}
+#[FilterButtonQueryData('מחקמדיה_2אישור')] 
+public function RemoveMedia2_1(callbackQuery $query)
+{
+	try {
+$userid = $query->userId;    
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
+$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
+}else{
+$filex = "null"; 	
+}
+
+if (file_exists(__DIR__."/"."data/$filex/MsgCloserMedia.txt")) {
+unlink(__DIR__."/"."data/$filex/MsgCloserMedia.txt");  
+}
+
+$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+$query->editText($message = "<b>המדיה הוסרה</b> 🗑", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+} catch (Throwable $e) {}
+}
+
+#[FilterButtonQueryData('צפהבכפתורים_2')] 
+public function buttonsmanageviewgroup2(callbackQuery $query)
+{
+	try {
+$userid = $query->userId;    
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+$username = $User_Full['User']['username']?? null;
+
+if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
+$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
+}else{
+$filex = "null"; 	
+}
+
+    if (file_exists(__DIR__."/"."data/$filex/MsgCloserButtons.txt")) {
+$BUTTONS = Amp\File\read(__DIR__."/"."data/$filex/MsgCloserButtons.txt");  
+$input = $BUTTONS;
+
+$pattern = '/(.+?)\s*-\s*(http[^\s]+)/i';
+preg_match_all($pattern, $input, $matches, PREG_SET_ORDER);
+//$output = [];
+foreach ($matches as $index => $match) {
+    $buttonText = trim($match[1]);
+    $buttonUrl = trim($match[2]);
+
+//	$output[] = "$buttonText - $buttonUrl";
+$bot_API_markup[] = [['text'=>"$buttonText",'url'=>"$buttonUrl"]];
 }
 }
 
+$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+$query->editText($message = "צפייה בכפתורים:", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+} catch (Throwable $e) {
+$query->editText($message = $e->getMessage(), $replyMarkup = $bot_API_markup, $noWebpage = false, $scheduleDate = NULL);
+}
+}
+
+#[FilterButtonQueryData('הגדרכפתורים_2')] 
+public function GroupMsgButtonSet2(callbackQuery $query)
+{
+	try {
+$userid = $query->userId;    
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
+$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
+}else{
+$filex = "null"; 	
+}
+
+if (file_exists(__DIR__."/"."data/$filex/MsgCloserButtons.txt")) {	
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתסגירה"],['text'=>"🗑 הסר כפתורים",'callback_data'=>"מחקכפתורים_2"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+}else{
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+}
+
+$query->editText($message = "<b>שלח את הכפתורים שתרצה להוסיף בפורמט הבא:</b>
+<pre>Button text 1 - http://www.example.com/ \nButton text 2 - http://www.example2.com/</pre>
+", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'opener_buttons_2');
+$msgqutryid = $query->messageId;
+Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
+} catch (Throwable $e) {}
+}
+
+#[FilterButtonQueryData('מחקכפתורים_2')] 
+public function RemoveButtons2(callbackQuery $query)
+{
+	try {
+$userid = $query->userId;    
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+$bot_API_markup[] = [['text'=>"לא ❌",'callback_data'=>"הגדרכפתורים_2"],['text'=>"כן ✅",'callback_data'=>"מחקכפתורים_2אישור"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+$query->editText($message = "האם אתה באמת בטוח שאתה רוצה למחוק את הכפתורים של הודעת הסגירה?", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+} catch (Throwable $e) {}
+}
+#[FilterButtonQueryData('מחקכפתורים_2אישור')] 
+public function RemoveButtons2_1(callbackQuery $query)
+{
+	try {
+$userid = $query->userId;    
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
+$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
+}else{
+$filex = "null"; 	
+}
+
+if (file_exists(__DIR__."/"."data/$filex/MsgCloserButtons.txt")) {
+unlink(__DIR__."/"."data/$filex/MsgCloserButtons.txt");  
+}
+
+$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+$query->editText($message = "<b>הכפתורים הוסרו</b> 🗑", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+} catch (Throwable $e) {}
+}
+
+    #[Handler]
+    public function HandleGroupMsgSet2(Incoming & PrivateMessage $message): void
+    {
+		try {
+$messagetext = $message->message;
+$entities = $message->entities;
+$messagefile = $message->media;
+$grouped_id = $message->groupedId;
+$messageid = $message->id;
+$senderid = $message->senderId;
+$User_Full = $this->getInfo($message->senderId);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+$last_name = $User_Full['User']['last_name']?? null;
+if($last_name == null){
+$last_name = "null";
+}
+$username = $User_Full['User']['username']?? null;
+if($username == null){
+$username = "null";
+}
+
+if(!preg_match('/^\/([Ss]tart)/',$messagetext)){  
+
+    if (file_exists(__DIR__."/data/$senderid/grs1.txt")) {
+$check = Amp\File\read(__DIR__."/data/$senderid/grs1.txt");    
+
+if (file_exists(__DIR__."/"."data/$senderid/groupid.txt")) {
+$filex = Amp\File\read(__DIR__."/"."data/$senderid/groupid.txt");  
+}else{
+$filex = "null"; 	
+}
+
+if($check == "opener_text_2"){ 
+
+if($grouped_id != null){
+$bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$this->messages->sendMessage(peer: $senderid, message: "<b>נא לשלוח הודעת טקסט בלבד!</b>", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$messageid]); 
+} catch (Throwable $e) {}
+
+ if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
+$filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$filexmsgid]); 
+} catch (Throwable $e) {}
+
+}
+}else{
+	
+if($messagefile){
+
+$bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$this->messages->sendMessage(peer: $senderid, message: "<b>נא לשלוח הודעת טקסט בלבד!</b>", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$messageid]); 
+} catch (Throwable $e) {}
+
+ if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
+$filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$filexmsgid]); 
+} catch (Throwable $e) {}
+
+}
+
+}
+
+if(!$messagefile){
+$messageLength = mb_strlen($messagetext);
+
+if($messageLength > 1024) {
+
+$bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$this->messages->sendMessage(peer: $senderid, message: "<b>נא לשלוח טקסט עד 1024 תווים</b>
+כמות התווים ששלחת: $messageLength", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$messageid]); 
+} catch (Throwable $e) {}
+
+ if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
+$filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$filexmsgid]); 
+} catch (Throwable $e) {}
+
+}
+
+} 
+else 
+{
+unlink(__DIR__."/data/$senderid/grs1.txt");
+
+$bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$this->messages->sendMessage(peer: $senderid, message: "<b>ההודעה נשמרה בהצלחה! ✔️</b>", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$messageid]); 
+} catch (Throwable $e) {}
+
+ if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
+$filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$filexmsgid]); 
+} catch (Throwable $e) {}
+
+}
+
+
+Amp\File\write(__DIR__."/"."data/$filex/MsgCloser.txt", $messagetext);
+Amp\File\write(__DIR__."/"."data/$filex/MsgCloser2.txt", json_encode(array_map(static fn($e) => $e->toMTProto(),$entities,)));
+
+}
+
+
+	
+}
+
+
+}
+
+}
+
+if($check == "opener_media_2"){
+ 
+if($grouped_id != null){
+$bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$this->messages->sendMessage(peer: $senderid, message: "<b>אין תמיכה באלבומים!</b>", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$messageid]); 
+} catch (Throwable $e) {}
+
+ if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
+$filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$filexmsgid]); 
+} catch (Throwable $e) {}
+
+}
+}else{
+	
+if(!$messagefile){
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$messageid]); 
+}catch (\danog\MadelineProto\Exception $e) {
+$estring = (string) $e;
+if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
+}
+
+} catch (\danog\MadelineProto\RPCErrorException $e) {
+    if ($e->rpc === 'MESSAGE_DELETE_FORBIDDEN') {	
+}
+}
+
+ if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
+$filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$filexmsgid]); 
+}catch (\danog\MadelineProto\Exception $e) {
+$estring = (string) $e;
+if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
+}
+
+} catch (\danog\MadelineProto\RPCErrorException $e) {
+    if ($e->rpc === 'MESSAGE_DELETE_FORBIDDEN') {	
+}
+}
+
+}
+
+$bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$this->messages->sendMessage(peer: $senderid, message: "<b>נא לשלוח מדיה בלבד!</b>", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+}
+
+if($messagefile){
+
+unlink(__DIR__."/data/$senderid/grs1.txt");
+
+$bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$this->messages->sendMessage(peer: $senderid, message: "<b>המדיה נשמרה בהצלחה! ✔️</b>", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$messageid]); 
+} catch (Throwable $e) {}
+
+ if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
+$filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$filexmsgid]); 
+} catch (Throwable $e) {}
+
+}
+
+$botApiFileId = $message->media->botApiFileId;
+Amp\File\write(__DIR__."/"."data/$filex/MsgCloserMedia.txt", $botApiFileId);
+}
+
+
+	
+}
+
+}
+
+if($check == "opener_buttons_2"){
+ 
+if(!function_exists("isTextInCorrectFormat")){
+function isTextInCorrectFormat($messagetext) {
+    // Split the text into lines
+    $lines = explode("\n", $messagetext);
+    
+    // Define the regex pattern for matching each line
+    $pattern = "/^[^:]* - (https?:\/\/[^\s]+)$/i";
+    
+    foreach ($lines as $line) {
+        // Trim leading and trailing whitespace
+        $line = trim($line);
+        
+        // Check if the line matches the pattern
+        if (!preg_match($pattern, $line)) {
+            return false; // Found a line that doesn't match
+        }
+    }
+    
+    return true; // All lines match the pattern
+}
+}
+
+
+if (isTextInCorrectFormat($messagetext)) {
+unlink(__DIR__."/data/$senderid/grs1.txt");
+
+Amp\File\write(__DIR__."/"."data/$filex/MsgCloserButtons.txt", $messagetext);
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$messageid]); 
+} catch (Throwable $e) {}
+
+ if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
+$filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
+$bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$Updates = $this->messages->editMessage(peer: $senderid, id: $filexmsgid, message: "<b>הכפתורים נשמרו בהצלחה! ✔️</b>", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+}
+
+
+} else {
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$messageid]); 
+} catch (Throwable $e) {}
+
+ if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
+$filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
+$bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+			try {
+$Updates = $this->messages->editMessage(peer: $senderid, id: $filexmsgid, message: "<b>נא שלח את הכפתורים שתרצה להוסיף בפורמט הנכון!</b>", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+} catch (Throwable $e) {}
+
+
+}
+}
+
+
+}
+
+}
+}
+} catch (Throwable $e) {}
+}
+
+#[FilterButtonQueryData('תצוגהמקדימהפתיחה_2')] 
+public function view_welcomeMessage_ful12(callbackQuery $query)
+{
+	try {
+$userid = $query->userId;    
+$msgqutryid = $query->messageId;
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
+$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
+}else{
+$filex = "null"; 	
+}
+
+if (file_exists(__DIR__."/"."data/$filex/MsgCloserMedia.txt")) {
+$MEDIA = Amp\File\read(__DIR__."/"."data/$filex/MsgCloserMedia.txt");  
+}else{
+$MEDIA = null; 	
+}
+if (file_exists(__DIR__."/"."data/$filex/MsgCloser.txt")) {
+$TXT = Amp\File\read(__DIR__."/"."data/$filex/MsgCloser.txt"); 
+}else{
+$TXT = null; 	
+}
+if (file_exists(__DIR__."/"."data/$filex/MsgCloser2.txt")) {
+$ENT = json_decode(Amp\File\read(__DIR__."/"."data/$filex/MsgCloser2.txt"),true);  
+}else{
+$ENT = null; 	
+}
+if (file_exists(__DIR__."/"."data/$filex/MsgCloserButtons.txt")) {
+$BUTTONS = Amp\File\read(__DIR__."/"."data/$filex/MsgCloserButtons.txt");  
+
+$input = $BUTTONS;
+
+$pattern = '/(.+?)\s*-\s*(http[^\s]+)/i';
+
+preg_match_all($pattern, $input, $matches, PREG_SET_ORDER);
+
+$output = [];
+
+foreach ($matches as $index => $match) {
+    $buttonText = trim($match[1]);
+    $buttonUrl = trim($match[2]);
+
+$output[] = "$buttonText - $buttonUrl";
+$bot_API_markup_welcome[] = [['text'=>"$buttonText",'url'=>"$buttonUrl"]];
+}
+
+$bot_API_markup_welcome = [ 'inline_keyboard'=> $bot_API_markup_welcome,];
+
+}else{
+$bot_API_markup_welcome = null;
+}
+
+$bot_API_markup[] = [['text'=>"מדיה 🖼",'callback_data'=>"הגדרמדיה_2"],['text'=>"👀 צפה",'callback_data'=>"צפהבמדיה_2"]];
+$bot_API_markup[] = [['text'=>"טקסט 🔤",'callback_data'=>"הגדרטקסט_2"],['text'=>"👀 צפה",'callback_data'=>"צפהבטקסט_2"]];
+$bot_API_markup[] = [['text'=>"כפתורים ⌨️",'callback_data'=>"הגדרכפתורים_2"],['text'=>"👀 צפה",'callback_data'=>"צפהבכפתורים_2"]];
+$bot_API_markup[] = [['text'=>"תצוגה מקדימה מלאה 👁",'callback_data'=>"תצוגהמקדימהפתיחה_2"]];
+$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"חזרהלהגדרות"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+if($MEDIA != null){
+
+if($TXT != null){
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
+} catch (Throwable $e) {}
+
+$this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖➖");
+$this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
+$sentMessage = $this->messages->sendMedia(peer: $userid, message: "$TXT",  entities: $ENT, media: $MEDIA, reply_markup: $bot_API_markup_welcome);
+
+$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת סגירה מותאמת אישית שתשלח בערב שבת כשהקבוצה נסגרת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+}else{
+	
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
+} catch (Throwable $e) {}
+
+$OPENER = self::CLOSER;
+$this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖➖");
+$this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
+$sentMessage = $this->messages->sendMedia(peer: $userid, message: $OPENER, media: $MEDIA, reply_markup: $bot_API_markup_welcome);	
+
+$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת סגירה מותאמת אישית שתשלח בערב שבת כשהקבוצה נסגרת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+}
+
+}else{
+
+if($TXT != null){
+	
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
+} catch (Throwable $e) {}
+
+$this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖➖");
+$this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
+$sentMessage = $this->messages->sendMessage(peer: $userid, message: "$TXT", entities: $ENT, reply_markup: $bot_API_markup_welcome);
+
+$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת סגירה מותאמת אישית שתשלח בערב שבת כשהקבוצה נסגרת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+}else{
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
+} catch (Throwable $e) {}
+
+$OPENER = self::CLOSER;
+$this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖➖");
+$this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
+$sentMessage = $this->messages->sendMessage(peer: $userid, message: $OPENER);
+
+$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת סגירה מותאמת אישית שתשלח בערב שבת כשהקבוצה נסגרת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+}
+
+
+}
+
+} catch (Throwable $e) {}
+}
 
     #[FilterCommandCaseInsensitive('stats')]
     public function StatsGroups(Incoming $message): void
@@ -1912,7 +3155,6 @@ $numFruits3new = $numFruits312 + $numFruits31;
 $this->messages->editMessage(peer: $message->chatId, id: $sentMessage2, message: "<b>📊 סך הכל קבוצות שומרות שבת בזכותי:</b> <code>$numFruits3new</code>", parse_mode: 'HTML');
 } catch (Throwable $e) {}
 }
-
 
     #[Cron(period: 60.0)] 
     public function cron1(): void
@@ -2127,14 +3369,80 @@ $Updates1 = $this->messages->editChatDefaultBannedRights(peer: $peer, banned_rig
 }
 
 if (file_exists(__DIR__."/"."data/$peer/alertshabat2.txt")) {
-if (file_exists(__DIR__."/"."data/$peer/msgclosermotan.txt")) {
-$modaha = Amp\File\read(__DIR__."/"."data/$peer/msgclosermotan.txt");  	
+
+if (file_exists(__DIR__."/"."data/$peer/MsgCloserMedia.txt")) {
+$MEDIA = Amp\File\read(__DIR__."/"."data/$peer/MsgCloserMedia.txt");  
+}else{
+$MEDIA = null; 	
 }
-if (!file_exists(__DIR__."/"."data/$peer/msgclosermotan.txt")) {
-$modaha = self::CLOSER;
+if (file_exists(__DIR__."/"."data/$peer/MsgCloser.txt")) {
+$TXT = Amp\File\read(__DIR__."/"."data/$peer/MsgCloser.txt"); 
+}else{
+$TXT = null; 	
+}
+if (file_exists(__DIR__."/"."data/$peer/MsgCloser2.txt")) {
+$ENT = json_decode(Amp\File\read(__DIR__."/"."data/$peer/MsgCloser2.txt"),true);  
+}else{
+$ENT = null; 	
+}
+if (file_exists(__DIR__."/"."data/$peer/MsgCloserButtons.txt")) {
+$BUTTONS = Amp\File\read(__DIR__."/"."data/$peer/MsgCloserButtons.txt");  
+
+$input = $BUTTONS;
+
+$pattern = '/(.+?)\s*-\s*(http[^\s]+)/i';
+
+preg_match_all($pattern, $input, $matches, PREG_SET_ORDER);
+
+$output = [];
+
+foreach ($matches as $index => $match) {
+    $buttonText = trim($match[1]);
+    $buttonUrl = trim($match[2]);
+
+$output[] = "$buttonText - $buttonUrl";
+$bot_API_markup_welcome[] = [['text'=>"$buttonText",'url'=>"$buttonUrl"]];
 }
 
-$sendmoadaa1 = $this->messages->sendMessage(peer: $peer, message: $modaha, parse_mode: 'html');
+$bot_API_markup_welcome = [ 'inline_keyboard'=> $bot_API_markup_welcome,];
+
+}else{
+$bot_API_markup_welcome = null;
+}
+
+
+if($MEDIA != null){
+
+if($TXT != null){
+
+$sentMessage = $this->messages->sendMedia(peer: $peer, message: "$TXT",  entities: $ENT, media: $MEDIA, reply_markup: $bot_API_markup_welcome);
+
+}else{
+	
+$OPENER = self::CLOSER;
+$sentMessage = $this->messages->sendMedia(peer: $peer, message: $OPENER, media: $MEDIA, reply_markup: $bot_API_markup_welcome);	
+
+}
+
+}else{
+
+if($TXT != null){
+	
+$sentMessage = $this->messages->sendMessage(peer: $peer, message: "$TXT", entities: $ENT, reply_markup: $bot_API_markup_welcome);
+
+}else{
+
+$OPENER = self::CLOSER;
+$sentMessage = $this->messages->sendMessage(peer: $peer, message: $OPENER);
+
+}
+
+
+}
+
+
+
+
 
 }
 $this->sleep(0.1);
@@ -2164,106 +3472,122 @@ $userstoasend1 = ($usersArray);
 if (!function_exists('getZmanimForCities')) {
     function getZmanimForCities() {
         $geonameIds = [
-            'ירושלים' => 281184,
-            'חיפה' => 294801,
-            'תל אביב' => 293397,
-            'באר שבע' => 295530
+            'ירושלים'   => 281184,
+            'חיפה'      => 294801,
+            'תל אביב'  => 293397,
+            'באר שבע'  => 295530,
         ];
 
         $zmanim = "⌚️ <u><b>זמני כניסת ויציאת השבת:</b></u>\n\n";
 
-        $candleTimes = [];
+        $candleTimes   = [];
         $havdalahTimes = [];
-        $parasha = '';
-        $mevarchim = '';
-        $holiday = '';
-        $date = '';
+        $holidays      = []; // [title => [date, candles[loc], havdalah[loc]]]
+        $date          = '';
+        $parashaText   = '';
 
         foreach ($geonameIds as $location => $geonameId) {
             $client = HttpClientBuilder::buildDefault();
-            $url = "https://www.hebcal.com/shabbat?cfg=json&geonameid=$geonameId&ue=off&M=on&lg=he-x-NoNikud&tgt=_top";
-
+            $url = "https://www.hebcal.com/shabbat?cfg=json&geonameid=$geonameId&ue=off&M=on&lg=he-x-NoNikud";
             $response = $client->request(new Request($url));
             $body = $response->getBody()->buffer();
             $json = json_decode($body, true);
 
             if (!$json || !isset($json['items'])) {
-                $zmanim .= "⚠️ לא ניתן היה לשלוף את זמני השבת עבור המיקום: $location\n";
+                $zmanim .= "⚠️ לא ניתן היה לשלוף את זמני השבת עבור: $location\n";
                 continue;
             }
 
-            $candles = $havdalah = $parasha = $holiday = $mevarchim = null;
+            $candles  = null;
+            $havdalah = null;
 
             foreach ($json['items'] as $item) {
                 switch ($item['category']) {
                     case 'candles':
-                        $candles = $item;
+                        $holidayName = $item['memo'] ?? null;
+                        if ($holidayName && isset($holidays[$holidayName])) {
+                            $holidays[$holidayName]['candles'][$location] = (new \DateTime($item['date']))->format('H:i');
+                        } else {
+                            $candles = $item; // שבת
+                        }
                         break;
+
                     case 'havdalah':
-                        $havdalah = $item;
+                        $holidayName = $item['memo'] ?? null;
+                        if ($holidayName && isset($holidays[$holidayName])) {
+                            $holidays[$holidayName]['havdalah'][$location] = (new \DateTime($item['date']))->format('H:i');
+                        } else {
+                            $havdalah = $item; // שבת
+                        }
                         break;
+
                     case 'parashat':
-                        $parasha = $item;
+                        $parashaText = $item['hebrew'];
                         break;
-                    case 'mevarchim':
-                        $mevarchim = $item;
-                        break;
+
                     case 'holiday':
-                        $holiday = $item;
+                        if ($location === 'ירושלים') {
+                            $hDate  = substr($item['date'],0,10);
+                            $hTitle = $item['hebrew'];
+                            $holidays[$hTitle]['date'] = $hDate;
+                        }
                         break;
                 }
             }
 
-            $candleDate = isset($candles['date']) ? new \DateTime($candles['date']) : null;
-            $candleTime = $candleDate?->format('H:i') ?? 'לא ידוע';
-
-            $havdalahDate = isset($havdalah['date']) ? new \DateTime($havdalah['date']) : null;
-            $havdalahTime = $havdalahDate?->format('H:i') ?? 'לא ידוע';
+            // זמני שבת רגילים
+            $candleTimes[$location]   = isset($candles['date']) ? (new \DateTime($candles['date']))->format('H:i') : 'לא ידוע';
+            $havdalahTimes[$location] = isset($havdalah['date']) ? (new \DateTime($havdalah['date']))->format('H:i') : 'לא ידוע';
 
             if (empty($date) && isset($havdalah['date'])) {
                 $date = (new \DateTime($havdalah['date']))->format('d/m/Y');
             }
-
-            $candleTimes[$location] = $candleTime;
-            $havdalahTimes[$location] = $havdalahTime;
-
-            if ($parasha) {
-                $parashaText = $parasha['hebrew'];
-            }
-
-            if ($mevarchim) {
-                $mevarchimText = $mevarchim['hebrew'];
-            }
-
-            if ($holiday) {
-                $holidayText = $holiday['hebrew'];
-            }
         }
 
+        // תאריך ופרשה
         $zmanim .= "🗓 <u>תאריך:</u> $date\n";
-        if (isset($parashaText)) {
+        if ($parashaText) {
             $zmanim .= "📖 <u>פרשת השבוע:</u> $parashaText\n";
         }
-        if (isset($mevarchimText)) {
-            $zmanim .= "🌒 <u>מברכים:</u> $mevarchimText\n";
-        }
-        if (isset($holidayText)) {
-            $zmanim .= "🎉 <u>חג:</u> $holidayText\n";
+
+        // זמני שבת
+        $zmanim .= "\n🕯 <u>כניסת שבת:</u>\n";
+        foreach ($candleTimes as $loc => $time) {
+            $zmanim .= "$loc: <code>$time</code>\n";
         }
 
-        $zmanim .= "\n🕯 <u>זמני כניסת השבת:</u>\n";
-        foreach ($candleTimes as $location => $time) {
-            $zmanim .= "$location: <code>$time</code>\n";
+        $zmanim .= "\n🍷 <u>יציאת שבת:</u>\n";
+        foreach ($havdalahTimes as $loc => $time) {
+            $zmanim .= "$loc: <code>$time</code>\n";
         }
 
-        $zmanim .= "\n🍷 <u>זמני יציאת השבת:</u>\n";
-        foreach ($havdalahTimes as $location => $time) {
-            $zmanim .= "$location: <code>$time</code>\n";
+        // חגים + זמנים שלהם
+        if ($holidays) {
+            uasort($holidays, fn($a,$b) => strtotime($a['date'] ?? '') <=> strtotime($b['date'] ?? ''));
+            $zmanim .= "\n🎉 <u>חגים קרובים:</u>\n";
+            foreach ($holidays as $title => $info) {
+                $hDateFormatted = isset($info['date']) ? (new \DateTime($info['date']))->format('d/m/Y') : '---';
+                $zmanim .= "• $title ($hDateFormatted)\n";
+
+                if (!empty($info['candles'])) {
+                    $zmanim .= "   🕯 כניסה:\n";
+                    foreach ($info['candles'] as $loc => $time) {
+                        $zmanim .= "   $loc: <code>$time</code>\n";
+                    }
+                }
+                if (!empty($info['havdalah'])) {
+                    $zmanim .= "   🍷 יציאה:\n";
+                    foreach ($info['havdalah'] as $loc => $time) {
+                        $zmanim .= "   $loc: <code>$time</code>\n";
+                    }
+                }
+            }
         }
 
         return $zmanim;
     }
 }
+
 $ShabatTimes = getZmanimForCities();
 
 
@@ -2282,10 +3606,8 @@ $inlineQueryPeerTypeMegagroup = ['_' => 'inlineQueryPeerTypeMegagroup'];
 $inlineQueryPeerTypeBroadcast = ['_' => 'inlineQueryPeerTypeBroadcast'];
 
 $keyboardButtonSwitchInline = ['_' => 'keyboardButtonSwitchInline', 'same_peer' => false, 'text' => 'לשיתוף זמני השבת 🕯', 'query' => 'shabat', 'peer_types' => [$inlineQueryPeerTypePM, $inlineQueryPeerTypeChat, $inlineQueryPeerTypeBotPM, $inlineQueryPeerTypeMegagroup, $inlineQueryPeerTypeBroadcast]];
-$keyboardButtonUrl = ['_' => 'keyboardButtonUrl', 'text' => '📣 לערוץ העדכונים 📣', 'url' => 'https://t.me/shabbatnews'];
 $keyboardButtonRow1 = ['_' => 'keyboardButtonRow', 'buttons' => [$keyboardButtonSwitchInline]];
-$keyboardButtonRow2 = ['_' => 'keyboardButtonRow', 'buttons' => [$keyboardButtonUrl]];
-$bot_API_markup = ['_' => 'replyInlineMarkup', 'rows' => [$keyboardButtonRow1, $keyboardButtonRow2]];
+$bot_API_markup = ['_' => 'replyInlineMarkup', 'rows' => [$keyboardButtonRow1]];
 
 $sendmoadaa1 = $this->messages->sendMessage(peer: $peer, message: $ShabatTimes, reply_markup: $bot_API_markup, parse_mode: 'html');
 $this->sleep(0.1);
@@ -2387,14 +3709,79 @@ $chatBannedRights2 = ['_'                => 'chatBannedRights',
 
 $Updates2 = $this->messages->editChatDefaultBannedRights(peer: $peer, banned_rights: $chatBannedRights2, );
 if (file_exists(__DIR__."/"."data/$peer/alertshabat2.txt")) {
-if (file_exists(__DIR__."/"."data/$peer/msgclosermotan2.txt")) {
-$modaha = Amp\File\read(__DIR__."/"."data/$peer/msgclosermotan2.txt");  	
+
+if (file_exists(__DIR__."/"."data/$peer/MsgOpenerMedia.txt")) {
+$MEDIA = Amp\File\read(__DIR__."/"."data/$peer/MsgOpenerMedia.txt");  
+}else{
+$MEDIA = null; 	
 }
-if (!file_exists(__DIR__."/"."data/$peer/msgclosermotan2.txt")) {
-$modaha = self::OPENER;
+if (file_exists(__DIR__."/"."data/$peer/MsgOpener.txt")) {
+$TXT = Amp\File\read(__DIR__."/"."data/$peer/MsgOpener.txt"); 
+}else{
+$TXT = null; 	
+}
+if (file_exists(__DIR__."/"."data/$peer/MsgOpener2.txt")) {
+$ENT = json_decode(Amp\File\read(__DIR__."/"."data/$peer/MsgOpener2.txt"),true);  
+}else{
+$ENT = null; 	
+}
+if (file_exists(__DIR__."/"."data/$peer/MsgOpenerButtons.txt")) {
+$BUTTONS = Amp\File\read(__DIR__."/"."data/$peer/MsgOpenerButtons.txt");  
+
+$input = $BUTTONS;
+
+$pattern = '/(.+?)\s*-\s*(http[^\s]+)/i';
+
+preg_match_all($pattern, $input, $matches, PREG_SET_ORDER);
+
+$output = [];
+
+foreach ($matches as $index => $match) {
+    $buttonText = trim($match[1]);
+    $buttonUrl = trim($match[2]);
+
+$output[] = "$buttonText - $buttonUrl";
+$bot_API_markup_welcome[] = [['text'=>"$buttonText",'url'=>"$buttonUrl"]];
 }
 
-$sendmoadaa1 = $this->messages->sendMessage(peer: $peer, message: $modaha, parse_mode: 'html');
+$bot_API_markup_welcome = [ 'inline_keyboard'=> $bot_API_markup_welcome,];
+
+}else{
+$bot_API_markup_welcome = null;
+}
+
+if($MEDIA != null){
+
+if($TXT != null){
+
+$sentMessage = $this->messages->sendMedia(peer: $peer, message: "$TXT",  entities: $ENT, media: $MEDIA, reply_markup: $bot_API_markup_welcome);
+
+}else{
+
+$OPENER = self::OPENER;
+$sentMessage = $this->messages->sendMedia(peer: $peer, message: $OPENER, media: $MEDIA, reply_markup: $bot_API_markup_welcome);	
+
+}
+
+}else{
+
+if($TXT != null){
+
+$sentMessage = $this->messages->sendMessage(peer: $peer, message: "$TXT", entities: $ENT, reply_markup: $bot_API_markup_welcome);
+
+}else{
+
+$OPENER = self::OPENER;
+$sentMessage = $this->messages->sendMessage(peer: $peer, message: $OPENER);
+
+}
+
+
+}
+
+
+
+
 }
 $this->sleep(0.1);
 }
@@ -2416,65 +3803,68 @@ continue;
     public function cron4(): void
     {
 try {
+        $candleTimes   = [];
+        $havdalahTimes = [];
+        $holidays      = []; 
+        $date          = '';
+        $parashaText   = '';
 
-    $client = HttpClientBuilder::buildDefault();
-    $url = "https://www.hebcal.com/shabbat?cfg=json&geonameid=281184&ue=off&M=on&lg=he-x-NoNikud&tgt=_top";
+            $client = HttpClientBuilder::buildDefault();
+            $url = "https://www.hebcal.com/shabbat?cfg=json&geonameid=281184&ue=off&M=on&lg=he-x-NoNikud&tgt=_top";
 
-    $response = $client->request(new Request($url));
-    $body = $response->getBody()->buffer();
-    $json = json_decode($body, true);
+            $response = $client->request(new Request($url));
+            $body = $response->getBody()->buffer();
+            $json = json_decode($body, true);
 
-    if (!$json || !isset($json['items'])) {
-// "⚠️ לא ניתן היה לשלוף את זמני השבת עבור המיקום.";
-    }
+            if (!$json || !isset($json['items'])) {
+            }
 
-    $candles = null;
-    $havdalah = null;
-    $parasha = null;
-    $holiday = null;
-    $mevarchim = null;
+            $candles  = null;
+            $havdalah = null;
 
-    foreach ($json['items'] as $item) {
-        switch ($item['category']) {
-            case 'candles':
-                $candles = $item;
-                break;
-            case 'havdalah':
-                $havdalah = $item;
-                break;
-            case 'parashat':
-                $parasha = $item;
-                break;
-            case 'mevarchim':
-                $mevarchim = $item;
-                break;
-            case 'holiday':
-                $holiday = $item;
-                break;
-        }
-    }
+            foreach ($json['items'] as $item) {
+                switch ($item['category']) {
+                    case 'candles':
+                        $holidayName = $item['memo'] ?? null;
+                        if ($holidayName && isset($holidays[$holidayName])) {
+                            $holidays[$holidayName]['candles'] = (new \DateTime($item['date']))->format('H:i');
+                        } else {
+                            $candles = $item; // שבת
+                        }
+                        break;
 
-    // Parse candle lighting
-    $candleDate = isset($candles['date']) ? new \DateTime($candles['date']) : null;
-    $candleTime = $candleDate?->format('H:i') ?? 'לא ידוע';
-    $candleDay = $candleDate?->format('d/m/Y') ?? '---';
+                    case 'havdalah':
+                        $holidayName = $item['memo'] ?? null;
+                        if ($holidayName && isset($holidays[$holidayName])) {
+                            $holidays[$holidayName]['havdalah'] = (new \DateTime($item['date']))->format('H:i');
+                        } else {
+                            $havdalah = $item; // שבת
+                        }
+                        break;
 
-    // Parse havdalah
-    $havdalahDate = isset($havdalah['date']) ? new \DateTime($havdalah['date']) : null;
-    $havdalahTime = $havdalahDate?->format('H:i') ?? 'לא ידוע';
-    $havdalahDay = $havdalahDate?->format('d/m/Y') ?? '---';
+                    case 'parashat':
+                        $parashaText = $item['hebrew'];
+                        break;
 
-    // Get location title
-    $locationTitle = $json['location']['title'] ?? 'מיקום לא ידוע';
+                    case 'holiday':
+                            $hDate  = substr($item['date'],0,10);
+                            $hTitle = $item['hebrew'];
+                            $holidays[$hTitle]['date'] = $hDate;
+                        break;
+                }
+            }
+
+            $candleTime = isset($candles['date']) ? (new \DateTime($candles['date']))->format('H:i') : 'לא ידוע';
+            $havdalahTime = isset($havdalah['date']) ? (new \DateTime($havdalah['date']))->format('H:i') : 'לא ידוע';
+            $candleDay = isset($candles['date']) ? (new \DateTime($candles['date']))->format('d/m/Y') : '---';
+            $havdalahDay = isset($havdalah['date']) ? (new \DateTime($havdalah['date']))->format('d/m/Y') : '---';
 
 Amp\File\write(__DIR__."/"."systemtimein.txt",$candleTime);
 Amp\File\write(__DIR__."/"."systemdatein.txt",$candleDay);
 Amp\File\write(__DIR__."/"."systemtimeout.txt",$havdalahTime);
 Amp\File\write(__DIR__."/"."systemdateout.txt",$havdalahDay);
-} catch (Throwable $e) {
+} catch (Throwable $e) {}
 }
-}
-
 
     #[FilterCommandCaseInsensitive('donate')]
     public function Payments(Incoming & PrivateMessage  $message): void
@@ -2590,11 +3980,14 @@ $error = $e->getMessage();
 }
 }
 
-//////////////////////// ADMIN COMMANDS
+#########################################
+# ADMIN COMMANDS #
+#########################################
 
 #[FilterCommandCaseInsensitive('admin')]
 public function admincommand(Incoming & PrivateMessage & FromAdmin $message): void
     {
+		try {
 $senderid = $message->senderId;
 $User_Full = $this->getInfo($message->senderId);
 $first_name = $User_Full['User']['first_name']?? null;
@@ -2620,11 +4013,13 @@ $this->messages->sendMessage(peer: $message->senderId, message: "<b>ברוך ה�
     if (file_exists("data/$senderid/grs1.txt")) {
 unlink("data/$senderid/grs1.txt");
 }
+} catch (Throwable $e) {}
     }
 
 #[FilterButtonQueryData('חזרהמנהל')] 
 public function addsohe1hazor(callbackQuery $query)
 {
+	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
 $first_name = $User_Full['User']['first_name']?? null;
@@ -2632,19 +4027,9 @@ if($first_name == null){
 $first_name = "null";
 }
 
-$flag = false;
 $ADMIN = $this->getAdminIds();
-foreach ($ADMIN as $user) {
-$usertocheck = (string) $user;
-$senderidtocheck = (string) $userid;
-if (preg_match('/^' . preg_quote($senderidtocheck, '/') . '\b/i', $usertocheck)) {
-$flag = true;
-break;
-}
-}
-
-if($flag){ 
-
+if (in_array((string)$userid, array_map('strval', $ADMIN), true)) {
+	
 $bot_API_markup[] = [['text'=>"סטטיסטיקות מנויים 📊",'callback_data'=>"סטטיסטיקות"]];
 $bot_API_markup[] = [['text'=>"הצג מנויים 👁",'callback_data'=>"רשימתמשתמשים"]];
 $bot_API_markup[] = [['text'=>"שידור למנויים 📮",'callback_data'=>"שידורלמשתמשים"]];
@@ -2656,38 +4041,22 @@ if (file_exists("data/$userid/grs1.txt")) {
 unlink("data/$userid/grs1.txt");
 }
 }
+} catch (Throwable $e) {}
 }
 
 #[FilterButtonQueryData('חזרהמנהל2')] 
 public function addsohe1hazor2(callbackQuery $query)
 {
+	try {
 $userid = $query->userId;  
 $msgid = $query->messageId;  
 
-$flag = false;
 $ADMIN = $this->getAdminIds();
-foreach ($ADMIN as $user) {
-$usertocheck = (string) $user;
-$senderidtocheck = (string) $userid;
-if (preg_match('/^' . preg_quote($senderidtocheck, '/') . '\b/i', $usertocheck)) {
-$flag = true;
-break;
-}
-}
-
-if($flag){ 
+if (in_array((string)$userid, array_map('strval', $ADMIN), true)) {
 
 try {
 $this->messages->deleteMessages(revoke: true, id: [$msgid]); 
-}catch (\danog\MadelineProto\Exception $e) {
-$estring = (string) $e;
-if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
-}
-
-} catch (\danog\MadelineProto\RPCErrorException $e) {
-    if ($e->rpc === 'MESSAGE_DELETE_FORBIDDEN') {	
-}
-}
+} catch (Throwable $e) {}
 
 $bot_API_markup[] = [['text'=>"סטטיסטיקות מנויים 📊",'callback_data'=>"סטטיסטיקות"]];
 $bot_API_markup[] = [['text'=>"הצג מנויים 👁",'callback_data'=>"רשימתמשתמשים"]];
@@ -2715,7 +4084,7 @@ unlink(__DIR__."/data/$userid/media.txt");
   }	 
 
 }
-
+} catch (Throwable $e) {}
 }
 
 #[FilterButtonQueryData('סטטיסטיקות')] 
@@ -2851,6 +4220,7 @@ $query->editText($message = "<b>🧮 סטטיסטיקות מנויים 📊</b>
 #[FilterButtonQueryData('רשימתמשתמשים')] 
 public function reshimamishtamshim(callbackQuery $query)
 {
+	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
 $first_name = $User_Full['User']['first_name']?? null;
@@ -2948,15 +4318,13 @@ $query->editText($message = "<b>$newLangsComma</b>", $replyMarkup = $bot_API_mar
 
 	}		
 
-
-
-
-
+} catch (Throwable $e) {}
 }
 
 #[FilterButtonQueryData('רשימתמנוייםהמשך')] 
 public function reshimamishtamshim2(callbackQuery $query)
 {
+	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
 $first_name = $User_Full['User']['first_name']?? null;
@@ -3061,13 +4429,13 @@ $query->editText($message = "<b>$newLangsComma</b>", $replyMarkup = $bot_API_mar
 }
 
 	}		
-		
-		
+} catch (Throwable $e) {}	
 }
 
 #[FilterButtonQueryData('רשימתמנוייםהקודם')] 
 public function reshimamishtamshim3(callbackQuery $query)
 {
+	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
 $first_name = $User_Full['User']['first_name']?? null;
@@ -3171,12 +4539,13 @@ $query->editText($message = "<b>$newLangsComma</b>", $replyMarkup = $bot_API_mar
 }
 
 	}		
-	
+} catch (Throwable $e) {}	
 }
 
 #[FilterButtonQueryData('var_cat')]
 public function var_cat_command(callbackQuery $query)
-{  
+{ 
+try { 
     if (file_exists(__DIR__."/ids.txt")) {
 $filex = Amp\File\read(__DIR__."/ids.txt"); 
 $numFruits = count(explode("\n",$filex));
@@ -3188,11 +4557,13 @@ $resultpages = ceil($numFruits / 5);
 $query->answer($message = "מציג דף $pages_var/$resultpages 📃", $alert = true, $url = null, $cacheTime = 0);
 }
 }
+} catch (Throwable $e) {}
 }
 
 #[Handler]
     public function adnimhandle(callbackQuery $query): void
     {
+		try {
 $userid = $query->userId;  
 $querydata = $query->data;  
 $msgid = $query->messageId;   
@@ -3210,19 +4581,8 @@ if($username == null){
 $username = "null";
 }
 
-
-$flag = false;
 $ADMIN = $this->getAdminIds();
-foreach ($ADMIN as $user) {
-$usertocheck = (string) $user;
-$senderidtocheck = (string) $userid;
-if (preg_match('/^' . preg_quote($senderidtocheck, '/') . '\b/i', $usertocheck)) {
-$flag = true;
-break;
-}
-}
-
-if($flag){
+if (in_array((string)$userid, array_map('strval', $ADMIN), true)) {
 
 if(preg_match('/openprofile_/',$querydata)){ 
 $str = str_replace('openprofile_','',$querydata);
@@ -3231,11 +4591,8 @@ try {
 	
 $User_Full2 = $this->getInfo($str);
 $chackdb = true;
-}catch (\danog\MadelineProto\Exception $e) {
-$estring = (string) $e;
-if(preg_match("/This peer is not present in the internal peer database/",$estring)){
+} catch (Throwable $e) {
 $chackdb = false;
-}
 }
 
 $type = $User_Full2['type']?? null;
@@ -3325,13 +4682,7 @@ $txtuserag = "
 
 $this->messages->editMessage(peer: $userid, id: $sentMessage2, message: "$txtuserag", reply_markup: $bot_API_markup, parse_mode: 'HTML');
 
-}catch (\danog\MadelineProto\Exception $e) {
-$estring = (string) $e;
-if(preg_match("/This peer is not present in the internal peer database/",$estring)){
-}
-if(preg_match("/Undefined array key/",$estring)){
-}
-}
+} catch (Throwable $e) {}
 
 if (file_exists(__DIR__."/data/$userid/grs1.txt")) {
 unlink(__DIR__."/data/$userid/grs1.txt");
@@ -3340,132 +4691,14 @@ unlink(__DIR__."/data/$userid/grs1.txt");
 }
 
 }
+} catch (Throwable $e) {}
 }
 	
-    #[Handler]
-    public function handlemashovMessageAdmin(Incoming & PrivateMessage & FromAdmin $message): void
-    {
-$messagetext = $message->message;
-$messageid = $message->id;
-$senderid = $message->senderId;
-$User_Full = $this->getInfo($message->senderId);
-$first_name = $User_Full['User']['first_name']?? null;
-if($first_name == null){
-$first_name = "null";
-}
-$last_name = $User_Full['User']['last_name']?? null;
-if($last_name == null){
-$last_name = "null";
-}
-$username = $User_Full['User']['username']?? null;
-if($username == null){
-$username = "null";
-}
-
-if(!preg_match('/^\/([Ss]tart)/',$messagetext)){  
-    if (file_exists(__DIR__."/data/$senderid/grs1.txt")) {
-$grs1 = Amp\File\read(__DIR__."/data/$senderid/grs1.txt");    
-if($grs1 == "mashovadminmsg"){
-unlink(__DIR__."/data/$senderid/grs1.txt");	
-
-    if (file_exists(__DIR__."/data/$senderid/usertosend.txt")) {
-$peer = Amp\File\read(__DIR__."/data/$senderid/usertosend.txt");   
-$bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"openprofile2_$peer"],];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-try {
-	
-$User_Full2 = $this->getInfo($peer);
-$chackdb = true;
-}catch (\danog\MadelineProto\Exception $e) {
-$estring = (string) $e;
-if(preg_match("/This peer is not present in the internal peer database/",$estring)){
-$chackdb = false;
-}
-}
-$first_name2 = $User_Full2['User']['first_name']?? null;
-if($first_name2 == null){
-$first_name2 = "(null)";
-}
-$last_name2 = $User_Full2['User']['last_name']?? null;
-if($last_name2 == null){
-$last_name2 = "(null)";
-}
-$username2 = $User_Full2['User']['username']?? null;
-if($username2 == null){
-$username2 = "(null)";
-}
-
-
- if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
-$filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
-try {
-
-if($chackdb != false){
-$this->messages->editMessage(peer: $senderid, id: $filexmsgid, message: "ההודעה נשלחה ל<a href='mention:$peer'>$first_name2</a>", reply_markup: $bot_API_markup, parse_mode: 'HTML');
-}
-if($chackdb != true){
-$this->messages->editMessage(peer: $senderid, id: $filexmsgid, message: "ההודעה נשלחה ל $peer", reply_markup: $bot_API_markup, parse_mode: 'HTML');
-}
-}catch (\danog\MadelineProto\Exception $e) {
-$estring = (string) $e;
-if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
-}else{
-}
-
-} catch (\danog\MadelineProto\RPCErrorException $e) {
-    if ($e->rpc === 'MESSAGE_DELETE_FORBIDDEN') {	
-}else{
-}
-}
-
-//unlink("data/$senderid/messagetodelete.txt");
-}
-
-try {
-$Updates = $this->messages->forwardMessages(silent: false, background: true, drop_author: true, drop_media_captions: false, noforwards: true,id: [$messageid], to_peer: "$peer");
-}catch (\danog\MadelineProto\Exception $e) {
-$estring = (string) $e;
-if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
-}else{
-}
-
-} catch (\danog\MadelineProto\RPCErrorException $e) {
-    if ($e->rpc === 'MESSAGE_DELETE_FORBIDDEN') {	
-}else{
-}
-}
-
-try {
-$this->messages->deleteMessages(revoke: true, id: [$messageid]); 
-}catch (\danog\MadelineProto\Exception $e) {
-$estring = (string) $e;
-if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
-}else{
-}
-
-} catch (\danog\MadelineProto\RPCErrorException $e) {
-    if ($e->rpc === 'MESSAGE_DELETE_FORBIDDEN') {	
-}else{
-}
-}
-
-    }
-    }
-
-
-    }
-
-
-
-
-
-
-    }
-    }
 
 #[FilterButtonQueryData('שידורלמשתמשים')] 
 public function addsoheshidur1(callbackQuery $query)
 {
+	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
 $first_name = $User_Full['User']['first_name']?? null;
@@ -3480,11 +4713,13 @@ $bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהמנהל2"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
 $query->editText($message = "<b>תפריט שידור, אנא בחר:</b>", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+} catch (Throwable $e) {}
 }
 
 #[FilterButtonQueryData('שידורלמשתמשים2')] 
 public function addsoheshidur12(callbackQuery $query)
 {
+	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
 $first_name = $User_Full['User']['first_name']?? null;
@@ -3500,14 +4735,15 @@ $query->editText($message = "<b>נא שלח את ההודעה שתרצה לשל�
 Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'broadcast1');
 $msgqutryid = $query->messageId;
 Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
+} catch (Throwable $e) {}
 }
 
 #[FilterButtonQueryData('LastBrodDATA')]
 public function LastBrodDATA(callbackQuery $query)
 {  
 try{
-    if (file_exists(getcwd()."/LastBrodDATA")) {
-$filex = Amp\File\read(getcwd()."/LastBrodDATA"); 
+    if (file_exists(__DIR__."/LastBrodDATA")) {
+$filex = Amp\File\read(__DIR__."/LastBrodDATA"); 
 	}else{
 $filex = "📊 אין עדיין נתונים."; 	
 	}
@@ -3518,6 +4754,7 @@ $query->answer($message = $filex, $alert = true, $url = null, $cacheTime = 0);
     #[Handler]
     public function handlebroadcast1(Incoming & PrivateMessage & FromAdmin $message): void
     {
+		try {
 $messagetext = $message->message;
 $messageid = $message->id;
 $messagefile = $message->media;
@@ -3701,11 +4938,14 @@ $sentMessage = $this->messages->sendMessage(peer: $message->senderId, message: "
 }
 
 }
+
+} catch (Throwable $e) {}
 	}
 
 #[FilterButtonQueryData('חזרהתפריטשידור')] 
 public function hazarashidur(callbackQuery $query)
 {
+	try {
 $userid = $query->userId; 
 $msgqutryid = $query->messageId;   
 $User_Full = $this->getInfo($userid);
@@ -3754,12 +4994,13 @@ $this->messages->editMessage(peer: $userid, id: $msgqutryid, message: "$filexmsg
 }else{
 $query->editText($message = "תפריט שידור אנא בחר:", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
 }
-
+} catch (Throwable $e) {}
 }
 
 #[FilterButtonQueryData('נעץהודעה')] 
 public function addsoheshidur1forneitza1(callbackQuery $query)
 {
+	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
 $first_name = $User_Full['User']['first_name']?? null;
@@ -3773,11 +5014,13 @@ $bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהתפריטש�
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
 $query->editText($message = "כעת ההודעה תנעץ בצ'אט ✔️", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+} catch (Throwable $e) {}
 }
 
 #[FilterButtonQueryData('נעץהודעהללא')] 
 public function addsoheshidur1forneitza2(callbackQuery $query)
 {
+	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
 $first_name = $User_Full['User']['first_name']?? null;
@@ -3793,11 +5036,13 @@ $bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהתפריטש�
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
 $query->editText($message = "כעת ההודעה לא תנעץ בצ'אט ✖️", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+} catch (Throwable $e) {}
 }
 
 #[FilterButtonQueryData('מצבתפוצה')] 
 public function broadsetsenders(callbackQuery $query)
 {
+	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
 $first_name = $User_Full['User']['first_name']?? null;
@@ -3814,11 +5059,13 @@ $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
 $query->editText($message = "<b>אנא בחר מצב תפוצה 🔘</b>
 האם לשלוח את ההודעה לכל המנויים או עם פילטר: רק משתמשים/קבוצות/ערוצים.", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+} catch (Throwable $e) {}
 }
 
 #[FilterButtonQueryData('מצבתפוצה1')] 
 public function broadsetsenders1(callbackQuery $query)
 {
+	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
 $first_name = $User_Full['User']['first_name']?? null;
@@ -3832,11 +5079,13 @@ $bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהתפריטש�
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
 $query->editText($message = "<b>התפוצה שנבחרה:</b> רק למשתמשים", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+} catch (Throwable $e) {}
 }
 
 #[FilterButtonQueryData('מצבתפוצה2')] 
 public function broadsetsenders2(callbackQuery $query)
 {
+	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
 $first_name = $User_Full['User']['first_name']?? null;
@@ -3850,11 +5099,13 @@ $bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהתפריטש�
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
 $query->editText($message = "<b>התפוצה שנבחרה:</b> רק לערוצים", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+} catch (Throwable $e) {}
 }
 
 #[FilterButtonQueryData('מצבתפוצה3')] 
 public function broadsetsenders3(callbackQuery $query)
 {
+	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
 $first_name = $User_Full['User']['first_name']?? null;
@@ -3868,11 +5119,13 @@ $bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהתפריטש�
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
 $query->editText($message = "<b>התפוצה שנבחרה:</b> רק לקבוצות", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+} catch (Throwable $e) {}
 }
 
 #[FilterButtonQueryData('מצבתפוצה4')] 
 public function broadsetsenders4(callbackQuery $query)
 {
+	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
 $first_name = $User_Full['User']['first_name']?? null;
@@ -3886,11 +5139,13 @@ $bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהתפריטש�
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
 $query->editText($message = "<b>התפוצה שנבחרה:</b> כולם", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+} catch (Throwable $e) {}
 }
 
 #[FilterButtonQueryData('הוספתכפתורים')] 
 public function hosafkaf(callbackQuery $query)
 {
+	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
 $first_name = $User_Full['User']['first_name']?? null;
@@ -3907,11 +5162,13 @@ $query->editText($message = "<b>שלח את הכפתורים שתרצה להוס
 Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'addBUTTONS');
 $msgqutryid = $query->messageId;
 Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
+} catch (Throwable $e) {}
 }
 
     #[Handler]
     public function handlebuttons(Incoming & PrivateMessage & FromAdmin $message): void
     {
+		try {
 $messagetext = $message->message;
 $entities = $message->entities;
 $messagefile = $message->media;
@@ -4048,12 +5305,14 @@ if(preg_match("/MESSAGE_NOT_MODIFIED/",$estring)){
 	
 }
 
+} catch (Throwable $e) {}
 
 }
 
 #[FilterButtonQueryData('צפהבכפתורים')] 
 public function buttonsmanageview(callbackQuery $query)
 {
+	try {
 $userid = $query->userId;   
 $msgid = $query->messageId;   
 $User_Full = $this->getInfo($userid);
@@ -4112,13 +5371,13 @@ $query->answer($message = "$BUTTONS", $alert = true, $url = null, $cacheTime = 0
 $BUTTONS = "לא הוגדרו עדיין כפתורים..";  
 $query->answer($message = "$BUTTONS", $alert = true, $url = null, $cacheTime = 10);
 	}
-	
-
+} catch (Throwable $e) {}
 }
 
 #[FilterButtonQueryData('שדרהודעה')] 
 public function buttonsmanageview2(callbackQuery $query)
 {
+	try{
 $userid = $query->userId;  
 $msgqutryid = $query->messageId;   
 $User_Full = $this->getInfo($userid);
@@ -4157,15 +5416,7 @@ $bot_API_markup = null;
 
 			try {
 $this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
-}catch (\danog\MadelineProto\Exception $e) {
-$estring = (string) $e;
-if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
-}
-
-} catch (\danog\MadelineProto\RPCErrorException $e) {
-    if ($e->rpc === 'MESSAGE_DELETE_FORBIDDEN') {	
-}
-}
+} catch (Throwable $e) {}
 
  if (file_exists(__DIR__."/data/$userid/txt.txt")) {
 $filexmsgidtxt = Amp\File\read(__DIR__."/data/$userid/txt.txt");  
@@ -4771,13 +6022,14 @@ messages: [['message' => "$filexmsgidtxt", 'entities' => $filexmsgident, 'reply_
 
 }
 
-
+} catch (Throwable $e) {}
 }
 
 private int $lastLog = 0;
     #[Handler]
     public function handleBroadcastProgress(Progress $progress): void
     {
+		try {
                 if (time() - $this->lastLog > 5 || $progress->status === Status::GATHERING_PEERS) {
             $this->lastLog = time();
 
@@ -4802,17 +6054,8 @@ $bot_API_markup = ['inline_keyboard' =>
 			try {
 $this->messages->editMessage(peer: $filexmsgid1, id: $filexmsgid2, message: "📯 שולח את הודעת השידור..
 $progressStr", reply_markup: $bot_API_markup);
-}catch (\danog\MadelineProto\Exception $e) {
-$estring = (string) $e;
-if(preg_match("/MESSAGE_NOT_MODIFIED/",$estring)){
-}else{
-}
+} catch (Throwable $e) {}
 
-} catch (\danog\MadelineProto\RPCErrorException $e) {
-    if ($e->rpc === 'MESSAGE_NOT_MODIFIED') {	
-}else{
-}
-}
 
 
 
@@ -4859,19 +6102,10 @@ $this->messages->editMessage(peer: $filexmsgid1, id: $filexmsgid2, message: "�
 ⏳ ממתינים לשליחה: $pendingCount
 ❌ נכשל בעת השליחה: $sucessCount2", reply_markup: $bot_API_markup);
 
-}catch (\danog\MadelineProto\Exception $e) {
-$estring = (string) $e;
-if(preg_match("/MESSAGE_NOT_MODIFIED/",$estring)){
-}else{
-}
+} catch (Throwable $e) {}
 
-} catch (\danog\MadelineProto\RPCErrorException $e) {
-    if ($e->rpc === 'MESSAGE_NOT_MODIFIED') {	
-}else{
-}
-}
 
-Amp\File\write(getcwd()."/LastBrodDATA", "פילטר מנויים: $broadcast_send
+Amp\File\write(__DIR__."/LastBrodDATA", "פילטר מנויים: $broadcast_send
 ✅ ההודעה נשלחה ל: $sucessCount
 ⏳ ממתינים לשליחה: $pendingCount
 ❌ נכשל בעת השליחה: $sucessCount2");
@@ -4902,28 +6136,34 @@ unlink(__DIR__."/data/$filexmsgid1/media.txt");
 
 
         }
+} catch (Throwable $e) {}
         }
 
 #[FilterButtonQueryData('בקרוב')]
 public function comingsoon(callbackQuery $query)
 {  
-$userid = $query->userId;  
+try{
 $query->answer($message = "בקרוב מאוד זה יפעל 💡", $alert = true, $url = null, $cacheTime = 0);
+} catch (Throwable $e) {}
 }
     
 
 }
 
-function RunShabbat(): void {
 	try {
-$API_ID = parse_ini_file(__DIR__."/".'.env')['API_ID'];
-$API_HASH = parse_ini_file(__DIR__."/".'.env')['API_HASH'];
-$BOT_TOKEN = parse_ini_file(__DIR__."/".'.env')['BOT_TOKEN'];
+$env = parse_ini_file(__DIR__ . '/.env');
+
+if (!isset($env['API_ID'], $env['API_HASH'], $env['BOT_TOKEN'])) {
+    die("Missing environment variables in .env\n");
+}
+
+$apiId   = $env['API_ID'];
+$apiHash = $env['API_HASH'];
+$botToken = $env['BOT_TOKEN'];
+
 $settings = new Settings;
-$settings->setAppInfo((new \danog\MadelineProto\Settings\AppInfo)->setApiId((int)$API_ID)->setApiHash($API_HASH));
-Shabbat::startAndLoopBot(__DIR__.'/bot.madeline', $BOT_TOKEN, $settings);
+$settings->setAppInfo((new \danog\MadelineProto\Settings\AppInfo)->setApiId((int)$apiId)->setApiHash($apiHash));
+Shabbat::startAndLoopBot(__DIR__.'/bot.madeline', $botToken, $settings);
 } catch (Throwable $e) {
 echo "\n" . $e->getMessage() . "\n";
 }
-}
-RunShabbat();
