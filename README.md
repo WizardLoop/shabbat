@@ -17,7 +17,6 @@
 - 🕯 **Automatic Shabbat Mode:** Restricts group permissions at Shabbat entrance, restores at exit
 - 🔔 **Customizable Messages:** Set your own "Shabbat" and "Motzei Shabbat" messages
 - 👑 **Admin Panel:** Only admins can change settings or override
-- 📦 **Zero dependencies:** Just MadelineProto & EnvLoader
 
 ---
 
@@ -30,3 +29,5 @@ composer install
 cp .env.example .env
 # Fill your API credentials and settings in .env
 php bot.php
+
+# new: added support for multiple admins bot - eg: ADMIN=@user1, @user2 [username/ID]
