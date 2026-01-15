@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php 
+
+declare(strict_types=1);
 
 /**
  * Copyright WizardLoop (C)
@@ -40,6 +42,8 @@ use Amp\File;
 use Amp\Http\Client\HttpClientBuilder;
 use Amp\Http\Client\Request;
 
+use BroadcastTool\BroadcastManager;
+
 class Shabbat extends SimpleEventHandler
 {
 
@@ -68,7 +72,6 @@ private function getZmanimForCities(): string {
         $holidays      = [];
         $date          = '';
         $parashaText   = '';
-        $roshChodeshText = '';
         $mevarchimText  = '';
 		$mevarchimMemo  = '';
 
@@ -119,14 +122,8 @@ private function getZmanimForCities(): string {
                         }
                         break;
 
-                    case 'roshchodesh':
-                        if ($location === 'ירושלים' && empty($roshChodeshText)) {
-                            $roshChodeshText = $item['hebrew'];
-                        }
-                    break;
-
                     case 'mevarchim':
-                        if ($location === 'ירושלים' && empty($mevarchimText)) {
+                        if ($location === 'ירושלים') {
                             $mevarchimText = $item['hebrew'];
                             $mevarchimMemo = $item['memo'] ?? '';
                         }
@@ -151,10 +148,6 @@ private function getZmanimForCities(): string {
         if ($mevarchimText) {
             $memo = $mevarchimMemo ? " ($mevarchimMemo)" : '';
             $zmanim .= "🌒 <u>מברכים:</u> $mevarchimText$memo\n";
-        }
-
-        if ($roshChodeshText) {
-            $zmanim .= "🌙 <u>ראש חודש:</u> $roshChodeshText\n";
         }
 
         $zmanim .= "\n🕯 <u>כניסת שבת:</u>\n";
@@ -3622,7 +3615,7 @@ $username = "null";
 
 $bot_API_markup[] = [['text'=>"סטטיסטיקות מנויים 📊",'callback_data'=>"סטטיסטיקות"]];
 $bot_API_markup[] = [['text'=>"הצג מנויים 👁",'callback_data'=>"רשימתמשתמשים"]];
-$bot_API_markup[] = [['text'=>"שידור למנויים 📮",'callback_data'=>"שידורלמשתמשים"]];
+$bot_API_markup[] = [['text'=>"שידור למנויים 📮",'callback_data'=>"Broadcast"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
 $this->messages->sendMessage(peer: $message->senderId, message: "<b>ברוך הבא מנהל! 👋</b>", reply_markup: $bot_API_markup, parse_mode: 'HTML');
@@ -3647,7 +3640,7 @@ if (in_array((string)$userid, array_map('strval', $ADMIN), true)) {
 	
 $bot_API_markup[] = [['text'=>"סטטיסטיקות מנויים 📊",'callback_data'=>"סטטיסטיקות"]];
 $bot_API_markup[] = [['text'=>"הצג מנויים 👁",'callback_data'=>"רשימתמשתמשים"]];
-$bot_API_markup[] = [['text'=>"שידור למנויים 📮",'callback_data'=>"שידורלמשתמשים"]];
+$bot_API_markup[] = [['text'=>"שידור למנויים 📮",'callback_data'=>"Broadcast"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
 
@@ -3674,7 +3667,7 @@ $this->messages->deleteMessages(revoke: true, id: [$msgid]);
 
 $bot_API_markup[] = [['text'=>"סטטיסטיקות מנויים 📊",'callback_data'=>"סטטיסטיקות"]];
 $bot_API_markup[] = [['text'=>"הצג מנויים 👁",'callback_data'=>"רשימתמשתמשים"]];
-$bot_API_markup[] = [['text'=>"שידור למנויים 📮",'callback_data'=>"שידורלמשתמשים"]];
+$bot_API_markup[] = [['text'=>"שידור למנויים 📮",'callback_data'=>"Broadcast"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
 
@@ -3699,59 +3692,6 @@ unlink(__DIR__."/data/$userid/media.txt");
 
 }
 } catch (Throwable $e) {}
-}
-
-#[FilterButtonQueryData('סטטיסטיקות')]
-public function StatsUsers(callbackQuery $query) {
-    try {
-        $bot_API_markup = [
-            'inline_keyboard' => [
-                [['text' => "🔙 חזרה 🔙", 'callback_data' => "חזרהמנהל"]]
-            ]
-        ];
-
-        $query->editText("⌛️", null, ParseMode::HTML);
-
-$dialogs = $this->getDialogIds();
-
-        $numChannels = $numSupergroups = $numChats = $numBots = 0;
-        $numUsers = 0;
-
-        foreach ($dialogs as $id) {
-            try {
-                $info = $this->getInfo($id);
-
-                switch ($info['type'] ?? 'user') {
-                    case 'channel':    $numChannels++; break;
-                    case 'supergroup': $numSupergroups++; break;
-                    case 'chat':       $numChats++; break;
-                    case 'bot':        $numBots++; break;
-                    default:           $numUsers++; break;
-                }
-            } catch (Throwable $e) {
-				$numUsers++;
-			    continue;
-            }
-        }
-
-$allIds = $numUsers + $numChannels + $numSupergroups + $numChats + $numBots;
-
-
-        $fmt = fn($n) => number_format($n, 0, '.', ',');
-
-        $message = "<b>🧮 סטטיסטיקות מנויים 📊</b>
-- - - - - - - - - -
-📢 כמות ערוצים: {$fmt($numChannels)}
-💬 כמות קבוצות: {$fmt($numChats)}
-👥 כמות קבוצות-על: {$fmt($numSupergroups)}
-🤖 כמות בוטים: {$fmt($numBots)}
-👤 כמות משתמשים: {$fmt($numUsers)}
-- - - - - - - - - -
-<b>🎯 סך הכל מנויים: {$fmt($allIds)}</b>";
-
-        $query->editText($message, $bot_API_markup, ParseMode::HTML);
-
-    } catch (Throwable $e) { }
 }
 
 #[FilterButtonQueryData('רשימתמשתמשים')] 
@@ -4227,8 +4167,73 @@ unlink(__DIR__."/data/$userid/grs1.txt");
 } catch (Throwable $e) {}
 }
 
-#[FilterButtonQueryData('שידורלמשתמשים')] 
-public function addsoheshidur1(callbackQuery $query) {
+#[FilterButtonQueryData('סטטיסטיקות')]
+public function StatsUsers(callbackQuery $query)
+{
+    try {
+        $bot_API_markup = [
+            'inline_keyboard' => [
+                [['text' => "🔙 חזרה 🔙", 'callback_data' => "חזרהמנהל"]]
+            ]
+        ];
+
+        $query->editText("⌛️", null, ParseMode::HTML);
+
+$dialogs = $this->getDialogIds();
+
+        $numChannels = $numSupergroups = $numChats = $numBots = 0;
+        $numUsers = 0;
+
+        foreach ($dialogs as $id) {
+            try {
+                $info = $this->getInfo($id);
+
+                switch ($info['type'] ?? 'user') {
+                    case 'channel':    $numChannels++; break;
+                    case 'supergroup': $numSupergroups++; break;
+                    case 'chat':       $numChats++; break;
+                    case 'bot':        $numBots++; break;
+                    case 'user':        $numUsers++; break;
+                  //  default:           $numUsers++; break;
+                }
+            } catch (Throwable $e) {
+				//$numUsers++;
+			    continue;
+            }
+        }
+
+$allIds = $numUsers + $numChannels + $numSupergroups + $numChats + $numBots;
+
+
+        $fmt = fn($n) => number_format($n, 0, '.', ',');
+
+        $message = "<b>🧮 סטטיסטיקות מנויים 📊</b>
+- - - - - - - - - -
+📢 כמות ערוצים: {$fmt($numChannels)}
+💬 כמות קבוצות: {$fmt($numChats)}
+👥 כמות קבוצות-על: {$fmt($numSupergroups)}
+🤖 כמות בוטים: {$fmt($numBots)}
+👤 כמות משתמשים: {$fmt($numUsers)}
+- - - - - - - - - -
+<b>🎯 סך הכל מנויים: {$fmt($allIds)}</b>";
+
+        $query->editText($message, $bot_API_markup, ParseMode::HTML);
+
+    } catch (Throwable $e) { }
+}
+
+#[FilterButtonQueryData('closeMsg')]
+public function closecommandbrod(callbackQuery $query) {
+	try {
+$this->messages->deleteMessages(revoke: true, id: [$query->messageId]); 
+} catch (\Throwable $e) {
+$query->answer($message = "אני לא יכול לסגור את ההודעה, סגור אותה בעצמך..", $alert = false, $url = null, $cacheTime = 0);		
+}
+}
+
+#[FilterButtonQueryData('Broadcast')] 
+public function broadcastCommand(callbackQuery $query)
+{
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -4238,17 +4243,93 @@ $first_name = "null";
 }
 
 $bot_API_markup[] = [['text'=>"נתוני הודעה אחרונה 📊",'callback_data'=>"LastBrodDATA"]];
-$bot_API_markup[] = [['text'=>"מחק הודעה אחרונה 🗑",'callback_data'=>"בקרוב"]];
-$bot_API_markup[] = [['text'=>"שלח הודעה למנויים 📮",'callback_data'=>"שידורלמשתמשים2"]];
-$bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהמנהל2"]];
+$bot_API_markup[] = [['text'=>"שידור למנויים 📮",'callback_data'=>"setBroadcast"]];
+$bot_API_markup[] = [['text'=>"מחק הודעה אחרונה 🗑",'callback_data'=>"deleteLastBroadcast"]];
+$bot_API_markup[] = [['text'=>"מחק את כל ההודעות 🗑",'callback_data'=>"deleteAllBroadcast"]];
+$bot_API_markup[] = [['text'=>"בטל נעיצת הודעות ⛓️‍💥",'callback_data'=>"cancelPinned"]];
+$bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהמנהל"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
 $query->editText($message = "<b>תפריט שידור, אנא בחר:</b>", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
 } catch (Throwable $e) {}
 }
 
-#[FilterButtonQueryData('שידורלמשתמשים2')] 
-public function addsoheshidur12(callbackQuery $query) {
+#[FilterButtonQueryData('deleteLastBroadcast')]
+public function deleteLastBroadcast(callbackQuery $query)
+{
+try {
+$API = new \danog\MadelineProto\API(__DIR__.'/bot.madeline');
+$manager = new BroadcastManager($API);
+BroadcastManager::setDataDir(__DIR__ . '/data');
+if (!$manager->hasLastBroadcast()) {
+$query->answer($message = "אין הודעת שידור למחיקה!", $alert = true, $url = null, $cacheTime = 0);
+	}else{
+$query->answer($message = "אנא המתן...", $alert = false, $url = null, $cacheTime = 0);
+$allUsers = $this->getDialogIds(); 
+$manager->deleteLastBroadcastForAll($allUsers, $query->userId, 20);
+    }
+} catch (Throwable $e) {}
+}
+
+#[FilterButtonQueryData('deleteAllBroadcast')]
+public function deleteAllBroadcast(callbackQuery $query)
+{
+try {
+$API = new \danog\MadelineProto\API(__DIR__.'/bot.madeline');
+$manager = new BroadcastManager($API);
+BroadcastManager::setDataDir(__DIR__ . '/data');
+
+if (!$manager->hasAllBroadcast()) {
+$query->answer($message = "אין הודעות שידור למחיקה!", $alert = true, $url = null, $cacheTime = 0);
+	}else{
+$query->answer($message = "אנא המתן...", $alert = false, $url = null, $cacheTime = 0);
+$allUsers = $this->getDialogIds(); 
+$manager->deleteAllBroadcastsForAll($allUsers, $query->userId, 20);
+    }
+} catch (Throwable $e) {}
+}
+
+#[FilterButtonQueryData('cancelPinned')]
+public function cancelPinned(callbackQuery $query)
+{
+try {
+$api = new \danog\MadelineProto\API(__DIR__.'/bot.madeline');
+$manager = new BroadcastManager($api);
+BroadcastManager::setDataDir(__DIR__ . '/data');
+$query->answer($message = "אנא המתן...", $alert = false, $url = null, $cacheTime = 0);
+$allUsers = $this->getDialogIds(); 
+$subfilter = 'users';
+$filter_sub = $manager->filterPeers($allUsers, $subfilter);
+$subs = $filter_sub['targets'];
+$manager->unpinAllMessagesForAll($subs, $query->userId, 20);
+} catch (Throwable $e) {}
+}
+
+#[FilterButtonQueryData('LastBrodDATA')]
+public function LastBrodDATA(callbackQuery $query)
+{  
+try{
+
+$API = new \danog\MadelineProto\API(__DIR__.'/bot.madeline');
+$manager = new BroadcastManager($API);
+BroadcastManager::setDataDir(__DIR__ . '/data');
+if ($manager->lastBroadcastData()) {
+$filex = $manager->lastBroadcastData();
+$bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"Broadcast"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+$query->editText($message = $filex, $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+
+	}else{
+$filex = "📊 אין עדיין נתונים."; 
+$query->answer($message = $filex, $alert = true, $url = null, $cacheTime = 0);	
+	}
+} catch (Throwable $e) {}
+}
+
+#[FilterButtonQueryData('setBroadcast')] 
+public function setBroadcast(callbackQuery $query)
+{
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -4257,31 +4338,25 @@ if($first_name == null){
 $first_name = "null";
 }
 
-$bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"חזרהמנהל2"]];
+$bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"חזרהלפאנל"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
 $query->editText($message = "<b>נא שלח את ההודעה שתרצה לשלוח:</b>", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
 
+$userDir = __DIR__ . "/data/$userid";
+        if (!is_dir($userDir)) {
+            mkdir($userDir, 0777, true);
+        }
+		
 Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'broadcast1');
 $msgqutryid = $query->messageId;
 Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
 } catch (Throwable $e) {}
 }
 
-#[FilterButtonQueryData('LastBrodDATA')]
-public function LastBrodDATA(callbackQuery $query) {  
-try{
-    if (file_exists(__DIR__."/LastBrodDATA")) {
-$filex = Amp\File\read(__DIR__."/LastBrodDATA"); 
-	}else{
-$filex = "📊 אין עדיין נתונים."; 	
-	}
-$query->answer($message = $filex, $alert = true, $url = null, $cacheTime = 0);
-} catch (Throwable $e) {}
-}
-
-#[Handler]
-public function handlebroadcast1(Incoming & PrivateMessage & FromAdmin $message): void {
+    #[Handler]
+    public function handlebroadcast1(Incoming & PrivateMessage & FromAdmin $message): void
+    {
 		try {
 $messagetext = $message->message;
 $messageid = $message->id;
@@ -4303,7 +4378,11 @@ if($username == null){
 $username = "null";
 }
 
-
+$userDir = __DIR__ . "/data/$senderid";
+        if (!is_dir($userDir)) {
+            mkdir($userDir, 0777, true);
+        }
+		
 
     if (file_exists(__DIR__."/data/$senderid/grs1.txt")) {
 $check = Amp\File\read(__DIR__."/data/$senderid/grs1.txt");    
@@ -4329,7 +4408,7 @@ if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
 $bot_API_markup = ['inline_keyboard' => 
     [
         [
-['text'=>"❌ ביטול ❌",'callback_data'=>"חזרהמנהל2"]
+['text'=>"❌ ביטול ❌",'callback_data'=>"פאנל"]
         ]
     ]
 ];
@@ -4404,9 +4483,8 @@ if (file_exists(__DIR__."/data/broadcastsend.txt")) {
 $broadcast_send = Amp\File\read(__DIR__."/data/broadcastsend.txt");
 }
 if (!file_exists(__DIR__."/data/broadcastsend.txt")) {
-$broadcast_send = "כולם";
+$broadcast_send = "משתמשים";
 }
-
 
 if (file_exists(__DIR__."/data/pinmessage.txt")) {
 $bot_API_markup[] = [['text'=>"📌 נעץ הודעה בצ'אט: ✔️",'callback_data'=>"נעץהודעהללא"]];
@@ -4422,7 +4500,7 @@ $bot_API_markup[] = [['text'=>"🔌 הוסף כפתורי קישור ➕",'callb
 
 $bot_API_markup[] = [['text'=>"✅ שדר הודעה ✅",'callback_data'=>"שדרהודעה"]];
 
-$bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"חזרהמנהל2"]];
+$bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"חזרהלפאנל"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
  if (file_exists(__DIR__."/data/$senderid/txt.txt")) {
@@ -4471,7 +4549,8 @@ $sentMessage = $this->messages->sendMessage(peer: $message->senderId, message: "
 	}
 
 #[FilterButtonQueryData('חזרהתפריטשידור')] 
-public function hazarashidur(callbackQuery $query) {
+public function hazarashidur(callbackQuery $query)
+{
 	try {
 $userid = $query->userId; 
 $msgqutryid = $query->messageId;   
@@ -4485,7 +4564,7 @@ if (file_exists(__DIR__."/data/broadcastsend.txt")) {
 $broadcast_send = Amp\File\read(__DIR__."/data/broadcastsend.txt");
 }
 if (!file_exists(__DIR__."/data/broadcastsend.txt")) {
-$broadcast_send = "כולם";
+$broadcast_send = "משתמשים";
 }
 
 
@@ -4502,7 +4581,7 @@ $bot_API_markup[] = [['text'=>"🔌 הוסף כפתורי קישור ➕",'callb
 
 $bot_API_markup[] = [['text'=>"✅ שדר הודעה ✅",'callback_data'=>"שדרהודעה"]];
 
-$bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"חזרהמנהל2"]];
+$bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"פאנל"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
  if (file_exists(__DIR__."/data/$userid/txt.txt")) {
@@ -4525,7 +4604,8 @@ $query->editText($message = "תפריט שידור אנא בחר:", $replyMarkup
 }
 
 #[FilterButtonQueryData('נעץהודעה')] 
-public function addsoheshidur1forneitza1(callbackQuery $query) {
+public function addsoheshidur1forneitza1(callbackQuery $query)
+{
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -4544,7 +4624,8 @@ $query->editText($message = "כעת ההודעה תנעץ בצ'אט ✔️", $re
 }
 
 #[FilterButtonQueryData('נעץהודעהללא')] 
-public function addsoheshidur1forneitza2(callbackQuery $query) {
+public function addsoheshidur1forneitza2(callbackQuery $query)
+{
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -4565,7 +4646,8 @@ $query->editText($message = "כעת ההודעה לא תנעץ בצ'אט ✖️"
 }
 
 #[FilterButtonQueryData('מצבתפוצה')] 
-public function broadsetsenders(callbackQuery $query) {
+public function broadsetsenders(callbackQuery $query)
+{
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -4587,7 +4669,8 @@ $query->editText($message = "<b>אנא בחר מצב תפוצה 🔘</b>
 }
 
 #[FilterButtonQueryData('מצבתפוצה1')] 
-public function broadsetsenders1(callbackQuery $query) {
+public function broadsetsenders1(callbackQuery $query)
+{
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -4606,7 +4689,8 @@ $query->editText($message = "<b>התפוצה שנבחרה:</b> רק למשתמש
 }
 
 #[FilterButtonQueryData('מצבתפוצה2')] 
-public function broadsetsenders2(callbackQuery $query) {
+public function broadsetsenders2(callbackQuery $query)
+{
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -4625,7 +4709,8 @@ $query->editText($message = "<b>התפוצה שנבחרה:</b> רק לערוצי
 }
 
 #[FilterButtonQueryData('מצבתפוצה3')] 
-public function broadsetsenders3(callbackQuery $query) {
+public function broadsetsenders3(callbackQuery $query)
+{
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -4644,7 +4729,8 @@ $query->editText($message = "<b>התפוצה שנבחרה:</b> רק לקבוצו
 }
 
 #[FilterButtonQueryData('מצבתפוצה4')] 
-public function broadsetsenders4(callbackQuery $query) {
+public function broadsetsenders4(callbackQuery $query)
+{
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -4663,7 +4749,8 @@ $query->editText($message = "<b>התפוצה שנבחרה:</b> כולם", $reply
 }
 
 #[FilterButtonQueryData('הוספתכפתורים')] 
-public function hosafkaf(callbackQuery $query) {
+public function hosafkaf(callbackQuery $query)
+{
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -4672,11 +4759,30 @@ if($first_name == null){
 $first_name = "null";
 }
 
+$buttons = __DIR__."/data/menubuttons1.txt";
+
 $bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"חזרהתפריטשידור"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
-$query->editText($message = "<b>שלח את הכפתורים שתרצה להוסיף בפורמט הבא:</b>
-<pre>Button text 1 - http://www.example.com/ \nButton text 2 - http://www.example2.com/</pre>", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+$query->editText($message = "<b>שלח את הכפתורים שתרצה להגדיר בפורמט הבא:</b>
+
+• <u>רשימת כפתורים(כפתור בודד בשורה):</u>
+<pre>Button text 1 - http://www.example.com/
+Button text 2 - http://www.example2.com/</pre>
+
+• <u>מספר כפתורים בשורה אחת:</u>
+<pre>Button text 1 - http://www.example.com/ &amp;&amp; Button text 2 - http://www.example2.com/</pre>
+
+• <u>הוסף כפתור מסוג תפריט:</u>
+<pre>שם כפתור - data: שם תפריט</pre>
+
+<u>שמות תפריטים data:</u>
+<pre>
+closeMsg (סגור הודעה)
+</pre>
+
+<u>דוגמה:</u>
+<pre>סגור - data:closeMsg</pre>", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
 
 Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'addBUTTONS');
 $msgqutryid = $query->messageId;
@@ -4685,7 +4791,8 @@ Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
 }
 
 #[Handler]
-public function handlebuttons(Incoming & PrivateMessage & FromAdmin $message): void {
+public function handlebuttons(Incoming & PrivateMessage & FromAdmin $message): void
+    {
 		try {
 $messagetext = $message->message;
 $entities = $message->entities;
@@ -4706,47 +4813,76 @@ if($username == null){
 $username = "null";
 }
 
-
-
     if (file_exists(__DIR__."/data/$senderid/grs1.txt")) {
 $edit = Amp\File\read(__DIR__."/data/$senderid/grs1.txt");    
 if($edit == "addBUTTONS"){
  
 if(!preg_match('/^\/([Ss]tart)/',$messagetext)){   
 
-if(!function_exists("isTextInCorrectFormat")){
-function isTextInCorrectFormat($messagetext) {
-    // Split the text into lines
-    $lines = explode("\n", $messagetext);
-    
-    // Define the regex pattern for matching each line
-    $pattern = "/^[^:]* - (https?:\/\/[^\s]+)$/i";
-    
-    foreach ($lines as $line) {
-        // Trim leading and trailing whitespace
-        $line = trim($line);
-        
-        // Check if the line matches the pattern
-        if (!preg_match($pattern, $line)) {
-            return false; // Found a line that doesn't match
+if (!function_exists("parseButtons")) {
+    function parseButtons(string $text): array|false
+    {
+        $lines = explode("\n", trim($text));
+        $keyboard = [];
+
+        foreach ($lines as $lineNumber => $line) {
+            $line = trim($line);
+            if ($line === '') continue;
+
+            $row = [];
+            $buttons = explode('&&', $line);
+
+            foreach ($buttons as $btnNumber => $button) {
+                $button = trim($button);
+
+                // פורמט בסיסי: טקסט - ערך
+                if (!preg_match('/^(.+?)\s*-\s*(.+)$/u', $button, $m)) {
+                    return false;
+                }
+
+                $text  = trim($m[1]);
+                $value = trim($m[2]);
+
+                // URL
+                if (preg_match('#^https?://#i', $value)) {
+
+                    $row[] = [
+                        'text' => $text,
+                        'url'  => $value
+                    ];
+
+                // CALLBACK DATA
+                } elseif (preg_match('#^data:\s*(.+)$#u', $value, $dm)) {
+
+                    $callback = trim($dm[1]); // 🔹 מנקה רווחים לפני ואחרי
+
+                    // 🔒 הגבלת 64 bytes (לא תווים!)
+                    if (strlen($callback) > 64) {
+                        return false;
+                    }
+
+                    $row[] = [
+                        'text' => $text,
+                        'callback_data' => $callback
+                    ];
+
+                } else {
+                    // לא URL ולא data:
+                    return false;
+                }
+            }
+
+            $keyboard[] = $row;
         }
+
+        return $keyboard;
     }
-    
-    return true; // All lines match the pattern
-}
 }
 
+$parsedButtons = parseButtons($messagetext);
 
-if (isTextInCorrectFormat($messagetext)) {
+if ($parsedButtons !== false) {
 unlink(__DIR__."/data/$senderid/grs1.txt");
-
-    if (!file_exists(__DIR__."/data/BUTTONS.txt")) {	
-Amp\File\write(__DIR__."/data/BUTTONS.txt", "$messagetext");
-	}
-    if (file_exists(__DIR__."/data/BUTTONS.txt")) {	
-unlink(__DIR__."/data/BUTTONS.txt");
-Amp\File\write(__DIR__."/data/BUTTONS.txt", "$messagetext");
-	}
 
 			try {
 $this->messages->deleteMessages(revoke: true, id: [$messageid]); 
@@ -4762,9 +4898,12 @@ if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
 
  if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
 $filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
+$bot_API_markup = [];
 $bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהתפריטשידור"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 $Updates = $this->messages->editMessage(peer: $senderid, id: $filexmsgid, message: "<b>הכפתורים נשמרו בהצלחה! ✔️</b>", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+Amp\File\write(__DIR__."/data/BUTTONS.txt", json_encode($parsedButtons, JSON_UNESCAPED_UNICODE));
 
 }
 
@@ -4784,6 +4923,7 @@ if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
 
  if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
 $filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
+$bot_API_markup = [];
 $bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"חזרהתפריטשידור"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
@@ -4824,75 +4964,68 @@ if(preg_match("/MESSAGE_NOT_MODIFIED/",$estring)){
 }
 
 } catch (Throwable $e) {}
-
 }
 
 #[FilterButtonQueryData('צפהבכפתורים')] 
-public function buttonsmanageview(callbackQuery $query) {
+public function buttonsmanageview(callbackQuery $query)
+{
 	try {
-$userid = $query->userId;   
-$msgid = $query->messageId;   
+$userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
 $first_name = $User_Full['User']['first_name']?? null;
 if($first_name == null){
 $first_name = "null";
 }
 
-    if (file_exists(__DIR__."/data/BUTTONS.txt")) {
-$BUTTONS = Amp\File\read(__DIR__."/data/BUTTONS.txt");  
+$buttons = __DIR__."/data/BUTTONS.txt";
 
-// Given input string
-$input = $BUTTONS;
-$peerList2 = [];
+    if (file_exists($buttons)) {
 
+if (!function_exists('loadButtons')) {
+    function loadButtons(string $file): array|null
+    {
+        if (!file_exists($file)) {
+            return null;
+        }
 
-$pattern = '/(.+?)\s*-\s*(http[^\s]+)/i';
+        $json = Amp\File\read($file);
+        $buttons = json_decode($json, true);
 
-// Use preg_match_all to find all matches in the input string
-preg_match_all($pattern, $input, $matches, PREG_SET_ORDER);
+        if (!is_array($buttons)) {
+            return null;
+        }
 
-$output = [];
-
-foreach ($matches as $index => $match) {
-    // $match[1] is the button text and $match[2] is the URL
-    $buttonText = trim($match[1]);
-    $buttonUrl = trim($match[2]);
-
-    // Format output
-  //  $output["Button" . ($index + 1) . "txt"] = $buttonText;
-   // $output["Button" . ($index + 1) . "url"] = $buttonUrl;
-	$output[] = "$buttonText - $buttonUrl";
-$bot_API_markup[] = [['text'=>"$buttonText",'url'=>"$buttonUrl"]];
+        return $buttons;
+    }
 }
 
-// Print the output in the desired format
-foreach ($output as $key) {
-$peerList2[]="$key";
-}
+$buttonsData = loadButtons($buttons);
 
-$newLangsComma = implode("\n", $peerList2);
-
-$bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהתפריטשידור"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-
-if($newLangsComma != null){
-$Updates = $this->messages->editMessage(peer: $userid, id: $msgid, message: "$newLangsComma", reply_markup: $bot_API_markup);
-
-	}else{
+if ($buttonsData === null || empty($buttonsData)) {
 $BUTTONS = "לא הוגדרו עדיין כפתורים..";  
-$query->answer($message = "$BUTTONS", $alert = true, $url = null, $cacheTime = 0);	
-	}
+$query->answer($message = "$BUTTONS", $alert = true, $url = null, $cacheTime = 0);
+	}else{
+
+$buttonsData[] = [['text' => 'חזרה', 'callback_data' => 'חזרהתפריטשידור']];
+$bot_API_markup = ['inline_keyboard' => $buttonsData];
+
+$query->editText($message = "הכפתורים שלך:", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+}
+
+
 	}
 	
-    if (!file_exists(__DIR__."/data/BUTTONS.txt")) {	
+    if (!file_exists($buttons)) {
 $BUTTONS = "לא הוגדרו עדיין כפתורים..";  
 $query->answer($message = "$BUTTONS", $alert = true, $url = null, $cacheTime = 10);
 	}
+	
 } catch (Throwable $e) {}
 }
 
 #[FilterButtonQueryData('שדרהודעה')] 
-public function buttonsmanageview2(callbackQuery $query) {
+public function buttonsmanageview2(callbackQuery $query)
+{
 	try{
 $userid = $query->userId;  
 $msgqutryid = $query->messageId;   
@@ -4902,33 +5035,41 @@ if($first_name == null){
 $first_name = "null";
 }
 
+$buttons = __DIR__."/data/BUTTONS.txt";
 
-$sentMessage = $this->messages->sendMessage(peer: $userid, message: "📯 שולח את הודעת השידור..");
-$sentMessage2 = $this->extractMessageId($sentMessage);
-Amp\File\write(__DIR__."/data/messagetoeditbroadcast1.txt", "$sentMessage2");
-Amp\File\write(__DIR__."/data/messagetoeditbroadcast2.txt", "$userid");
+    if (file_exists($buttons)) {
 
+if (!function_exists('loadButtons')) {
+    function loadButtons(string $file): array|null
+    {
+        if (!file_exists($file)) {
+            return null;
+        }
 
-    if (file_exists(__DIR__."/data/BUTTONS.txt")) {
-$BUTTONS = Amp\File\read(__DIR__."/data/BUTTONS.txt");  
-$input = $BUTTONS;
+        $json = Amp\File\read($file);
+        $buttons = json_decode($json, true);
 
-$pattern = '/(.+?)\s*-\s*(http[^\s]+)/i';
-preg_match_all($pattern, $input, $matches, PREG_SET_ORDER);
-$output = [];
-foreach ($matches as $index => $match) {
-    $buttonText = trim($match[1]);
-    $buttonUrl = trim($match[2]);
+        if (!is_array($buttons)) {
+            return null;
+        }
 
-	$output[] = "$buttonText - $buttonUrl";
-$bot_API_markup[] = [['text'=>"$buttonText",'url'=>"$buttonUrl"]];
+        return $buttons;
+    }
 }
 
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$buttonsData = loadButtons($buttons);
+
+if ($buttonsData === null || empty($buttonsData)) {
+$bot_API_markup = null;  
+}else{
+$bot_API_markup = ['inline_keyboard' => $buttonsData];
 }
-if (!file_exists(__DIR__."/data/BUTTONS.txt")) {
-$bot_API_markup = null;
-}
+
+
+	}else{
+$bot_API_markup = null;  
+	}
+	
 
 			try {
 $this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
@@ -4950,709 +5091,68 @@ $filexmsgidmedia = Amp\File\read(__DIR__."/data/$userid/media.txt");
 $filexmsgidmedia = null;  
   }	 
 
+        try {
+$dialogs = $this->getDialogIds();
+        } catch (Throwable $e) { $dialogs = []; }
 
-    if (file_exists(__DIR__."/data/broadcastsend.txt")) {
-$check2 = Amp\File\read(__DIR__."/data/broadcastsend.txt");    
-    if (file_exists(__DIR__."/data/pinmessage.txt")) {
-if($check2 == "משתמשים"){
-
-
-if($filexmsgidmedia != null){
-	
-if($filexmsgidtxt != null){
-
-$this->broadcastMessages(
-messages: [['message' => "$filexmsgidtxt", 'entities' => $filexmsgident, 'media' => $filexmsgidmedia, 'reply_markup' => $bot_API_markup]],
-            pin: true,
-            filter: new Filter(
-        allowUsers: true,
-        allowBots: true,
-        allowGroups: false,
-        allowChannels: false,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-
-
-}else{
-$this->broadcastMessages(
-messages: [['media' => $filexmsgidmedia, 'reply_markup' => $bot_API_markup]],
-            pin: true,
-            filter: new Filter(
-        allowUsers: true,
-        allowBots: true,
-        allowGroups: false,
-        allowChannels: false,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-}
-
-}else{
-
-if($filexmsgidtxt != null){
-
-$this->broadcastMessages(
-messages: [['message' => "$filexmsgidtxt", 'entities' => $filexmsgident, 'reply_markup' => $bot_API_markup]],
-            pin: true,
-            filter: new Filter(
-        allowUsers: true,
-        allowBots: true,
-        allowGroups: false,
-        allowChannels: false,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-
-}
-}
-
-}
-if($check2 == "ערוצים"){
-
-if($filexmsgidmedia != null){
-	
-if($filexmsgidtxt != null){
-
-$this->broadcastMessages(
-messages: [['message' => "$filexmsgidtxt", 'entities' => $filexmsgident, 'media' => $filexmsgidmedia, 'reply_markup' => $bot_API_markup]],
-            pin: true,
-            filter: new Filter(
-        allowUsers: false,
-        allowBots: true,
-        allowGroups: false,
-        allowChannels: true,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-
-
-}else{
-$this->broadcastMessages(
-messages: [['media' => $filexmsgidmedia, 'reply_markup' => $bot_API_markup]],
-            pin: true,
-            filter: new Filter(
-        allowUsers: false,
-        allowBots: true,
-        allowGroups: false,
-        allowChannels: true,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-}
-
-}else{
-
-if($filexmsgidtxt != null){
-
-$this->broadcastMessages(
-messages: [['message' => "$filexmsgidtxt", 'entities' => $filexmsgident, 'reply_markup' => $bot_API_markup]],
-            pin: true,
-            filter: new Filter(
-        allowUsers: false,
-        allowBots: true,
-        allowGroups: false,
-        allowChannels: true,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-
-}
-}
-
-}
-if($check2 == "קבוצות"){
-
-
-if($filexmsgidmedia != null){
-	
-if($filexmsgidtxt != null){
-
-$this->broadcastMessages(
-messages: [['message' => "$filexmsgidtxt", 'entities' => $filexmsgident, 'media' => $filexmsgidmedia, 'reply_markup' => $bot_API_markup]],
-            pin: true,
-            filter: new Filter(
-        allowUsers: false,
-        allowBots: true,
-        allowGroups: true,
-        allowChannels: false,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-
-
-}else{
-$this->broadcastMessages(
-messages: [['media' => $filexmsgidmedia, 'reply_markup' => $bot_API_markup]],
-            pin: true,
-            filter: new Filter(
-        allowUsers: false,
-        allowBots: true,
-        allowGroups: true,
-        allowChannels: false,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-}
-
-}else{
-
-if($filexmsgidtxt != null){
-
-$this->broadcastMessages(
-messages: [['message' => "$filexmsgidtxt", 'entities' => $filexmsgident, 'reply_markup' => $bot_API_markup]],
-            pin: true,
-            filter: new Filter(
-        allowUsers: false,
-        allowBots: true,
-        allowGroups: true,
-        allowChannels: false,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-
-}
-}
-
-}
-if($check2 == "כולם"){
-
-
-if($filexmsgidmedia != null){
-	
-if($filexmsgidtxt != null){
-
-$this->broadcastMessages(
-messages: [['message' => "$filexmsgidtxt", 'entities' => $filexmsgident, 'media' => $filexmsgidmedia, 'reply_markup' => $bot_API_markup]],
-            pin: true,
-            filter: new Filter(
-        allowUsers: true,
-        allowBots: true,
-        allowGroups: true,
-        allowChannels: true,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-
-
-}else{
-$this->broadcastMessages(
-messages: [['media' => $filexmsgidmedia, 'reply_markup' => $bot_API_markup]],
-            pin: true,
-            filter: new Filter(
-        allowUsers: true,
-        allowBots: true,
-        allowGroups: true,
-        allowChannels: true,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-}
-
-}else{
-
-if($filexmsgidtxt != null){
-
-$this->broadcastMessages(
-messages: [['message' => "$filexmsgidtxt", 'entities' => $filexmsgident, 'reply_markup' => $bot_API_markup]],
-            pin: true,
-            filter: new Filter(
-        allowUsers: true,
-        allowBots: true,
-        allowGroups: true,
-        allowChannels: true,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-
-}
-}
-
-}	
-
-}
     if (!file_exists(__DIR__."/data/pinmessage.txt")) {
-if($check2 == "משתמשים"){
-
-
-if($filexmsgidmedia != null){
-	
-if($filexmsgidtxt != null){
-
-$this->broadcastMessages(
-messages: [['message' => "$filexmsgidtxt", 'entities' => $filexmsgident, 'media' => $filexmsgidmedia, 'reply_markup' => $bot_API_markup]],
-            pin: false,
-            filter: new Filter(
-        allowUsers: true,
-        allowBots: true,
-        allowGroups: false,
-        allowChannels: false,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-
-
-}else{
-$this->broadcastMessages(
-messages: [['media' => $filexmsgidmedia, 'reply_markup' => $bot_API_markup]],
-            pin: false,
-            filter: new Filter(
-        allowUsers: true,
-        allowBots: true,
-        allowGroups: false,
-        allowChannels: false,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-}
-
-}else{
-
-if($filexmsgidtxt != null){
-
-$this->broadcastMessages(
-messages: [['message' => "$filexmsgidtxt", 'entities' => $filexmsgident, 'reply_markup' => $bot_API_markup]],
-            pin: false,
-            filter: new Filter(
-        allowUsers: true,
-        allowBots: true,
-        allowGroups: false,
-        allowChannels: false,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-
-}
-}
-
-}
-if($check2 == "ערוצים"){
-
-
-if($filexmsgidmedia != null){
-	
-if($filexmsgidtxt != null){
-
-$this->broadcastMessages(
-messages: [['message' => "$filexmsgidtxt", 'entities' => $filexmsgident, 'media' => $filexmsgidmedia, 'reply_markup' => $bot_API_markup]],
-            pin: false,
-            filter: new Filter(
-        allowUsers: false,
-        allowBots: true,
-        allowGroups: false,
-        allowChannels: true,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-
-
-}else{
-$this->broadcastMessages(
-messages: [['media' => $filexmsgidmedia, 'reply_markup' => $bot_API_markup]],
-            pin: false,
-            filter: new Filter(
-        allowUsers: false,
-        allowBots: true,
-        allowGroups: false,
-        allowChannels: true,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-}
-
-}else{
-
-if($filexmsgidtxt != null){
-
-$this->broadcastMessages(
-messages: [['message' => "$filexmsgidtxt", 'entities' => $filexmsgident, 'reply_markup' => $bot_API_markup]],
-            pin: false,
-            filter: new Filter(
-        allowUsers: false,
-        allowBots: true,
-        allowGroups: false,
-        allowChannels: true,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-
-}
-}
-
-}
-if($check2 == "קבוצות"){
-
-
-if($filexmsgidmedia != null){
-	
-if($filexmsgidtxt != null){
-
-$this->broadcastMessages(
-messages: [['message' => "$filexmsgidtxt", 'entities' => $filexmsgident, 'media' => $filexmsgidmedia, 'reply_markup' => $bot_API_markup]],
-            pin: false,
-            filter: new Filter(
-        allowUsers: false,
-        allowBots: true,
-        allowGroups: true,
-        allowChannels: false,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-
-
-}else{
-$this->broadcastMessages(
-messages: [['media' => $filexmsgidmedia, 'reply_markup' => $bot_API_markup]],
-            pin: false,
-            filter: new Filter(
-        allowUsers: false,
-        allowBots: true,
-        allowGroups: true,
-        allowChannels: false,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-}
-
-}else{
-
-if($filexmsgidtxt != null){
-
-$this->broadcastMessages(
-messages: [['message' => "$filexmsgidtxt", 'entities' => $filexmsgident, 'reply_markup' => $bot_API_markup]],
-            pin: false,
-            filter: new Filter(
-        allowUsers: false,
-        allowBots: true,
-        allowGroups: true,
-        allowChannels: false,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-
-}
-}
-
-}
-if($check2 == "כולם"){
-
-if($filexmsgidmedia != null){
-	
-if($filexmsgidtxt != null){
-
-$this->broadcastMessages(
-messages: [['message' => "$filexmsgidtxt", 'entities' => $filexmsgident, 'media' => $filexmsgidmedia, 'reply_markup' => $bot_API_markup]],
-            pin: false,
-            filter: new Filter(
-        allowUsers: true,
-        allowBots: true,
-        allowGroups: true,
-        allowChannels: true,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-
-
-}else{
-$this->broadcastMessages(
-messages: [['media' => $filexmsgidmedia, 'reply_markup' => $bot_API_markup]],
-            pin: false,
-            filter: new Filter(
-        allowUsers: true,
-        allowBots: true,
-        allowGroups: true,
-        allowChannels: true,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-}
-
-}else{
-
-if($filexmsgidtxt != null){
-
-$this->broadcastMessages(
-messages: [['message' => "$filexmsgidtxt", 'entities' => $filexmsgident, 'reply_markup' => $bot_API_markup]],
-            pin: false,
-            filter: new Filter(
-        allowUsers: true,
-        allowBots: true,
-        allowGroups: true,
-        allowChannels: true,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-
-}
-}
-
-}	
-}
-
-
-
-
-
-}
+$pinmessage = false;
+	}else{
+$pinmessage = true;
+	}
 
     if (!file_exists(__DIR__."/data/broadcastsend.txt")) {
+$subfilter = 'users';
+	}else{
+$check2 = Amp\File\read(__DIR__."/data/broadcastsend.txt");  
 
-    if (file_exists(__DIR__."/data/pinmessage.txt")) {
-
-if($filexmsgidmedia != null){
-	
-if($filexmsgidtxt != null){
-
-$this->broadcastMessages(
-messages: [['message' => "$filexmsgidtxt", 'entities' => $filexmsgident, 'media' => $filexmsgidmedia, 'reply_markup' => $bot_API_markup]],
-            pin: true,
-            filter: new Filter(
-        allowUsers: true,
-        allowBots: true,
-        allowGroups: true,
-        allowChannels: true,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-
-
+if($check2 == "משתמשים"){
+$subfilter = 'users';
+}elseif($check2 == "ערוצים"){
+$subfilter = 'channels';
+}elseif($check2 == "קבוצות"){	
+$subfilter = 'groups';
+}elseif($check2 == "כולם"){
+$subfilter = 'all';
 }else{
-$this->broadcastMessages(
-messages: [['media' => $filexmsgidmedia, 'reply_markup' => $bot_API_markup]],
-            pin: true,
-            filter: new Filter(
-        allowUsers: true,
-        allowBots: true,
-        allowGroups: true,
-        allowChannels: true,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-}
-
-}else{
-
-if($filexmsgidtxt != null){
-
-$this->broadcastMessages(
-messages: [['message' => "$filexmsgidtxt", 'entities' => $filexmsgident, 'reply_markup' => $bot_API_markup]],
-            pin: true,
-            filter: new Filter(
-        allowUsers: true,
-        allowBots: true,
-        allowGroups: true,
-        allowChannels: true,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-
+$subfilter = 'users';
 }
 }
-
-}
-    if (!file_exists(__DIR__."/data/pinmessage.txt")) {
 
 
 if($filexmsgidmedia != null){
-	
+
 if($filexmsgidtxt != null){
-
-$this->broadcastMessages(
-messages: [['message' => "$filexmsgidtxt", 'entities' => $filexmsgident, 'media' => $filexmsgidmedia, 'reply_markup' => $bot_API_markup]],
-            pin: false,
-            filter: new Filter(
-        allowUsers: true,
-        allowBots: true,
-        allowGroups: true,
-        allowChannels: true,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-
-
+$messages = [['message' => "$filexmsgidtxt", 'entities' => $filexmsgident, 'media' => $filexmsgidmedia, 'reply_markup' => $bot_API_markup]];
 }else{
-$this->broadcastMessages(
-messages: [['media' => $filexmsgidmedia, 'reply_markup' => $bot_API_markup]],
-            pin: false,
-            filter: new Filter(
-        allowUsers: true,
-        allowBots: true,
-        allowGroups: true,
-        allowChannels: true,
-        blacklist: [], 
-        whitelist: null 
-)
-);
+$messages = [['media' => $filexmsgidmedia, 'reply_markup' => $bot_API_markup]];
 }
 
 }else{
 
 if($filexmsgidtxt != null){
-
-$this->broadcastMessages(
-messages: [['message' => "$filexmsgidtxt", 'entities' => $filexmsgident, 'reply_markup' => $bot_API_markup]],
-            pin: false,
-            filter: new Filter(
-        allowUsers: true,
-        allowBots: true,
-        allowGroups: true,
-        allowChannels: true,
-        blacklist: [], 
-        whitelist: null 
-)
-);
-
-}
+$messages = [['message' => "$filexmsgidtxt", 'entities' => $filexmsgident, 'reply_markup' => $bot_API_markup]];
 }
 
 }
 
+$api = new \danog\MadelineProto\API(__DIR__.'/bot.madeline');
+$manager = new BroadcastManager($api);
+BroadcastManager::setDataDir(__DIR__ . '/data');
 
+if(!$manager->progress()){
+$filter_sub = $manager->filterPeers($dialogs, $subfilter);
+$subs = $filter_sub['targets'];
+
+$manager->broadcastWithProgress($subs, $messages, $userid, $pinmessage, 20);
+
+}else{
+$message = "יש שידור פעיל כרגע אנא המתן..";  
+$query->answer($message = $message, $alert = true, $url = null, $cacheTime = 0);
 }
 
 } catch (Throwable $e) {}
 }
-
-private int $lastLog = 0;
-#[Handler]
-public function handleBroadcastProgress(Progress $progress): void {
-		try {
-                if (time() - $this->lastLog > 5 || $progress->status === Status::GATHERING_PEERS) {
-            $this->lastLog = time();
-
-
-$progressStr = (string) $progress;
-
- if (file_exists(__DIR__."/data/messagetoeditbroadcast2.txt")) {
-$filexmsgid1 = Amp\File\read(__DIR__."/data/messagetoeditbroadcast2.txt");  
-
- if (file_exists(__DIR__."/data/messagetoeditbroadcast1.txt")) {
-$filexmsgid2 = Amp\File\read(__DIR__."/data/messagetoeditbroadcast1.txt");  
-
-$bot_API_markup = ['inline_keyboard' => 
-    [
-        [
-['text'=>"חזרה",'callback_data'=>"חזרהמנהל"]
-        ]
-    ]
-];
-
-
-			try {
-$this->messages->editMessage(peer: $filexmsgid1, id: $filexmsgid2, message: "📯 שולח את הודעת השידור..
-$progressStr", reply_markup: $bot_API_markup);
-} catch (Throwable $e) {}
-
-
-
-
- }
- }
- 
- 
-				}
-
-        if (time() - $this->lastLog > 5 || $progress->status === Status::FINISHED) {
-            $this->lastLog = time();
-// $this->sendMessageToAdmins((string) $progress);
-if (file_exists(__DIR__."/data/broadcastsend.txt")) {
-$broadcast_send = Amp\File\read(__DIR__."/data/broadcastsend.txt");
-}
-if (!file_exists(__DIR__."/data/broadcastsend.txt")) {
-$broadcast_send = "כולם";
-}
-//$this->sendMessageToAdmins("✅ ההודעה נשלחה ל: $broadcast_send");
-
-$progressStr = (string) $progress;
-
-    $pendingCount = $progress->pendingCount;
-    $sucessCount = $progress->successCount;
-    $sucessCount2 = $progress->failCount;
-
- if (file_exists(__DIR__."/data/messagetoeditbroadcast2.txt")) {
-$filexmsgid1 = Amp\File\read(__DIR__."/data/messagetoeditbroadcast2.txt");  
-
- if (file_exists(__DIR__."/data/messagetoeditbroadcast1.txt")) {
-$filexmsgid2 = Amp\File\read(__DIR__."/data/messagetoeditbroadcast1.txt");  
-$bot_API_markup = ['inline_keyboard' => 
-    [
-        [
-['text'=>"חזרה",'callback_data'=>"חזרהמנהל"]
-        ]
-    ]
-];
-
-
-			try {
-$this->messages->editMessage(peer: $filexmsgid1, id: $filexmsgid2, message: "📯 הודעת השידור נשלחה בהצלחה!
-✅ ההודעה נשלחה ל: $sucessCount
-⏳ ממתינים לשליחה: $pendingCount
-❌ נכשל בעת השליחה: $sucessCount2", reply_markup: $bot_API_markup);
-
-} catch (Throwable $e) {}
-
-
-Amp\File\write(__DIR__."/LastBrodDATA", "פילטר מנויים: $broadcast_send
-✅ ההודעה נשלחה ל: $sucessCount
-⏳ ממתינים לשליחה: $pendingCount
-❌ נכשל בעת השליחה: $sucessCount2");
-
-    if (file_exists(__DIR__."/data/BUTTONS.txt")) {
-unlink(__DIR__."/data/BUTTONS.txt");  
-	}	
- if (file_exists(__DIR__."/data/$filexmsgid1/txt.txt")) {
-unlink(__DIR__."/data/$filexmsgid1/txt.txt");  
-}
-  if (file_exists(__DIR__."/data/$filexmsgid1/ent.txt")) {
-unlink(__DIR__."/data/$filexmsgid1/ent.txt");  
-  }	  
-  if (file_exists(__DIR__."/data/$filexmsgid1/media.txt")) {
-unlink(__DIR__."/data/$filexmsgid1/media.txt");  
-  }	 
-
-
- }
- }
-
-
-
-
-
-
-
-
-
-        }
-} catch (Throwable $e) {}
-        }
 
 #[FilterButtonQueryData('בקרוב')]
 public function comingsoon(callbackQuery $query) {  
