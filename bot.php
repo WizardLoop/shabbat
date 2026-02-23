@@ -3481,41 +3481,71 @@ Amp\File\write(__DIR__."/"."systemdateout.txt",$havdalahDay);
 
 #[FilterCommandCaseInsensitive('donate')]
 public function Payments(Incoming & PrivateMessage  $message): void {
-$senderid = $message->senderId;
-$messageid = $message->id;
 try {
+$messagetext = $message->message;
+$messageid = $message->id;
+$messagefile = $message->media;
+$senderid = $message->senderId;
+$grouped_id = $message->groupedId;
+$User_Full = $this->getInfo($message->senderId);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+$last_name = $User_Full['User']['last_name']?? null;
+if($last_name == null){
+$last_name = "null";
+}
+
+$username = $User_Full['User']['username'] ?? ($User_Full['User']['usernames'][0]['username'] ?? "(null)");
+
 $originalString = $senderid;
 $encodedString = $originalString;
+
 $labeledPrice1 = ['_' => 'labeledPrice', 'label' => 'star', 'amount' => 5];
 $invoice1 = ['_' => 'invoice', 'currency' => 'XTR', 'prices' => [$labeledPrice1],];
+
 $labeledPrice2 = ['_' => 'labeledPrice', 'label' => 'star', 'amount' => 25];
 $invoice2 = ['_' => 'invoice', 'currency' => 'XTR', 'prices' => [$labeledPrice2],];
+
 $labeledPrice3 = ['_' => 'labeledPrice', 'label' => 'star', 'amount' => 100];
 $invoice3 = ['_' => 'invoice', 'currency' => 'XTR', 'prices' => [$labeledPrice3],];
+
 $labeledPrice4 = ['_' => 'labeledPrice', 'label' => 'star', 'amount' => 150];
 $invoice4 = ['_' => 'invoice', 'currency' => 'XTR', 'prices' => [$labeledPrice4],];
+
 $labeledPrice5 = ['_' => 'labeledPrice', 'label' => 'star', 'amount' => 250];
 $invoice5 = ['_' => 'invoice', 'currency' => 'XTR', 'prices' => [$labeledPrice5],];
+
 $labeledPrice6 = ['_' => 'labeledPrice', 'label' => 'star', 'amount' => 400];
 $invoice6 = ['_' => 'invoice', 'currency' => 'XTR', 'prices' => [$labeledPrice6],];
-$inputMediaInvoice1 = ['_' => 'inputMediaInvoice', 'title' => 'תמכו בי', 'description' => 'תמכו בי ב 5 ⭐️', 'invoice' => $invoice1, 'payload' => "$encodedString", 'provider_data' => 'test']; 
-$inputMediaInvoice2 = ['_' => 'inputMediaInvoice', 'title' => 'תמכו בי', 'description' => 'תמכו בי ב 25 ⭐️', 'invoice' => $invoice2, 'payload' => "$encodedString", 'provider_data' => 'test']; 
-$inputMediaInvoice3 = ['_' => 'inputMediaInvoice', 'title' => 'תמכו בי', 'description' => 'תמכו בי ב 100 ⭐️', 'invoice' => $invoice3, 'payload' => "$encodedString", 'provider_data' => 'test']; 
-$inputMediaInvoice4 = ['_' => 'inputMediaInvoice', 'title' => 'תמכו בי', 'description' => 'תמכו בי ב 150 ⭐️', 'invoice' => $invoice4, 'payload' => "$encodedString", 'provider_data' => 'test']; 
-$inputMediaInvoice5 = ['_' => 'inputMediaInvoice', 'title' => 'תמכו בי', 'description' => 'תמכו בי ב 250 ⭐️', 'invoice' => $invoice5, 'payload' => "$encodedString", 'provider_data' => 'test']; 
-$inputMediaInvoice6 = ['_' => 'inputMediaInvoice', 'title' => 'תמכו בי', 'description' => 'תמכו בי ב 400 ⭐️', 'invoice' => $invoice6, 'payload' => "$encodedString", 'provider_data' => 'test']; 
+
+$inputMediaInvoice1 = ['_' => 'inputMediaInvoice', 'title' => 'תמכו בנו!', 'description' => 'תמכו בנו ב - 5 ⭐️', 'invoice' => $invoice1, 'payload' => "donate|$senderid|5", 'provider_data' => 'test']; 
+$inputMediaInvoice2 = ['_' => 'inputMediaInvoice', 'title' => 'תמכו בנו!', 'description' => 'תמכו בנו ב - 25 ⭐️', 'invoice' => $invoice2, 'payload' => "donate|$senderid|25", 'provider_data' => 'test']; 
+$inputMediaInvoice3 = ['_' => 'inputMediaInvoice', 'title' => 'תמכו בנו!', 'description' => 'תמכו בנו ב - 100 ⭐️', 'invoice' => $invoice3, 'payload' => "donate|$senderid|100", 'provider_data' => 'test']; 
+$inputMediaInvoice4 = ['_' => 'inputMediaInvoice', 'title' => 'תמכו בנו!', 'description' => 'תמכו בנו ב - 150 ⭐️', 'invoice' => $invoice4, 'payload' => "donate|$senderid|150", 'provider_data' => 'test']; 
+$inputMediaInvoice5 = ['_' => 'inputMediaInvoice', 'title' => 'תמכו בנו!', 'description' => 'תמכו בנו ב - 250 ⭐️', 'invoice' => $invoice5, 'payload' => "donate|$senderid|250", 'provider_data' => 'test']; 
+$inputMediaInvoice6 = ['_' => 'inputMediaInvoice', 'title' => 'תמכו בנו!', 'description' => 'תמכו בנו ב - 400 ⭐️', 'invoice' => $invoice6, 'payload' => "donate|$senderid|400", 'provider_data' => 'test']; 
+
+
 $payments_ExportedInvoice1 = $this->payments->exportInvoice(invoice_media: $inputMediaInvoice1, );
-$urlexp1 = $payments_ExportedInvoice1['url']; 
+$urlexp1 = $payments_ExportedInvoice1['url']; //5
+
 $payments_ExportedInvoice2 = $this->payments->exportInvoice(invoice_media: $inputMediaInvoice2, );
-$urlexp2 = $payments_ExportedInvoice2['url']; 
+$urlexp2 = $payments_ExportedInvoice2['url']; //25
+
 $payments_ExportedInvoice3 = $this->payments->exportInvoice(invoice_media: $inputMediaInvoice3, );
-$urlexp3 = $payments_ExportedInvoice3['url']; 
+$urlexp3 = $payments_ExportedInvoice3['url']; //100
+
 $payments_ExportedInvoice4 = $this->payments->exportInvoice(invoice_media: $inputMediaInvoice4, );
-$urlexp4 = $payments_ExportedInvoice4['url']; 
+$urlexp4 = $payments_ExportedInvoice4['url']; //150
+
 $payments_ExportedInvoice5 = $this->payments->exportInvoice(invoice_media: $inputMediaInvoice5, );
-$urlexp5 = $payments_ExportedInvoice5['url']; 
+$urlexp5 = $payments_ExportedInvoice5['url']; //250
+
 $payments_ExportedInvoice6 = $this->payments->exportInvoice(invoice_media: $inputMediaInvoice6, );
-$urlexp6 = $payments_ExportedInvoice6['url']; 
+$urlexp6 = $payments_ExportedInvoice6['url']; //400
+
 
 $bot_API_markup = ['inline_keyboard' => 
     [
@@ -3529,66 +3559,91 @@ $bot_API_markup = ['inline_keyboard' =>
 ];
 
 $inputReplyToMessage = ['_' => 'inputReplyToMessage', 'reply_to_msg_id' => $messageid];
-$this->messages->sendMessage(no_webpage: true, peer: $message->senderId, reply_to: $inputReplyToMessage, message: "היי, תודה שאתם רוצים לתרום לי🥰
-בחרו את סכום התרומה שתרצו לתת👇", reply_markup: $bot_API_markup, parse_mode: 'HTML', effect: 5159385139981059251) ;
-} catch (Throwable $e) {
-$error = $e->getMessage();
-$sentMessage = $this->messages->sendMessage(peer: $message->senderId, message: $error);
-}
-}
+$sentMessage = $this->messages->sendMessage(peer: $senderid, reply_to: $inputReplyToMessage, message: "היי, תודה שאתם רוצים לתמוך בנו 🥰
+בחרו את סכום התרומה שתרצו לתת 👇", reply_markup: $bot_API_markup, parse_mode: 'HTML', effect: 5159385139981059251);
 
+} catch (Throwable $e) {}
+}
 public function onupdateBotPrecheckoutQuery($update) {
-try {
+		try{
+if ($this->isSelfBot()) {
 $userid = $update['user_id'];
 $total_amount = $update['total_amount']; 
-$query_id = $update['query_id']; 
-$payload = $update['payload']; 
-$User_Full = $this->getInfo($userid);
+$query_id = $update['query_id'];
+$sucses = $this->messages->setBotPrecheckoutResults(success: true, query_id: $query_id);
+}
+} catch (\Throwable $e) {}
+}
+public function onUpdateNewMessage($update) {
+		try{
+if ($this->isSelfBot()) {
+        $msg = $update['message'];
+        $messageId = $msg['id'];
+        $userId = $msg['from_id'] ?? null;
+
+$User_Full = $this->getInfo($userId);
 $first_name = $User_Full['User']['first_name']?? null;
 if($first_name == null){
 $first_name = "null";
 }
 
-try {
-$usernames = $User_Full['User']['usernames']?? null;
-$newLangsCommausername = null;
-$peerList2username = [];
-foreach ($usernames as $username) {
-$usernamexfr = $username['username'];
-$usernamexfr = "@".$usernamexfr;
-$peerList2username[]=$usernamexfr;
-}
-$newLangsCommausername = implode(" ", $peerList2username);
-}catch (\danog\MadelineProto\Exception $e) {
-} catch (\danog\MadelineProto\RPCErrorException $e) {
-}
-$username = $User_Full['User']['username']?? null;
-if($username == null){	
-if($newLangsCommausername != null){
-$username = $newLangsCommausername;
-}else{
+$username = $User_Full['User']['username'] ?? ($User_Full['User']['usernames'][0]['username'] ?? null);
+if($username === null){
 $username = "(null)";
-}
 }else{
 $username = "@".$username;
 }
 
-$sucses = $this->messages->setBotPrecheckoutResults(success: true, query_id: $query_id);
+        if (isset($msg['action']['_']) && $msg['action']['_'] === 'messageActionPinMessage') {
 
-if($sucses == true){
-$this->messages->sendMessage(peer: $userid, message: "<b>סכום:</b> $total_amount ⭐️
+    $botId = $this->getSelf()['id'];
+
+    $actorId = $msg['from_id'] ?? null;
+
+    if ($actorId == $botId) {
+        $serviceMessageId = $msg['id'];
+        try {
+        $this->messages->deleteMessages(['id' => [$serviceMessageId], 'revoke' => true]);
+		} catch (\Throwable $e) {}
+    }
+    }
+
+        if (isset($msg['action']['_']) && $msg['action']['_'] === 'messageActionPaymentSentMe') {
+            $amount   = $msg['action']['total_amount'];
+            $currency = $msg['action']['currency'];
+            $payload  = (string) $msg['action']['payload'];
+            $charge   = $msg['action']['charge']['id'];
+echo $charge;
+$parts = explode('|', $payload);
+if (count($parts) < 3) return;
+$type    = $parts[0];
+$uid     = $parts[1];
+$price   = (int)$parts[2];
+
+    if($amount != $price){
+        return;
+    }
+
+    if($type == 'payment'){
+    $credits = (int)$parts[3];
+    $orderid = (int)$parts[4];
+
+	}
+    elseif($type == 'donate'){
+$inputReplyToMessage = ['_' => 'inputReplyToMessage', 'reply_to_msg_id' => $messageId];
+$this->messages->sendMessage(peer: $userId, reply_to: $inputReplyToMessage, message: "<b>amount:</b> $amount ⭐️
 🎉 תודה על תרומתך 🎉", parse_mode: 'HTML', effect: 5159385139981059251);	
 
-$this->sendMessageToAdmins("<b>תרומה התקבלה! 🎉</b>
-FIRSTNAME: <a href='mention:$userid'>$first_name </a>
-ID: <a href='mention:$userid'>$userid </a>
+$this->sendMessageToAdmins("<b>תרומה התקבלה במערכת! 🎉</b>
+FIRSTNAME: <a href='mention:$userId'>$first_name </a>
+ID: <a href='mention:$userId'>$userId </a>
 USERNAME: $username
-<b>סכום:</b> $total_amount ⭐️",parseMode: ParseMode::HTML);
+<b>סכום:</b> $amount ⭐️",parseMode: ParseMode::HTML);
 }
 
-} catch (Throwable $e) {
-$error = $e->getMessage();
-}
+        }
+    }
+} catch (\Throwable $e) {}
 }
 
 #########################################
@@ -4223,11 +4278,11 @@ $allIds = $numUsers + $numChannels + $numSupergroups + $numChats + $numBots;
 }
 
 #[FilterButtonQueryData('closeMsg')]
-public function closecommandbrod(callbackQuery $query) {
+public function closeBroadcastMsg(callbackQuery $query) {
 	try {
 $this->messages->deleteMessages(revoke: true, id: [$query->messageId]); 
 } catch (\Throwable $e) {
-$query->answer($message = "אני לא יכול לסגור את ההודעה, סגור אותה בעצמך..", $alert = false, $url = null, $cacheTime = 0);		
+$query->answer($message = "I can't close the message, close it yourself.", $alert = false, $url = null, $cacheTime = 0);		
 }
 }
 
@@ -4338,6 +4393,12 @@ if($first_name == null){
 $first_name = "null";
 }
 
+$api = new \danog\MadelineProto\API(__DIR__.'/bot.madeline');
+$manager = new BroadcastManager($api);
+BroadcastManager::setDataDir(__DIR__ . '/data');
+
+if(!$manager->progress()){
+
 $bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"חזרהלפאנל"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
@@ -4351,6 +4412,12 @@ $userDir = __DIR__ . "/data/$userid";
 Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'broadcast1');
 $msgqutryid = $query->messageId;
 Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
+
+}else{
+$message = "יש שידור פעיל כרגע אנא המתן..";  
+$query->answer($message = $message, $alert = true, $url = null, $cacheTime = 0);
+}
+
 } catch (Throwable $e) {}
 }
 
@@ -4389,6 +4456,7 @@ $check = Amp\File\read(__DIR__."/data/$senderid/grs1.txt");
 if($check == "broadcast1"){
     
 if(!preg_match('/^\/([Ss]tart)/',$messagetext)){   
+
 
 $messageLength = mb_strlen($messagetext);
 
@@ -4436,7 +4504,23 @@ unlink(__DIR__."/data/$senderid/messagetodelete.txt");
 }
 
 }else{
-unlink(__DIR__."/data/$senderid/grs1.txt"); 
+
+  if (file_exists(__DIR__."/data/$senderid/grs1.txt")) {
+unlink(__DIR__."/data/$senderid/grs1.txt");  
+  }	
+    if (file_exists(__DIR__."/data/BUTTONS.txt")) {
+unlink(__DIR__."/data/BUTTONS.txt");  
+	}	
+ if (file_exists(__DIR__."/data/$senderid/txt.txt")) {
+unlink(__DIR__."/data/$senderid/txt.txt");  
+}
+  if (file_exists(__DIR__."/data/$senderid/ent.txt")) {
+unlink(__DIR__."/data/$senderid/ent.txt");  
+  }	  
+  if (file_exists(__DIR__."/data/$senderid/media.txt")) {
+unlink(__DIR__."/data/$senderid/media.txt");  
+  }	 
+
 
 if($messagetext != null){
 Amp\File\write(__DIR__."/data/$senderid/txt.txt", "$messagetext");
@@ -4758,8 +4842,6 @@ $first_name = $User_Full['User']['first_name']?? null;
 if($first_name == null){
 $first_name = "null";
 }
-
-$buttons = __DIR__."/data/menubuttons1.txt";
 
 $bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"חזרהתפריטשידור"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
@@ -5170,10 +5252,22 @@ $API_HASH = parse_ini_file(__DIR__."/".'.env')['API_HASH'];
 $BOT_TOKEN = parse_ini_file(__DIR__."/".'.env')['BOT_TOKEN'];
 $settings = new \danog\MadelineProto\Settings;
 $settings->setAppInfo((new \danog\MadelineProto\Settings\AppInfo)->setApiId((int)$API_ID)->setApiHash($API_HASH));
+
+$logger = (new \danog\MadelineProto\Settings\Logger)->setLevel(\danog\MadelineProto\Logger::ERROR);
+$settings->setLogger($logger);
+
 Shabbat::startAndLoopBot(__DIR__.'/bot.madeline', $BOT_TOKEN, $settings);
 
 } catch (\Throwable $e) {
-echo "\n" . $e->getMessage() . "\n";
+    if ($e instanceof \Amp\TimeoutException || $e instanceof \Amp\CancelledException) {
+
+//            \Amp\Future\complete(\Amp\delay(3.0)->then(fn() => exit(1)));
+//            return;
+
+            exit(1);
+    }
+
+//    echo "\n" . $e->getMessage() . "\n";
 }
 }
 RunBot();
