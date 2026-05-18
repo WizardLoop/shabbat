@@ -41,148 +41,377 @@ use danog\MadelineProto\EventHandler\Update;
 use Amp\File;
 use Amp\Http\Client\HttpClientBuilder;
 use Amp\Http\Client\Request;
-
+use danog\MadelineProto\EventHandler\SimpleFilter\IsNotEdited;
 use BroadcastTool\BroadcastManager;
 
 class Shabbat extends SimpleEventHandler
 {
 
 /*
-* טקסטים כניסה / יציאת שבת
+* test mode - change to true to check the cron
 */
-public const CLOSER = "הקבוצה שלנו שומרת שבת ותהיה סגורה עד צאת השבת 🕯\n🇮🇱 שבת שלום לכולם 🇮🇱"; 
-public const OPENER = "🇮🇱 שבוע טוב לכולם! 🇮🇱\nהקבוצה פתוחה לכתיבת הודעות.";	
+private bool $testMode = false;
+private function getTestShabbatLockTimes(): array
+{
+    return [
+
+        /*
+        |--------------------------------------------------------------------------
+        | זמן סגירה לבדיקה
+        |--------------------------------------------------------------------------
+        */
+
+        'close_datetime' => '23/05/2026 19:00',
+
+        /*
+        |--------------------------------------------------------------------------
+        | זמן פתיחה לבדיקה
+        |--------------------------------------------------------------------------
+        */
+
+        'open_datetime' => '23/05/2026 19:10',
+
+        'close_time' => '19:00',
+
+        'open_time' => '19:10',
+
+        'close_date' => '23/05/2026',
+
+        'open_date' => '23/05/2026',
+    ];
+}
+private function getAlertTestTime(): string
+{
+    return '18:30';
+}
 
 /*
-* זמני שבת
+* text - ברירת מחדל כניסה ויציאת שבת וחג
 */
-private function getZmanimForCities(): string {
+public const CLOSER = "הקבוצה שלנו שומרת שבת וחג! 🇮🇱\nותהיה סגורה עד זמן הבדלה/יציאה 🕯"; 
+public const OPENER = "הקבוצה פתוחה לכתיבת הודעות! 🇮🇱";	
 
-        $geonameIds = [
-            'ירושלים'   => 281184,
-            'חיפה'      => 294801,
-            'תל אביב'  => 293397,
-            'באר שבע'  => 295530,
+/*
+ * זמני שבת
+ */
+private function getZmanimForCities(): string
+{
+    date_default_timezone_set('Asia/Jerusalem');
+
+    $geonameIds = [
+        'ירושלים'  => 281184,
+        'חיפה'     => 294801,
+        'תל אביב' => 293397,
+        'באר שבע' => 295530,
+    ];
+
+    $zmanim = "⌚️ <u><b>זמני כניסת ויציאת השבת:</b></u>\n\n";
+
+    $candleTimes   = [];
+    $havdalahTimes = [];
+    $holidays      = [];
+
+    $date           = '';
+    $parashaText    = '';
+    $mevarchimText  = '';
+    $mevarchimMemo  = '';
+
+    $client = HttpClientBuilder::buildDefault();
+
+    foreach ($geonameIds as $location => $geonameId) {
+
+        $url = "https://www.hebcal.com/shabbat?cfg=json&geonameid=$geonameId&ue=off&b=18&M=on&lg=he-x-NoNikud&tgt=_top";
+
+        $response = $client->request(new Request($url));
+        $body     = $response->getBody()->buffer();
+
+        $json = json_decode($body, true);
+
+        if (!$json || !isset($json['items'])) {
+            $zmanim .= "⚠️ לא ניתן היה לשלוף את זמני השבת עבור: $location\n";
+            continue;
+        }
+
+        $candles  = null;
+        $havdalah = null;
+
+        foreach ($json['items'] as $item) {
+
+            switch ($item['category']) {
+
+                case 'candles':
+
+                    $itemDate   = new \DateTime($item['date']);
+                    $dayOfWeek  = (int)$itemDate->format('w'); // 5 = Friday
+                    $holidayName = $item['memo'] ?? null;
+
+                    // שמירת זמני חגים
+                    if ($holidayName) {
+                        $holidays[$holidayName]['candles'][$location] =
+                            $itemDate->format('H:i');
+                    }
+
+                    // כניסת שבת = כל הדלקת נרות ביום שישי
+                    if ($dayOfWeek === 5) {
+                        $candles = $item;
+                    }
+
+                break;
+
+                case 'havdalah':
+
+                    $itemDate   = new \DateTime($item['date']);
+                    $dayOfWeek  = (int)$itemDate->format('w'); // 6 = Saturday
+                    $holidayName = $item['memo'] ?? null;
+
+                    // שמירת זמני חגים
+                    if ($holidayName) {
+                        $holidays[$holidayName]['havdalah'][$location] =
+                            $itemDate->format('H:i');
+                    }
+
+                    // יציאת שבת = כל הבדלה בשבת
+                    if ($dayOfWeek === 6) {
+                        $havdalah = $item;
+                    }
+
+                break;
+
+                case 'parashat':
+
+                    $parashaText = $item['hebrew'];
+
+                break;
+
+                case 'holiday':
+
+                    if ($location === 'ירושלים') {
+
+                        $hDate  = substr($item['date'], 0, 10);
+                        $hTitle = $item['hebrew'];
+
+                        if (!isset($holidays[$hTitle])) {
+                            $holidays[$hTitle] = [];
+                        }
+
+                        $holidays[$hTitle]['date'] = $hDate;
+                    }
+
+                break;
+
+                case 'mevarchim':
+
+                    if ($location === 'ירושלים') {
+
+                        $mevarchimText = $item['hebrew'];
+                        $mevarchimMemo = $item['memo'] ?? '';
+                    }
+
+                break;
+            }
+        }
+
+        $candleTimes[$location] = isset($candles['date'])
+            ? (new \DateTime($candles['date']))->format('H:i')
+            : 'לא ידוע';
+
+        $havdalahTimes[$location] = isset($havdalah['date'])
+            ? (new \DateTime($havdalah['date']))->format('H:i')
+            : 'לא ידוע';
+
+        if (empty($date) && isset($havdalah['date'])) {
+            $date = (new \DateTime($havdalah['date']))->format('d/m/Y');
+        }
+    }
+
+    $zmanim .= "🗓 <u>תאריך:</u> $date\n";
+
+    if ($parashaText) {
+        $zmanim .= "📖 <u>פרשת השבוע:</u> $parashaText\n";
+    }
+
+    if ($mevarchimText) {
+
+        $memo = $mevarchimMemo
+            ? " ($mevarchimMemo)"
+            : '';
+
+        $zmanim .= "🌒 <u>מברכים:</u> $mevarchimText$memo\n";
+    }
+
+    $zmanim .= "\n🕯 <u>כניסת שבת:</u>\n";
+
+    foreach ($candleTimes as $loc => $time) {
+        $zmanim .= "$loc: <code>$time</code>\n";
+    }
+
+    $zmanim .= "\n🍷 <u>יציאת שבת:</u>\n";
+
+    foreach ($havdalahTimes as $loc => $time) {
+        $zmanim .= "$loc: <code>$time</code>\n";
+    }
+
+    if ($holidays) {
+
+        uasort(
+            $holidays,
+            fn($a, $b) =>
+                strtotime($a['date'] ?? '') <=> strtotime($b['date'] ?? '')
+        );
+
+        $zmanim .= "\n🎉 <u>חגים קרובים:</u>\n";
+
+        foreach ($holidays as $title => $info) {
+
+            $hDateFormatted = isset($info['date'])
+                ? (new \DateTime($info['date']))->format('d/m/Y')
+                : '---';
+
+            $zmanim .= "• $title ($hDateFormatted)\n";
+
+            if (!empty($info['candles'])) {
+
+                $zmanim .= "   🕯 כניסה:\n";
+
+                foreach ($info['candles'] as $loc => $time) {
+                    $zmanim .= "   $loc: <code>$time</code>\n";
+                }
+            }
+
+            if (!empty($info['havdalah'])) {
+
+                $zmanim .= "   🍷 יציאה:\n";
+
+                foreach ($info['havdalah'] as $loc => $time) {
+                    $zmanim .= "   $loc: <code>$time</code>\n";
+                }
+            }
+        }
+    }
+
+    return $zmanim;
+}
+
+/*
+ * זמני סגירה ופתיחה בלבד
+ */
+private int $closeBeforeMinutes = 10; # 10 דקות לפני שבת
+private function getShabbatLockTimes(): array
+{
+    date_default_timezone_set('Asia/Jerusalem');
+
+    $geonameId = 281184; // ירושלים
+
+    $url = "https://www.hebcal.com/shabbat?cfg=json&geonameid={$geonameId}&ue=off&b=18&M=on&lg=he-x-NoNikud&tgt=_top";
+
+    $client = HttpClientBuilder::buildDefault();
+
+    $response = $client->request(new Request($url));
+
+    $body = $response->getBody()->buffer();
+
+    $json = json_decode($body, true);
+
+    if (!$json || !isset($json['items'])) {
+
+        return [
+            'close_datetime' => null,
+            'open_datetime'  => null,
+            'close_time'     => null,
+            'open_time'      => null,
+            'close_date'     => null,
+            'open_date'      => null,
         ];
+    }
 
-        $zmanim = "⌚️ <u><b>זמני כניסת ויציאת השבת:</b></u>\n\n";
+    $now = new \DateTime();
 
-        $candleTimes   = [];
-        $havdalahTimes = [];
-        $holidays      = [];
-        $date          = '';
-        $parashaText   = '';
-        $mevarchimText  = '';
-		$mevarchimMemo  = '';
+    $candles = [];
+    $havdalahs = [];
 
-            $client = HttpClientBuilder::buildDefault();
-        foreach ($geonameIds as $location => $geonameId) {
-            $url = "https://www.hebcal.com/shabbat?cfg=json&geonameid=$geonameId&ue=off&b=18&M=on&lg=he-x-NoNikud&tgt=_top";
-            $response = $client->request(new Request($url));
-            $body = $response->getBody()->buffer();
-            $json = json_decode($body, true);
+    foreach ($json['items'] as $item) {
 
-            if (!$json || !isset($json['items'])) {
-                $zmanim .= "⚠️ לא ניתן היה לשלוף את זמני השבת עבור: $location\n";
-                continue;
-            }
+        if (
+            !isset($item['category']) ||
+            !isset($item['date'])
+        ) {
+            continue;
+        }
 
-            $candles  = null;
-            $havdalah = null;
+        try {
 
-            foreach ($json['items'] as $item) {
-                switch ($item['category']) {
-                    case 'candles':
-                        $holidayName = $item['memo'] ?? null;
-                        if ($holidayName && isset($holidays[$holidayName])) {
-                            $holidays[$holidayName]['candles'][$location] = (new \DateTime($item['date']))->format('H:i');
-                        } else {
-                            $candles = $item; // שבת
-                        }
-                        break;
+            $date = new \DateTime($item['date']);
 
-                    case 'havdalah':
-                        $holidayName = $item['memo'] ?? null;
-                        if ($holidayName && isset($holidays[$holidayName])) {
-                            $holidays[$holidayName]['havdalah'][$location] = (new \DateTime($item['date']))->format('H:i');
-                        } else {
-                            $havdalah = $item; // שבת
-                        }
-                        break;
+        } catch (\Throwable $e) {
+            continue;
+        }
 
-                    case 'parashat':
-                        $parashaText = $item['hebrew'];
-                        break;
+        if ($date <= $now) {
+            continue;
+        }
 
-                    case 'holiday':
-                        if ($location === 'ירושלים') {
-                            $hDate  = substr($item['date'],0,10);
-                            $hTitle = $item['hebrew'];
-                            $holidays[$hTitle]['date'] = $hDate;
-                        }
-                        break;
+        if ($item['category'] === 'candles') {
+            $date->modify("-{$this->closeBeforeMinutes} minutes");
+            $candles[] = $date;
+        }
 
-                    case 'mevarchim':
-                        if ($location === 'ירושלים') {
-                            $mevarchimText = $item['hebrew'];
-                            $mevarchimMemo = $item['memo'] ?? '';
-                        }
-                    break;
+        if ($item['category'] === 'havdalah') {
+            $havdalahs[] = $date;
+        }
+    }
 
-                }
-            }
+    usort(
+        $candles,
+        fn($a, $b) => $a->getTimestamp() <=> $b->getTimestamp()
+    );
 
-            $candleTimes[$location]   = isset($candles['date']) ? (new \DateTime($candles['date']))->format('H:i') : 'לא ידוע';
-            $havdalahTimes[$location] = isset($havdalah['date']) ? (new \DateTime($havdalah['date']))->format('H:i') : 'לא ידוע';
+    usort(
+        $havdalahs,
+        fn($a, $b) => $a->getTimestamp() <=> $b->getTimestamp()
+    );
 
-            if (empty($date) && isset($havdalah['date'])) {
-                $date = (new \DateTime($havdalah['date']))->format('d/m/Y');
+    $closeDateTime = $candles[0] ?? null;
+
+    $openDateTime = null;
+
+    if ($closeDateTime) {
+
+        foreach ($havdalahs as $havdalah) {
+
+            if ($havdalah > $closeDateTime) {
+
+                $openDateTime = $havdalah;
+                break;
             }
         }
+    }
 
-        $zmanim .= "🗓 <u>תאריך:</u> $date\n";
-        if ($parashaText) {
-            $zmanim .= "📖 <u>פרשת השבוע:</u> $parashaText\n";
-        }
+    return [
 
-        if ($mevarchimText) {
-            $memo = $mevarchimMemo ? " ($mevarchimMemo)" : '';
-            $zmanim .= "🌒 <u>מברכים:</u> $mevarchimText$memo\n";
-        }
+        'close_datetime' => $closeDateTime
+            ? $closeDateTime->format('d/m/Y H:i')
+            : null,
 
-        $zmanim .= "\n🕯 <u>כניסת שבת:</u>\n";
-        foreach ($candleTimes as $loc => $time) {
-            $zmanim .= "$loc: <code>$time</code>\n";
-        }
+        'open_datetime' => $openDateTime
+            ? $openDateTime->format('d/m/Y H:i')
+            : null,
 
-        $zmanim .= "\n🍷 <u>יציאת שבת:</u>\n";
-        foreach ($havdalahTimes as $loc => $time) {
-            $zmanim .= "$loc: <code>$time</code>\n";
-        }
+        'close_time' => $closeDateTime
+            ? $closeDateTime->format('H:i')
+            : null,
 
-        if ($holidays) {
-            uasort($holidays, fn($a,$b) => strtotime($a['date'] ?? '') <=> strtotime($b['date'] ?? ''));
-            $zmanim .= "\n🎉 <u>חגים קרובים:</u>\n";
-            foreach ($holidays as $title => $info) {
-                $hDateFormatted = isset($info['date']) ? (new \DateTime($info['date']))->format('d/m/Y') : '---';
-                $zmanim .= "• $title ($hDateFormatted)\n";
+        'open_time' => $openDateTime
+            ? $openDateTime->format('H:i')
+            : null,
 
-                if (!empty($info['candles'])) {
-                    $zmanim .= "   🕯 כניסה:\n";
-                    foreach ($info['candles'] as $loc => $time) {
-                        $zmanim .= "   $loc: <code>$time</code>\n";
-                    }
-                }
-                if (!empty($info['havdalah'])) {
-                    $zmanim .= "   🍷 יציאה:\n";
-                    foreach ($info['havdalah'] as $loc => $time) {
-                        $zmanim .= "   $loc: <code>$time</code>\n";
-                    }
-                }
-            }
-        }
+        'close_date' => $closeDateTime
+            ? $closeDateTime->format('d/m/Y')
+            : null,
 
-        return $zmanim;
+        'open_date' => $openDateTime
+            ? $openDateTime->format('d/m/Y')
+            : null,
+    ];
 }
 
 /*
@@ -190,6 +419,12 @@ private function getZmanimForCities(): string {
 */
 public function getReportPeers() {
     return array_map('trim', explode(',', parse_ini_file(__DIR__.'/.env')['ADMIN']));
+}
+
+public function onStart(): void {
+try {
+    $this->sendMessageToAdmins("<b>The system has been restarted!</b>",parseMode: ParseMode::HTML);
+} catch (\Throwable $e) {}
 }
 
 /*
@@ -202,8 +437,10 @@ $this->channels->leaveChannel(channel: $message->chatId );
 } catch (Throwable $e) {}
 }
 
+/* ================ main handlers ================ */
+
 #[FilterCommandCaseInsensitive('start')]
-public function StartCommand(Incoming & PrivateMessage  $message): void {
+public function StartCommand(Incoming & PrivateMessage & IsNotEdited $message): void {
 try {
 $senderid = $message->senderId;
 $messageid = $message->id;
@@ -313,7 +550,7 @@ public function Rules(callbackQuery $query) {
 try {
 $txtbot = "<b>(הרובוט הזה עובד רק בסופר קבוצה)</b>
 
-🕯 על מנת שאני יוכל לסגור את הקבוצה בשבת, יש להוסיף אותי לקבוצה שלך כמנהל עם הרשאה לחסימת משתמשים.
+🕯 על מנת שאני יוכל לסגור את הקבוצה בשבתות וחגים, יש להוסיף אותי לקבוצה שלך כמנהל עם הרשאה לחסימת משתמשים.
 
 לאחר ההוספה חובה לשלוח בקבוצה את הפקודה <code>/add</code> אחרת אני לא אשמור את השבת אצלך בקבוצה...
 
@@ -321,7 +558,7 @@ $txtbot = "<b>(הרובוט הזה עובד רק בסופר קבוצה)</b>
 
 <i>טיפ: רוצה שאני רק אשלח את זמני השבת מבלי לסגור את הקבוצה? כתוב /add > הפעל התראות שבת > תסיר לי הרשאות ניהול(שאני לא יוכל לסגור את הקבוצה, אפשר גם כחבר רגיל בקבוצה ללא אדמין)</i>
 
-<b>[בקרוב יהיה פעיל גם בחגים]</b>
+<b>חדש: הבוט פעיל גם בחגים!</b>
 
 זכור: אתה צריך להשתמש בפקודות בתוך הקבוצה, אלא אם כן הם תוכננו במיוחד עבור כל צ'אט (ראה 'פקודות לכל המשתמשים').";
 
@@ -341,20 +578,20 @@ $query->editText($message = "$txtbot", $replyMarkup = $bot_API_markup, ParseMode
 public function CommandForAdmins(callbackQuery $query) {
 try {
 $txtbot = "💡 <b>רשימת פקודות זמינות:</b>
-/add - שליחת פקודה זו בקבוצה תוסיף את הקבוצה לבסיס נתונים על מנת שהיא תסגר בשבת!
-/remove - הסרת הקבוצה מהבסיס נתונים... הקבוצה לא תסגר בשבת!
+/add - שליחת פקודה זו בקבוצה תוסיף את הקבוצה לבסיס נתונים על מנת שהיא תסגר בשבתות וחגים!
+/remove - הסרת הקבוצה מהבסיס נתונים... הקבוצה לא תסגר!
 /settings - התאם אישית את הרובוט בקבוצה שלך. 
 
 ⚙️ <b>מה אפשר לעשות בהגדרות?</b>
-באפשרותכם להגדיר האם הקבוצה תקבל מידי יום שישי (בשעה 13:30) הודעה עם זמני כניסת השבת!
-כמו כן באפשרותכם להגדיר הודעה מותאמת אישית שתשלח בערב שבת כשהקבוצה נסגרת!
-והודעה מותאמת אישית שתשלח במוצאי שבת כשהקבוצה נפתחת!
+באפשרותכם להגדיר האם הקבוצה תקבל מידי יום שישי / יום חג (בשעה 13:30) הודעה עם זמני כניסה ויציאה!
+כמו כן באפשרותכם להגדיר הודעה מותאמת אישית שתשלח כשהקבוצה נסגרת!
+והודעה מותאמת אישית שתשלח בזמן הבדלה כשהקבוצה נפתחת!
 
 <b>הקבוצה תיסגר לפי זמן:</b> ירושלים 
 כניסה: 18 דקות לפני השקיעה.
 יציאה: 8.5 מעלות
 
-⌚️ הקבוצה תסגר 10 דק' לפני הזמן.
+⌚️ הקבוצה תסגר 10 דק' לפני הזמן!!
 
 <i>פקודות אלו יש לשלוח בקבוצה בלבד</i>";
 
@@ -373,9 +610,9 @@ $me = $this->getSelf();
 $me_username = '@'.$me['username'];
 
 $txtbot = "💡 <b>רשימת פקודות זמינות:</b>
-/shabat - הצגת זמני כניסת ויציאת השבת.
-(ניתן גם לכתוב /shabbat )
-/stats - כמה קבוצות שומרות שבת 📊
+/shabat - הצגת זמני כניסת ויציאה.
+( גם /shabbat )
+/stats - כמה קבוצות שומרות שבת/חג.
 /donate - תמיכה ברובוט ⭐️
 
 <b>ניתן גם להשתמש במצב אינליין:</b>
@@ -396,7 +633,7 @@ $query->editText($message = "$txtbot", $replyMarkup = $bot_API_markup, ParseMode
 }
 
 #[FiltersOr(new FilterCommandCaseInsensitive('shabat'), new FilterCommandCaseInsensitive('shabbat'))]
-public function shabatCommand(Incoming $message): void {
+public function shabatCommand(Incoming & IsNotEdited $message): void {
 try {
 $senderid = $message->senderId;
 $messageid = $message->id;
@@ -478,6 +715,8 @@ $sentMessage = $this->messages->sendMessage(peer: $update['query_id'], message: 
 }
 }
 	
+/* ================ group handlers ================ */
+
 #[FilterButtonQueryData('סגור')]
 public function closecommand(callbackQuery $query) {
 	try {
@@ -488,7 +727,7 @@ $query->answer($message = "אני לא יכול לסגור את ההודעה, ס
 }
 
 #[FilterCommandCaseInsensitive('add')]
-public function addgroupCommand(Incoming & GroupMessage  $message): void {
+public function addgroupCommand(Incoming & GroupMessage & IsNotEdited $message): void {
 try {
 $senderid = $message->senderId;
 $messageid = $message->id;
@@ -617,7 +856,7 @@ $sentMessage = $this->messages->sendMessage(peer: $message->chatId, message: $er
 	}
 	
 #[FilterCommandCaseInsensitive('remove')]
-public function removegroupCommand(Incoming & GroupMessage  $message): void {
+public function removegroupCommand(Incoming & GroupMessage & IsNotEdited $message): void {
 try {
 $senderid = $message->senderId;
 $messageid = $message->id;
@@ -765,7 +1004,7 @@ $sentMessage = $this->messages->sendMessage(peer: $message->chatId, message: $er
 	}
 	
 #[FilterCommandCaseInsensitive('settings')]
-public function grupsettingsCommand(Incoming & GroupMessage  $message): void {
+public function grupsettingsCommand(Incoming & GroupMessage & IsNotEdited $message): void {
 	try {
 $senderid = $message->senderId;
 $messageid = $message->id;
@@ -856,19 +1095,19 @@ if (in_array((string)$chatid, $user1, true)) {
 	
 $txtbot2 = "<b>התאם אישית את הרובוט בקבוצה:</b>";
 if (!file_exists(__DIR__."/"."data/$chatid/alertshabat.txt")) {
-$bot_API_markup[] = [['text'=>"OFF ❌",'callback_data'=>"שלחזמני"],['text'=>"זמני כניסת שבת",'callback_data'=>"הסברזמנישבת"]];
+$bot_API_markup[] = [['text'=>"OFF ❌",'callback_data'=>"שלחזמני"],['text'=>"שלח זמנים:",'callback_data'=>"הסברזמנישבת"]];
 }
 if (file_exists(__DIR__."/"."data/$chatid/alertshabat.txt")) {
-$bot_API_markup[] = [['text'=>"ON ✅",'callback_data'=>"שלחזמני1"],['text'=>"זמני כניסת שבת",'callback_data'=>"הסברזמנישבת"]];
+$bot_API_markup[] = [['text'=>"ON ✅",'callback_data'=>"שלחזמני1"],['text'=>"שלח זמנים:",'callback_data'=>"הסברזמנישבת"]];
 }
 if (!file_exists(__DIR__."/"."data/$chatid/alertshabat2.txt")) {
-$bot_API_markup[] = [['text'=>"OFF ❌",'callback_data'=>"הודעותלפניואחרי"],['text'=>"הודעות לפני ואחרי שבת",'callback_data'=>"הסברהודעותלפאח"]];
+$bot_API_markup[] = [['text'=>"OFF ❌",'callback_data'=>"הודעותלפניואחרי"],['text'=>"הודעות סגירה/פתיחה:",'callback_data'=>"הסברהודעותלפאח"]];
 }
 if (file_exists(__DIR__."/"."data/$chatid/alertshabat2.txt")) {
-$bot_API_markup[] = [['text'=>"ON ✅",'callback_data'=>"הודעותלפניואחרי1"],['text'=>"הודעות לפני ואחרי שבת",'callback_data'=>"הסברהודעותלפאח"]];
+$bot_API_markup[] = [['text'=>"ON ✅",'callback_data'=>"הודעותלפניואחרי1"],['text'=>"הודעות סגירה/פתיחה:",'callback_data'=>"הסברהודעותלפאח"]];
 }
-$bot_API_markup[] = [['text'=>"הודעה לפני שבת ✏️",'callback_data'=>"הודעתסגירה"]];
-$bot_API_markup[] = [['text'=>"הודעה במוצאי שבת ✏️",'callback_data'=>"הודעתפתיחה"]];
+$bot_API_markup[] = [['text'=>"הודעה לפני סגירה ✏️",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup[] = [['text'=>"הודעה לאחר פתיחה ✏️",'callback_data'=>"הודעתפתיחה"]];
 $bot_API_markup[] = [['text'=>"↪️ החזר לברירת מחדל",'callback_data'=>"החזרברירתמחדל"]];
 $bot_API_markup[] = [['text'=>"סגור ✖️",'callback_data'=>"סגור"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
@@ -923,7 +1162,7 @@ $sentMessage = $this->messages->sendMessage(peer: $message->chatId, message: $er
 	}
 	
 #[FiltersOr(new FilterCommandCaseInsensitive('add'), new FilterCommandCaseInsensitive('remove'), new FilterCommandCaseInsensitive('settings'))]
-public function ifNotCommands(Incoming & PrivateMessage  $message): void {
+public function ifNotCommands(Incoming & PrivateMessage & IsNotEdited $message): void {
 try {
 $messageid = $message->id;
 
@@ -957,19 +1196,19 @@ $filex = "NULL";
 
 $txtbot = "<b>התאם אישית את הרובוט בקבוצה:</b>";
 if (!file_exists(__DIR__."/"."data/$filex/alertshabat.txt")) {
-$bot_API_markup[] = [['text'=>"OFF ❌",'callback_data'=>"שלחזמני"],['text'=>"זמני כניסת שבת",'callback_data'=>"הסברזמנישבת"]];
+$bot_API_markup[] = [['text'=>"OFF ❌",'callback_data'=>"שלחזמני"],['text'=>"שלח זמנים:",'callback_data'=>"הסברזמנישבת"]];
 }
 if (file_exists(__DIR__."/"."data/$filex/alertshabat.txt")) {
-$bot_API_markup[] = [['text'=>"ON ✅",'callback_data'=>"שלחזמני1"],['text'=>"זמני כניסת שבת",'callback_data'=>"הסברזמנישבת"]];
+$bot_API_markup[] = [['text'=>"ON ✅",'callback_data'=>"שלחזמני1"],['text'=>"שלח זמנים:",'callback_data'=>"הסברזמנישבת"]];
 }
 if (!file_exists(__DIR__."/"."data/$filex/alertshabat2.txt")) {
-$bot_API_markup[] = [['text'=>"OFF ❌",'callback_data'=>"הודעותלפניואחרי"],['text'=>"הודעות לפני ואחרי שבת",'callback_data'=>"הסברהודעותלפאח"]];
+$bot_API_markup[] = [['text'=>"OFF ❌",'callback_data'=>"הודעותלפניואחרי"],['text'=>"הודעות סגירה/פתיחה:",'callback_data'=>"הסברהודעותלפאח"]];
 }
 if (file_exists(__DIR__."/"."data/$filex/alertshabat2.txt")) {
-$bot_API_markup[] = [['text'=>"ON ✅",'callback_data'=>"הודעותלפניואחרי1"],['text'=>"הודעות לפני ואחרי שבת",'callback_data'=>"הסברהודעותלפאח"]];
+$bot_API_markup[] = [['text'=>"ON ✅",'callback_data'=>"הודעותלפניואחרי1"],['text'=>"ההודעות סגירה/פתיחה:",'callback_data'=>"הסברהודעותלפאח"]];
 }
-$bot_API_markup[] = [['text'=>"הודעה לפני שבת ✏️",'callback_data'=>"הודעתסגירה"]];
-$bot_API_markup[] = [['text'=>"הודעה במוצאי שבת ✏️",'callback_data'=>"הודעתפתיחה"]];
+$bot_API_markup[] = [['text'=>"הודעה לפני סגירה ✏️",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup[] = [['text'=>"הודעה לאחר פתיחה ✏️",'callback_data'=>"הודעתפתיחה"]];
 $bot_API_markup[] = [['text'=>"↪️ החזר לברירת מחדל",'callback_data'=>"החזרברירתמחדל"]];
 $bot_API_markup[] = [['text'=>"סגור ✖️",'callback_data'=>"סגור"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
@@ -1073,7 +1312,7 @@ unlink(__DIR__."/"."data/$filex/MsgCloserButtons.txt");
 #[FilterButtonQueryData('הסברזמנישבת')]
 public function infotimes(callbackQuery $query) {
 try {
-$query->answer($message = "האם הקבוצה תקבל מידי יום שישי (בשעה 13:30) הודעה עם זמני כניסת השבת!", $alert = true, $url = null, $cacheTime = 0);		
+$query->answer($message = "האם הקבוצה תקבל מידי יום שישי / יום חג (בשעה 13:30) הודעה עם זמני כניסת השבת/חג!", $alert = true, $url = null, $cacheTime = 0);		
 } catch (Throwable $e) {
 }
 }
@@ -1081,7 +1320,7 @@ $query->answer($message = "האם הקבוצה תקבל מידי יום שישי
 #[FilterButtonQueryData('הסברהודעותלפאח')]
 public function infomessages(callbackQuery $query) {
 try {
-$query->answer($message = "האם הקבוצה תקבל מידי יום שישי הודעה שתשלח בערב שבת ובצאת שבת!
+$query->answer($message = "האם הקבוצה תקבל מידי יום שישי/יום חג הודעה שתשלח בערב הכניסה(כשהקבוצה נסגרת) ובזמן הבדלה(יציאה) כשהקבוצה נפתחת!
 • ניתן להשתמש בברירת מחדל.
 • וניתן להגדיר הודעה מותאמת אישית.", $alert = true, $url = null, $cacheTime = 0);	
 } catch (Throwable $e) {
@@ -1106,7 +1345,7 @@ Amp\File\write(__DIR__."/"."data/$filex/alertshabat.txt", "on");
 
 $bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהלהגדרות"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-$query->editText($message = "<b>הקבוצה תקבל מידי יום שישי (בשעה 13:30) הודעה עם זמני כניסת השבת! ✅</b>", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+$query->editText($message = "<b>הקבוצה תקבל מידי יום שישי/חג (בשעה 13:30) הודעה עם הזמנים! ✅</b>", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
 } catch (Throwable $e) {
 }
 }
@@ -1131,7 +1370,7 @@ unlink(__DIR__."/"."data/$filex/alertshabat.txt");
 
 $bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהלהגדרות"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-$query->editText($message = "<b>הקבוצה לא תקבל מידי יום שישי (בשעה 13:30) הודעה עם זמני כניסת השבת! ❌</b>", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+$query->editText($message = "<b>הקבוצה לא תקבל מידי יום שישי/חג הודעה עם הזמנים! ❌</b>", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
 } catch (Throwable $e) {
 }
 }
@@ -1155,8 +1394,7 @@ Amp\File\write(__DIR__."/"."data/$filex/alertshabat2.txt", "on");
 $bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהלהגדרות"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
-$query->editText($message = "<b>הקבוצה תקבל מידי יום שישי הודעה שתשלח בערב שבת ובצאת שבת!</b> ✅
-(כאשר הקבוצה נסגרת ונפתחת)", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+$query->editText($message = "<b>הקבוצה תקבל מידי יום שישי/חג הודעה שתשלח בכניסה(כשהקבוצה נסגרת) וביציאה(כשהקבוצה נפתחת)!</b> ✅", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
 } catch (Throwable $e) {
 }
 }
@@ -1182,7 +1420,7 @@ unlink(__DIR__."/"."data/$filex/alertshabat2.txt");
 $bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהלהגדרות"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
-$query->editText($message = "<b>הקבוצה לא תקבל מידי יום שישי הודעה שתשלח בערב שבת ובצאת שבת!</b> ❌", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+$query->editText($message = "<b>הקבוצה לא תקבל מידי יום שישי/חג הודעת פתיחה/סגירה!</b> ❌", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
 } catch (Throwable $e) {
 }
 }
@@ -1205,7 +1443,7 @@ $bot_API_markup[] = [['text'=>"תצוגה מקדימה מלאה 👁",'callback_
 $bot_API_markup[] = [['text'=>"חזרה להגדרות",'callback_data'=>"חזרהלהגדרות"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
-$query->editText($message = "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת כשהקבוצה נפתחת!", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+$query->editText($message = "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת/חג כשהקבוצה נפתחת!", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
     if (file_exists(__DIR__."/"."data/$userid/grs1.txt")) {
 unlink(__DIR__."/"."data/$userid/grs1.txt");
 }
@@ -1231,7 +1469,7 @@ $bot_API_markup[] = [['text'=>"תצוגה מקדימה מלאה 👁",'callback_
 $bot_API_markup[] = [['text'=>"חזרה להגדרות",'callback_data'=>"חזרהלהגדרות"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
-$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת כשהקבוצה נפתחת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת/חג כשהקבוצה נפתחת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
 
 			try {
 $this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
@@ -2031,14 +2269,14 @@ $bot_API_markup[] = [['text'=>"תצוגה מקדימה מלאה 👁",'callback_
 $bot_API_markup[] = [['text'=>"חזרה להגדרות",'callback_data'=>"חזרהלהגדרות"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
-$query->editText($message = "כאן תוכל להגדיר הודעת סגירה מותאמת אישית שתשלח בערב שבת כשהקבוצה נסגרת!", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+$query->editText($message = "כאן תוכל להגדיר הודעת סגירה מותאמת אישית שתשלח בערב שבת/חג כשהקבוצה נסגרת!", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
     if (file_exists(__DIR__."/"."data/$userid/grs1.txt")) {
 unlink(__DIR__."/"."data/$userid/grs1.txt");
 }
 } catch (Throwable $e) {}
 }
 
-  #[FilterButtonQueryData('חזרההודעתסגירה')]
+#[FilterButtonQueryData('חזרההודעתסגירה')]
 public function CloseMessage2(callbackQuery $query) {
 try {
 $userid = $query->userId;   
@@ -2057,7 +2295,7 @@ $bot_API_markup[] = [['text'=>"תצוגה מקדימה מלאה 👁",'callback_
 $bot_API_markup[] = [['text'=>"חזרה להגדרות",'callback_data'=>"חזרהלהגדרות"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
-$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת סגירה מותאמת אישית שתשלח בערב שבת כשהקבוצה נסגרת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת סגירה מותאמת אישית שתשלח בערב שבת/חג כשהקבוצה נסגרת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
 
 			try {
 $this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
@@ -2424,7 +2662,7 @@ $query->editText($message = "<b>הכפתורים הוסרו</b> 🗑", $replyMar
 }
 
 #[Handler]
-public function HandleGroupMsgSet2(Incoming & PrivateMessage $message): void {
+public function HandleGroupMsgSet2(Incoming & PrivateMessage & IsNotEdited $message): void {
 		try {
 $messagetext = $message->message;
 $entities = $message->entities;
@@ -2840,102 +3078,217 @@ $this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדי
 } catch (Throwable $e) {}
 }
 
+/* ================ stats ================ */
 #[FilterCommandCaseInsensitive('stats')]
-public function StatsGroups(Incoming $message): void {
-try {
-$sentMessage = $this->messages->sendMessage(peer: $message->chatId, message: "⌛️");	
-$sentMessage2 = $this->extractMessageId($sentMessage); 
+public function StatsGroups(
+    Incoming & IsNotEdited $message
+): void {
 
-$dialogs = $this->getDialogIds();
-$numFruits = count($dialogs);
-$peerList31 = [];
-foreach($dialogs as $peer)
-{
-try {
-$info = $this->getInfo($peer);
-if(!isset($info['type']) || $info['type'] != "supergroup"){
-continue;
-}
-$peerList31[]=$peer;
-} catch (Throwable $e) {
-continue;
-}
-}
-$numFruits31 = count($peerList31);
+    try {
 
-$peerList312 = [];
-foreach($dialogs as $peer)
-{
-	try {
-$info = $this->getInfo($peer);
-if(!isset($info['type']) || $info['type'] != "chat"){
-continue;
-}
-$peerList312[]=$peer;
-} catch (Throwable $e) {
-continue;
-}
-}
-$numFruits312 = count($peerList312);
+        $sentMessage = $this->messages->sendMessage(
+            peer: $message->chatId,
+            message: "⌛️ Loading statistics..."
+        );
 
-if (!isset($numFruits312)) {
-$numFruits312 = 0;
-} else {
-}
-if (!isset($numFruits31)) {
-$numFruits31 = 0;
-} else {
-}
-$numFruits3new = $numFruits312 + $numFruits31;
+        $messageId = $this->extractMessageId(
+            $sentMessage
+        );
 
-$this->messages->editMessage(peer: $message->chatId, id: $sentMessage2, message: "<b>📊 סך הכל קבוצות שומרות שבת בזכותי:</b> <code>$numFruits3new</code>", parse_mode: 'HTML');
-} catch (Throwable $e) {}
+        $dialogs = $this->getDialogIds();
+
+        $supergroups = 0;
+        $normalGroups = 0;
+        $lockedGroups = 0;
+        $alertsEnabled = 0;
+
+        foreach ($dialogs as $peer) {
+            try {
+
+                $info = $this->getInfo($peer);
+
+                if (
+                    !isset($info['type'])
+                ) {
+                    continue;
+                }
+
+
+                if ($info['type'] === 'supergroup') {
+                    $supergroups++;
+                }
+
+
+                if ($info['type'] === 'chat') {
+                    $normalGroups++;
+                }
+
+                if (
+                    isset(
+                        $info['Chat']['default_banned_rights']['send_messages']
+                    ) &&
+                    $info['Chat']['default_banned_rights']['send_messages']
+                ) {
+                    $lockedGroups++;
+                }
+
+                if (
+                    file_exists(
+                        __DIR__ . "/data/$peer/alertshabat.txt"
+                    )
+                ) {
+                    $alertsEnabled++;
+                }
+
+            } catch (\Throwable $e) {
+                continue;
+            }
+        }
+
+        $totalGroups = $supergroups + $normalGroups;
+
+        $zmanim = $this->getShabbatLockTimes();
+
+        $closeDateTime =
+            $zmanim['close_datetime'] ?? 'Unknown';
+
+        $openDateTime =
+            $zmanim['open_datetime'] ?? 'Unknown';
+
+        $closeDateObj = \DateTime::createFromFormat(
+            'd/m/Y H:i',
+            $closeDateTime
+        );
+
+        $openDateObj = \DateTime::createFromFormat(
+            'd/m/Y H:i',
+            $openDateTime
+        );
+
+        $isLockedNow = false;
+
+        if (
+            $closeDateObj &&
+            $openDateObj
+        ) {
+
+            $nowTs = time();
+
+            $closeTs = $closeDateObj->getTimestamp();
+
+            $openTs = $openDateObj->getTimestamp();
+
+            $isLockedNow =
+                $closeTs <= $nowTs &&
+                $openTs > $nowTs;
+        }
+
+        $systemStatus = $isLockedNow
+            ? 'סגור'
+            : 'פתוח';
+
+        $testModeStatus =
+            $this->testMode
+                ? 'פועל'
+                : 'כבוי';
+
+        $version = 'v2.0.0';
+
+        $statsMessage =
+"📊 <b>סטטיסטיקות</b> 📊
+
+🕯 <b>קבוצות שומרות שבת/חג:</b> <code>{$totalGroups}</code>
+- <b>קבוצות על:</b> <code>{$supergroups}</code>
+- <b>קבוצות רגילות:</b> <code>{$normalGroups}</code>
+
+🔒 <b>קבוצות סגורות כרגע:</b> <code>{$lockedGroups}</code>
+
+🔔 <b>קבוצות שהפעילו זמנים:</b> <code>{$alertsEnabled}</code>
+
+🕯 <b>זמן סגירה הבא:</b> <code>{$closeDateTime}</code>
+
+🍷 <b>זמן פתיחה הבא:</b> <code>{$openDateTime}</code>
+
+⚡ <b>מצב קבוצות נוכחי:</b> <code>{$systemStatus}</code>
+
+🧪 <b>מצב בדיקות:</b> <code>{$testModeStatus}</code>
+
+🤖 <b>גרסת הבוט:</b> <code>{$version}</code>";
+
+        $this->messages->editMessage(
+            peer: $message->chatId,
+            id: $messageId,
+            message: $statsMessage,
+            parse_mode: 'HTML'
+        );
+
+    } catch (\Throwable $e) {
+
+        $this->messages->sendMessage(
+            peer: $message->chatId,
+            message:
+                "❌ Error:\n\n" .
+                $e->getMessage()
+        );
+    }
 }
 
+/* ================ cron ================ */
 #[Cron(period: 60.0)] 
-public function cron1(): void {
+public function shabatCron(): void {
 try {
 	
 date_default_timezone_set("Asia/Jerusalem");
-$TIME = date('H:i');
-$DATE = date('d/m/Y');
-$today = date("d/m/Y H:i"); 
 
-if (file_exists(__DIR__."/"."systemtimein.txt")) {
-$systemtime = Amp\File\read(__DIR__."/"."systemtimein.txt");
+$zmanim = $this->testMode ? $this->getTestShabbatLockTimes(): $this->getShabbatLockTimes();
 
+$closeDateTime = $zmanim['close_datetime'];
+$closeDateOnly = null;
+if ($closeDateTime) {
 
-$dateTime = DateTime::createFromFormat('H:i', $systemtime);
-$dateTime->sub(new DateInterval('PT10M'));
-$formattedTime = $dateTime->format('H:i');
-}else{
-$formattedTime = "null";
+    $closeDate = \DateTime::createFromFormat(
+        'd/m/Y H:i',
+        $closeDateTime
+    );
+
+    if ($closeDate !== false) {
+        $closeDateOnly = $closeDate->format('d/m/Y');
+    }
 }
-if (file_exists(__DIR__."/"."systemdatein.txt")) {
-$systemdate = Amp\File\read(__DIR__."/"."systemdatein.txt");
-}else{
-$systemdate = "null";
-}
-if (file_exists(__DIR__."/"."systemtimeout.txt")) {
-$systemtime2 = Amp\File\read(__DIR__."/"."systemtimeout.txt");
+$openDateTime  = $zmanim['open_datetime'];
+$now = date('d/m/Y H:i');
 
+$closeLockFile = __DIR__ . "/close_lock.txt";
+$alreadyClosed = false;
+if (file_exists($closeLockFile)) {
 
-$dateTime2 = DateTime::createFromFormat('H:i', $systemtime2);
-$dateTime2->sub(new DateInterval('PT0M'));
-$formattedTime2 = $dateTime2->format('H:i');
-}else{
-$formattedTime2 = "null";
-}
-if (file_exists(__DIR__."/"."systemdateout.txt")) {
-$systemdate2 = Amp\File\read(__DIR__."/"."systemdateout.txt");
-}else{
-$systemdate2 = "null";
+    $lockData = trim(
+        Amp\File\read($closeLockFile)
+    );
+
+    if ($lockData === $closeDateTime) {
+        $alreadyClosed = true;
+    }
 }
 
-$TIMER = "$today";
-$TIMETOCHECK2 = "$systemdate $formattedTime";
-if($TIMER == $TIMETOCHECK2 ){
+$nowTs = time();
 
+$closeDateObj = \DateTime::createFromFormat(
+    'd/m/Y H:i',
+    $closeDateTime
+);
+
+$closeTs = $closeDateObj
+    ? $closeDateObj->getTimestamp()
+    : 0;
+
+if (
+    $closeTs <= $nowTs &&
+    ($nowTs - $closeTs) < 120 &&
+    !$alreadyClosed
+) {
+
+    Amp\File\write($closeLockFile, $closeDateTime);
 
 if (file_exists(__DIR__."/"."data/DBgroups.txt")) {
 $userstoasend = Amp\File\read(__DIR__."/"."data/DBgroups.txt");  
@@ -3130,7 +3483,7 @@ $pattern = '/(.+?)\s*-\s*(http[^\s]+)/i';
 preg_match_all($pattern, $input, $matches, PREG_SET_ORDER);
 
 $output = [];
-
+$bot_API_markup_welcome = [];
 foreach ($matches as $index => $match) {
     $buttonText = trim($match[1]);
     $buttonUrl = trim($match[2]);
@@ -3191,12 +3544,30 @@ continue;
 
 }
 
-
 }
 
-$TIMER = "$today";
-$TIMETOCHECK1 = "$systemdate 13:30";
-if($TIMER == $TIMETOCHECK1 ){
+$alertLockFile = __DIR__ . "/alert_lock.txt";
+$alreadyAlerted = false;
+if (file_exists($alertLockFile)) {
+
+    $lockData = trim(Amp\File\read($alertLockFile));
+
+    if ($lockData === $closeDateOnly) {
+        $alreadyAlerted = true;
+    }
+}
+
+if (
+    $closeDateOnly &&
+    date('d/m/Y') === $closeDateOnly &&
+    date('H:i') === (
+    $this->testMode
+        ? $this->getAlertTestTime()
+        : '13:30') &&
+    !$alreadyAlerted
+) {
+
+    Amp\File\write($alertLockFile, $closeDateOnly);
 
 if (file_exists(__DIR__."/"."data/DBgroups.txt")) {
 $userstoasend = Amp\File\read(__DIR__."/"."data/DBgroups.txt");  
@@ -3212,7 +3583,6 @@ $me_username = $me['username'];
 foreach ($userstoasend1 as $peer) {
 try {
 if (file_exists(__DIR__."/"."data/$peer/alertshabat.txt")) {
-
 $inlineQueryPeerTypePM = ['_' => 'inlineQueryPeerTypePM'];
 $inlineQueryPeerTypeChat = ['_' => 'inlineQueryPeerTypeChat'];
 $inlineQueryPeerTypeBotPM = ['_' => 'inlineQueryPeerTypeBotPM'];
@@ -3238,9 +3608,33 @@ continue;
 
 }
 
-$TIMER = "$today";
-$TIMETOCHECK3 = "$systemdate2 $formattedTime2";
-if($TIMER == $TIMETOCHECK3 ){
+$openLockFile = __DIR__ . "/open_lock.txt";
+$alreadyOpened = false;
+if (file_exists($openLockFile)) {
+
+    $lockData = trim(Amp\File\read($openLockFile));
+
+    if ($lockData === $openDateTime) {
+        $alreadyOpened = true;
+    }
+}
+
+$openDateObj = \DateTime::createFromFormat(
+    'd/m/Y H:i',
+    $openDateTime
+);
+
+$openTs = $openDateObj
+    ? $openDateObj->getTimestamp()
+    : 0;
+
+if (
+    $openTs <= $nowTs &&
+    ($nowTs - $openTs) < 120 &&
+    !$alreadyOpened
+) {
+
+    Amp\File\write($openLockFile, $openDateTime);
 
 if (file_exists(__DIR__."/"."data/DBgroups.txt")) {
 $userstoasend = Amp\File\read(__DIR__."/"."data/DBgroups.txt");  
@@ -3253,6 +3647,7 @@ try {
 
 if (file_exists(__DIR__."/"."data/$peer/chatb1.txt")) {
 $lines = file(__DIR__."/"."data/$peer/chatb1.txt");
+$lines = array_pad($lines, 21, "false\n");
 $dillerr1 = $lines[0];
 $dillerr2 = $lines[1];
 $dillerr3 = $lines[2];
@@ -3349,7 +3744,7 @@ $pattern = '/(.+?)\s*-\s*(http[^\s]+)/i';
 preg_match_all($pattern, $input, $matches, PREG_SET_ORDER);
 
 $output = [];
-
+$bot_API_markup_welcome = [];
 foreach ($matches as $index => $match) {
     $buttonText = trim($match[1]);
     $buttonUrl = trim($match[2]);
@@ -3413,74 +3808,9 @@ continue;
 }
 }
 
-#[Cron(period: 1800.0)] 
-public function cron4(): void {
-try {
-        $candleTimes   = [];
-        $havdalahTimes = [];
-        $holidays      = []; 
-        $date          = '';
-        $parashaText   = '';
-
-            $client = HttpClientBuilder::buildDefault();
-            $url = "https://www.hebcal.com/shabbat?cfg=json&geonameid=281184&ue=off&b=18&M=on&lg=he-x-NoNikud&tgt=_top";
-
-            $response = $client->request(new Request($url));
-            $body = $response->getBody()->buffer();
-            $json = json_decode($body, true);
-
-            if (!$json || !isset($json['items'])) {
-            }
-
-            $candles  = null;
-            $havdalah = null;
-
-            foreach ($json['items'] as $item) {
-                switch ($item['category']) {
-                    case 'candles':
-                        $holidayName = $item['memo'] ?? null;
-                        if ($holidayName && isset($holidays[$holidayName])) {
-                            $holidays[$holidayName]['candles'] = (new \DateTime($item['date']))->format('H:i');
-                        } else {
-                            $candles = $item; // שבת
-                        }
-                        break;
-
-                    case 'havdalah':
-                        $holidayName = $item['memo'] ?? null;
-                        if ($holidayName && isset($holidays[$holidayName])) {
-                            $holidays[$holidayName]['havdalah'] = (new \DateTime($item['date']))->format('H:i');
-                        } else {
-                            $havdalah = $item; // שבת
-                        }
-                        break;
-
-                    case 'parashat':
-                        $parashaText = $item['hebrew'];
-                        break;
-
-                    case 'holiday':
-                            $hDate  = substr($item['date'],0,10);
-                            $hTitle = $item['hebrew'];
-                            $holidays[$hTitle]['date'] = $hDate;
-                        break;
-                }
-            }
-
-            $candleTime = isset($candles['date']) ? (new \DateTime($candles['date']))->format('H:i') : 'לא ידוע';
-            $havdalahTime = isset($havdalah['date']) ? (new \DateTime($havdalah['date']))->format('H:i') : 'לא ידוע';
-            $candleDay = isset($candles['date']) ? (new \DateTime($candles['date']))->format('d/m/Y') : '---';
-            $havdalahDay = isset($havdalah['date']) ? (new \DateTime($havdalah['date']))->format('d/m/Y') : '---';
-
-Amp\File\write(__DIR__."/"."systemtimein.txt",$candleTime);
-Amp\File\write(__DIR__."/"."systemdatein.txt",$candleDay);
-Amp\File\write(__DIR__."/"."systemtimeout.txt",$havdalahTime);
-Amp\File\write(__DIR__."/"."systemdateout.txt",$havdalahDay);
-} catch (Throwable $e) {}
-}
-
+/* ================ payments / donate ================ */
 #[FilterCommandCaseInsensitive('donate')]
-public function Payments(Incoming & PrivateMessage  $message): void {
+public function Payments(Incoming & PrivateMessage & IsNotEdited $message): void {
 try {
 $messagetext = $message->message;
 $messageid = $message->id;
@@ -3646,12 +3976,230 @@ USERNAME: $username
 } catch (\Throwable $e) {}
 }
 
-#########################################
-# ADMIN COMMANDS #
-#########################################
+/* ================ admin handlers ================ */
+
+/*
+* debug - זמנים
+*/
+#[FilterCommandCaseInsensitive('testzmanim')]
+public function testzmanim(
+    Incoming & PrivateMessage & FromAdmin & IsNotEdited $message
+): void {
+
+    try {
+
+        $zmanim = $this->testMode
+            ? $this->getTestShabbatLockTimes()
+            : $this->getShabbatLockTimes();
+
+        $text =
+            "🧪 Debug Zmanim\n\n" .
+
+            "Test mode: " .
+            ($this->testMode ? 'ON ✅' : 'OFF ❌') .
+            "\n\n" .
+
+            "close_datetime: " .
+            ($zmanim['close_datetime'] ?? 'null') .
+            "\n" .
+
+            "open_datetime: " .
+            ($zmanim['open_datetime'] ?? 'null') .
+            "\n\n" .
+
+            "close_date: " .
+            ($zmanim['close_date'] ?? 'null') .
+            "\n" .
+
+            "close_time: " .
+            ($zmanim['close_time'] ?? 'null') .
+            "\n\n" .
+
+            "open_date: " .
+            ($zmanim['open_date'] ?? 'null') .
+            "\n" .
+
+            "open_time: " .
+            ($zmanim['open_time'] ?? 'null');
+
+        $this->messages->sendMessage(
+            peer: $message->chatId,
+            message: $text
+        );
+
+    } catch (\Throwable $e) {
+
+        $this->messages->sendMessage(
+            peer: $message->chatId,
+            message: "❌ Error:\n\n" . $e->getMessage()
+        );
+    }
+}
+
+/*
+* הגדרת פקודות
+*/
+#[FilterCommandCaseInsensitive('setcommands')]
+public function setcommands(Incoming & PrivateMessage & FromAdmin & IsNotEdited $message): void
+{
+    try {
+
+        $this->bots->setBotCommands(
+
+            scope: [
+                '_' => 'botCommandScopeUsers'
+            ],
+
+            commands: [
+
+                [
+                    '_' => 'botCommand',
+                    'command' => 'start',
+                    'description' => 'התחל שימוש ברובוט ✅'
+                ],
+
+                [
+                    '_' => 'botCommand',
+                    'command' => 'shabat',
+                    'description' => 'זמני שבת וחג 🕯'
+                ],
+
+                [
+                    '_' => 'botCommand',
+                    'command' => 'shabbat',
+                    'description' => 'זמני שבת וחג 🕯'
+                ],
+
+                [
+                    '_' => 'botCommand',
+                    'command' => 'stats',
+                    'description' => 'קבוצות שומרות שבת/חג 📊'
+                ],
+
+                [
+                    '_' => 'botCommand',
+                    'command' => 'donate',
+                    'description' => 'תמיכה ברובוט ⭐️'
+                ],
+            ]
+        );
+
+foreach ($this->getAdminIds() as $adminId) {
+        $this->bots->setBotCommands(
+
+            scope: [
+                '_' => 'botCommandScopePeer',
+                'peer' => $adminId
+            ],
+
+            commands: [
+                [
+                    '_' => 'botCommand',
+                    'command' => 'start',
+                    'description' => 'התחל שימוש ברובוט ✅'
+                ],
+
+                [
+                    '_' => 'botCommand',
+                    'command' => 'shabat',
+                    'description' => 'זמני שבת וחג 🕯'
+                ],
+
+                [
+                    '_' => 'botCommand',
+                    'command' => 'shabbat',
+                    'description' => 'זמני שבת וחג 🕯'
+                ],
+
+                [
+                    '_' => 'botCommand',
+                    'command' => 'stats',
+                    'description' => 'קבוצות שומרות שבת/חג 📊'
+                ],
+
+                [
+                    '_' => 'botCommand',
+                    'command' => 'donate',
+                    'description' => 'תמיכה ברובוט ⭐️'
+                ],
+
+                [
+                    '_' => 'botCommand',
+                    'command' => 'admin',
+                    'description' => 'פאנל ניהול ⚙️'
+                ],
+
+                [
+                    '_' => 'botCommand',
+                    'command' => 'testzmanim',
+                    'description' => 'דיבוג זמנים 🧪'
+                ],
+
+                [
+                    '_' => 'botCommand',
+                    'command' => 'restart',
+                    'description' => 'אתחל את הבוט 🔄'
+                ],
+            ]
+        );
+}
+
+$this->bots->setBotCommands(
+
+    scope: [
+        '_' => 'botCommandScopeChatAdmins'
+    ],
+
+    commands: [
+
+        [
+            '_' => 'botCommand',
+            'command' => 'add',
+            'description' => 'הפעלת שמירת שבת/חג 🕯'
+        ],
+
+        [
+            '_' => 'botCommand',
+            'command' => 'remove',
+            'description' => 'כיבוי שמירת שבת/חג ❌'
+        ],
+
+        [
+            '_' => 'botCommand',
+            'command' => 'settings',
+            'description' => 'הגדרות הקבוצה ⚙️'
+        ],
+    ]
+);
+
+        $this->messages->sendMessage(
+            peer: $message->chatId,
+            message: "✅ Commands updated successfully"
+        );
+
+    } catch (\Throwable $e) {
+
+        $this->messages->sendMessage(
+            peer: $message->chatId,
+            message: "❌ Error:\n\n" . $e->getMessage()
+        );
+    }
+}
+
+/*
+* כפתורים פאנל ניהול
+*/
+public function getAdminKeyboard() {
+    $markup[] = [['text'=>"סטטיסטיקות מנויים 📊",'callback_data'=>"סטטיסטיקות"]];
+    $markup[] = [['text'=>"הצג מנויים 👁",'callback_data'=>"רשימתמשתמשים"]];
+    $markup[] = [['text'=>"שידור למנויים 📮",'callback_data'=>"Broadcast"]];
+    $markup = [ 'inline_keyboard'=> $markup];
+
+    return $markup;
+}
 
 #[FilterCommandCaseInsensitive('admin')]
-public function admincommand(Incoming & PrivateMessage & FromAdmin $message): void {
+public function admincommand(Incoming & PrivateMessage & FromAdmin & IsNotEdited $message): void {
 		try {
 $senderid = $message->senderId;
 $User_Full = $this->getInfo($message->senderId);
@@ -3668,12 +4216,13 @@ if($username == null){
 $username = "null";
 }
 
-$bot_API_markup[] = [['text'=>"סטטיסטיקות מנויים 📊",'callback_data'=>"סטטיסטיקות"]];
-$bot_API_markup[] = [['text'=>"הצג מנויים 👁",'callback_data'=>"רשימתמשתמשים"]];
-$bot_API_markup[] = [['text'=>"שידור למנויים 📮",'callback_data'=>"Broadcast"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$markup = $this->getAdminKeyboard();
+$this->messages->sendMessage(peer: $message->senderId, message: "<b>ברוך הבא מנהל! 👋</b>
+/setcommands - הגדר פקודות
+/testzmanim - דיבוג זמנים
+/restart - אתחל את המערכת
 
-$this->messages->sendMessage(peer: $message->senderId, message: "<b>ברוך הבא מנהל! 👋</b>", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+", reply_markup: $markup, parse_mode: 'HTML');
     if (file_exists("data/$senderid/grs1.txt")) {
 unlink("data/$senderid/grs1.txt");
 }
@@ -3693,13 +4242,13 @@ $first_name = "null";
 $ADMIN = $this->getAdminIds();
 if (in_array((string)$userid, array_map('strval', $ADMIN), true)) {
 	
-$bot_API_markup[] = [['text'=>"סטטיסטיקות מנויים 📊",'callback_data'=>"סטטיסטיקות"]];
-$bot_API_markup[] = [['text'=>"הצג מנויים 👁",'callback_data'=>"רשימתמשתמשים"]];
-$bot_API_markup[] = [['text'=>"שידור למנויים 📮",'callback_data'=>"Broadcast"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$markup = $this->getAdminKeyboard();
+$query->editText($message = "<b>ברוך הבא מנהל! 👋</b>
+/setcommands - הגדר פקודות
+/testzmanim - דיבוג זמנים
+/restart - אתחל את המערכת
 
-
-$query->editText($message = "<b>ברוך הבא מנהל! 👋</b>", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+", $replyMarkup = $markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
 if (file_exists("data/$userid/grs1.txt")) {
 unlink("data/$userid/grs1.txt");
 }
@@ -3720,13 +4269,13 @@ try {
 $this->messages->deleteMessages(revoke: true, id: [$msgid]); 
 } catch (Throwable $e) {}
 
-$bot_API_markup[] = [['text'=>"סטטיסטיקות מנויים 📊",'callback_data'=>"סטטיסטיקות"]];
-$bot_API_markup[] = [['text'=>"הצג מנויים 👁",'callback_data'=>"רשימתמשתמשים"]];
-$bot_API_markup[] = [['text'=>"שידור למנויים 📮",'callback_data'=>"Broadcast"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$markup = $this->getAdminKeyboard();
+$this->messages->sendMessage(peer: $userid, message: "<b>ברוך הבא מנהל! 👋</b>
+/setcommands - הגדר פקודות
+/testzmanim - דיבוג זמנים
+/restart - אתחל את המערכת
 
-
-$this->messages->sendMessage(peer: $userid, message: "<b>ברוך הבא מנהל! 👋</b>", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+", reply_markup: $markup, parse_mode: 'HTML');
 
 if (file_exists(__DIR__."/data/$userid/grs1.txt")) {
 unlink(__DIR__."/data/$userid/grs1.txt");
@@ -3748,6 +4297,16 @@ unlink(__DIR__."/data/$userid/media.txt");
 }
 } catch (Throwable $e) {}
 }
+
+/* ================ restart ================ */
+public static function getPlugins(): array {
+    return [\danog\MadelineProto\EventHandler\Plugin\RestartPlugin::class];
+}
+public static function getPluginPaths(): string|array|null {
+    return null;
+}
+
+/* ================ מנויים ================ */
 
 #[FilterButtonQueryData('רשימתמשתמשים')] 
 public function reshimamishtamshim(callbackQuery $query)
@@ -4222,6 +4781,7 @@ unlink(__DIR__."/data/$userid/grs1.txt");
 } catch (Throwable $e) {}
 }
 
+/* ================ סטטיסטיקות ================ */
 #[FilterButtonQueryData('סטטיסטיקות')]
 public function StatsUsers(callbackQuery $query)
 {
@@ -4285,6 +4845,11 @@ $this->messages->deleteMessages(revoke: true, id: [$query->messageId]);
 $query->answer($message = "I can't close the message, close it yourself.", $alert = false, $url = null, $cacheTime = 0);		
 }
 }
+
+/* ================ מערכת שידור ================ */
+///-----------------------------------------
+# https://github.com/WizardLoop/BroadcastManager
+///-----------------------------------------
 
 #[FilterButtonQueryData('Broadcast')] 
 public function broadcastCommand(callbackQuery $query)
@@ -5256,18 +5821,11 @@ $settings->setAppInfo((new \danog\MadelineProto\Settings\AppInfo)->setApiId((int
 $logger = (new \danog\MadelineProto\Settings\Logger)->setLevel(\danog\MadelineProto\Logger::ERROR);
 $settings->setLogger($logger);
 
-Shabbat::startAndLoopBot(__DIR__.'/bot.madeline', $BOT_TOKEN, $settings);
+Shabbat::startAndLoopBot(__DIR__.'/bot.shabbat', $BOT_TOKEN, $settings);
 
 } catch (\Throwable $e) {
-    if ($e instanceof \Amp\TimeoutException || $e instanceof \Amp\CancelledException) {
-
-//            \Amp\Future\complete(\Amp\delay(3.0)->then(fn() => exit(1)));
-//            return;
-
-            exit(1);
-    }
-
-//    echo "\n" . $e->getMessage() . "\n";
+if (strpos($e->getMessage(), 'bad_msg_notification') !== false) exit(1);
+if ($e instanceof \Amp\TimeoutException || $e instanceof \Amp\CancelledException) exit(1);
 }
 }
 RunBot();
