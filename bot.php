@@ -1034,7 +1034,7 @@ if($type == "supergroup"){
 
 if($message->senderId == $message->chatId){
 $txtbot = "<b>הינך מנהל אנונימי.</b>
-רק מנהל לא אנונימי יכול להוסיף את הקבוצה לבסיס נתונים!";
+רק מנהל לא אנונימי יכול לפתוח תפריט הגדרות!";
 $this->messages->sendMessage(peer: $message->chatId, message: "$txtbot", parse_mode: 'HTML');
 }else{
 	
@@ -1374,6 +1374,613 @@ $query->editText($message = "<b>הקבוצה לא תקבל מידי יום שי�
 } catch (Throwable $e) {
 }
 }
+
+
+/*
+* parser group buttons
+*/
+private function parseButtonsold(string $input): array {
+    $keyboard = [];
+
+    $lines = preg_split('/\r\n|\r|\n/', trim($input));
+
+    foreach ($lines as $line) {
+
+        $line = trim($line);
+
+        if ($line === '') {
+            continue;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | כמה כפתורים באותה שורה
+        |--------------------------------------------------------------------------
+        */
+
+        $buttonsInRow = explode('&&', $line);
+
+        $row = [];
+
+        foreach ($buttonsInRow as $buttonRaw) {
+
+            $buttonRaw = trim($buttonRaw);
+
+            /*
+            |--------------------------------------------------------------------------
+            | text - action - options
+            |--------------------------------------------------------------------------
+            */
+
+            $parts = array_map(
+                'trim',
+                explode(' - ', $buttonRaw)
+            );
+
+            if (count($parts) < 2) {
+                continue;
+            }
+
+            $text = $parts[0];
+
+            $action = $parts[1];
+
+            $button = [
+                'text' => $text,
+            ];
+
+            /*
+            |--------------------------------------------------------------------------
+            | URL
+            |--------------------------------------------------------------------------
+            */
+
+            if (preg_match('/^https?:\/\//i', $action)) {
+
+                $button['url'] = $action;
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | alert:
+            |--------------------------------------------------------------------------
+            */
+
+            elseif (str_starts_with($action, 'alert:')) {
+
+                $button['callback_data'] =
+                    'alert:' .
+                    base64_encode(
+                        mb_substr(
+                            substr($action, 6),
+                            0,
+                            180
+                        )
+                    );
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | popup:
+            |--------------------------------------------------------------------------
+            */
+
+            elseif (str_starts_with($action, 'popup:')) {
+
+                $button['callback_data'] =
+                    'popup:' .
+                    base64_encode(
+                        mb_substr(
+                            substr($action, 6),
+                            0,
+                            180
+                        )
+                    );
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | copy:
+            |--------------------------------------------------------------------------
+            */
+
+            elseif (str_starts_with($action, 'copy:')) {
+
+                $button['copy_text'] = [
+                    '_' => 'copyTextButton',
+                    'text' => substr($action, 5),
+                ];
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | style
+            |--------------------------------------------------------------------------
+            */
+
+            $style = [];
+
+            foreach ($parts as $index => $part) {
+
+                if ($index < 2) {
+                    continue;
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | style:bg_success
+                |--------------------------------------------------------------------------
+                */
+
+                if (str_starts_with($part, 'style:')) {
+
+                    $styleValue = substr($part, 6);
+
+                    if ($styleValue === 'bg_success') {
+                        $style['bg_success'] = true;
+                    }
+
+                    if ($styleValue === 'bg_primary') {
+                        $style['bg_primary'] = true;
+                    }
+
+                    if ($styleValue === 'bg_danger') {
+                        $style['bg_danger'] = true;
+                    }
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | icon:
+                |--------------------------------------------------------------------------
+                */
+
+                if (str_starts_with($part, 'icon:')) {
+
+                    $style['icon'] =
+                        (int) trim(
+                            substr($part, 5)
+                        );
+                }
+            }
+
+            if (!empty($style)) {
+
+                $button['style'] = array_merge(
+                    [
+                        '_' => 'keyboardButtonStyle'
+                    ],
+                    $style
+                );
+            }
+
+            $row[] = $button;
+        }
+
+        if (!empty($row)) {
+            $keyboard[] = $row;
+        }
+    }
+
+    return $keyboard;
+}
+
+private function parseButtons(string $input): array {
+    $rows = [];
+
+    $lines = preg_split(
+        '/\r\n|\r|\n/',
+        trim($input)
+    );
+
+    foreach ($lines as $line) {
+
+        $line = trim($line);
+
+        if ($line === '') {
+            continue;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | כמה כפתורים באותה שורה
+        |--------------------------------------------------------------------------
+        */
+
+        $buttonsInRow = explode(
+            '&&',
+            $line
+        );
+
+        $buttons = [];
+
+        foreach ($buttonsInRow as $buttonRaw) {
+
+            $buttonRaw = trim($buttonRaw);
+
+            /*
+            |--------------------------------------------------------------------------
+            | text - action - options
+            |--------------------------------------------------------------------------
+            */
+
+            $parts = array_map(
+                'trim',
+                explode(' - ', $buttonRaw)
+            );
+
+            if (count($parts) < 2) {
+                continue;
+            }
+
+            $text = $parts[0];
+
+            $action = $parts[1];
+
+            /*
+            |--------------------------------------------------------------------------
+            | style
+            |--------------------------------------------------------------------------
+            */
+
+            $style = [];
+
+            foreach ($parts as $index => $part) {
+
+                if ($index < 2) {
+                    continue;
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | style:
+                |--------------------------------------------------------------------------
+                */
+
+                if (
+                    str_starts_with(
+                        $part,
+                        'style:'
+                    )
+                ) {
+
+                    $styleValue = trim(
+                        substr($part, 6)
+                    );
+
+                    if ($styleValue === 'bg_success') {
+                        $style['bg_success'] = true;
+                    }
+
+                    if ($styleValue === 'bg_primary') {
+                        $style['bg_primary'] = true;
+                    }
+
+                    if ($styleValue === 'bg_danger') {
+                        $style['bg_danger'] = true;
+                    }
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | icon:
+                |--------------------------------------------------------------------------
+                */
+
+                if (
+                    str_starts_with(
+                        $part,
+                        'icon:'
+                    )
+                ) {
+
+                    $style['icon'] = (int) trim(
+                        substr($part, 5)
+                    );
+                }
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | URL button
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                preg_match(
+                    '/^https?:\/\//i',
+                    $action
+                )
+            ) {
+
+                $button = [
+                    '_' => 'keyboardButtonUrl',
+
+                    'text' => $text,
+
+                    'url' => $action,
+                ];
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | alert:
+            |--------------------------------------------------------------------------
+            */
+
+            elseif (
+                str_starts_with(
+                    $action,
+                    'alert:'
+                )
+            ) {
+
+                $button = [
+                    '_' => 'keyboardButtonCallback',
+
+                    'text' => $text,
+
+                    'data' =>
+                        'alert:' .
+                        base64_encode(
+                            mb_substr(
+                                substr($action, 6),
+                                0,
+                                180
+                            )
+                        ),
+                ];
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | popup:
+            |--------------------------------------------------------------------------
+            */
+
+            elseif (
+                str_starts_with(
+                    $action,
+                    'popup:'
+                )
+            ) {
+
+                $button = [
+                    '_' => 'keyboardButtonCallback',
+
+                    'text' => $text,
+
+                    'data' =>
+                        'popup:' .
+                        base64_encode(
+                            mb_substr(
+                                substr($action, 6),
+                                0,
+                                180
+                            )
+                        ),
+                ];
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | copy:
+            |--------------------------------------------------------------------------
+            */
+
+            elseif (
+                str_starts_with(
+                    $action,
+                    'copy:'
+                )
+            ) {
+
+                $button = [
+                    '_' => 'keyboardButtonCopy',
+
+                    'text' => $text,
+
+                    'copy_text' => substr(
+                        $action,
+                        5
+                    ),
+                ];
+            }
+
+            else {
+                continue;
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | style
+            |--------------------------------------------------------------------------
+            */
+
+            if (!empty($style)) {
+
+                $button['style'] = array_merge(
+                    [
+                        '_' => 'keyboardButtonStyle'
+                    ],
+                    $style
+                );
+            }
+
+            $buttons[] = $button;
+        }
+
+        if (!empty($buttons)) {
+
+            $rows[] = [
+                '_' => 'keyboardButtonRow',
+                'buttons' => $buttons,
+            ];
+        }
+    }
+
+    return [
+        '_' => 'replyInlineMarkup',
+        'rows' => $rows,
+    ];
+}
+
+/*
+* group buttons callback
+*/
+#[Handler]
+public function buttonCallbacks(CallbackQuery $query): void {
+try {
+    $data = $query->data;
+
+    if (str_starts_with($data, 'alert:')) {
+
+        $text = base64_decode(
+            substr($data, 6)
+        );
+
+        $query->answer(
+            message: $text,
+            alert: false
+        );
+
+        return;
+    }
+
+    if (str_starts_with($data, 'popup:')) {
+
+        $text = base64_decode(
+            substr($data, 6)
+        );
+
+        $query->answer(
+            message: $text,
+            alert: true
+        );
+
+        return;
+    }
+} catch (Throwable $e) {}
+}
+
+/*
+* group buttons validate input
+*/
+private function validateButtonsInput(string $input): bool {
+
+    $lines = preg_split(
+        '/\r\n|\r|\n/',
+        trim($input)
+    );
+
+    foreach ($lines as $line) {
+
+        $line = trim($line);
+
+        if ($line === '') {
+            continue;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | כמה כפתורים בשורה
+        |--------------------------------------------------------------------------
+        */
+
+        $buttons = explode(
+            '&&',
+            $line
+        );
+
+        foreach ($buttons as $button) {
+
+            $button = trim($button);
+
+            $parts = array_map(
+                'trim',
+                explode(' - ', $button)
+            );
+
+            /*
+            |--------------------------------------------------------------------------
+            | חייב לפחות:
+            | text - action
+            |--------------------------------------------------------------------------
+            */
+
+            if (count($parts) < 2) {
+                return false;
+            }
+
+            $action = $parts[1];
+
+            /*
+            |--------------------------------------------------------------------------
+            | URL
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                preg_match(
+                    '/^https?:\/\//i',
+                    $action
+                )
+            ) {
+                continue;
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | alert:
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                str_starts_with(
+                    $action,
+                    'alert:'
+                )
+            ) {
+                continue;
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | popup:
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                str_starts_with(
+                    $action,
+                    'popup:'
+                )
+            ) {
+                continue;
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | copy:
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                str_starts_with(
+                    $action,
+                    'copy:'
+                )
+            ) {
+                continue;
+            }
+
+            return false;
+        }
+    }
+
+    return true;
+}
+
 
 #[FilterButtonQueryData('הודעותלפניואחרי')]
 public function MessagesON(callbackQuery $query) {
@@ -1734,27 +2341,35 @@ $filex = "null";
 }
 
     if (file_exists(__DIR__."/"."data/$filex/MsgOpenerButtons.txt")) {
-$BUTTONS = Amp\File\read(__DIR__."/"."data/$filex/MsgOpenerButtons.txt");  
-$input = $BUTTONS;
+$BUTTONS = Amp\File\read(__DIR__."/"."data/$filex/MsgOpenerButtons.txt");
+$bot_API_markup = $this->parseButtons($BUTTONS);
+} else {
 
-$pattern = '/(.+?)\s*-\s*(http[^\s]+)/i';
-preg_match_all($pattern, $input, $matches, PREG_SET_ORDER);
-//$output = [];
-foreach ($matches as $index => $match) {
-    $buttonText = trim($match[1]);
-    $buttonUrl = trim($match[2]);
-
-//	$output[] = "$buttonText - $buttonUrl";
-$bot_API_markup[] = [['text'=>"$buttonText",'url'=>"$buttonUrl"]];
-}
+    $bot_API_markup = [
+        '_' => 'replyInlineMarkup',
+        'rows' => [],
+    ];
 }
 
-$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"הודעתפתיחה"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$bot_API_markup['rows'][] = [
+
+    '_' => 'keyboardButtonRow',
+
+    'buttons' => [
+
+        [
+            '_' => 'keyboardButtonCallback',
+
+            'text' => '🔙 חזור 🔙',
+
+            'data' => 'הודעתפתיחה',
+        ]
+    ]
+];
 
 $query->editText($message = "צפייה בכפתורים:", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
 } catch (Throwable $e) {
-$query->editText($message = $e->getMessage(), $replyMarkup = $bot_API_markup, $noWebpage = false, $scheduleDate = NULL);
+$query->editText($message = $e->getMessage());
 }
 }
 
@@ -1784,7 +2399,49 @@ $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
 $query->editText($message = "<b>שלח את הכפתורים שתרצה להוסיף בפורמט הבא:</b>
 <pre>Button text 1 - http://www.example.com/ \nButton text 2 - http://www.example2.com/</pre>
-", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+
+<b>🔘 שלח כפתורים בפורמט:</b>
+
+<pre>טקסט - פעולה</pre>
+
+<b>📌 פעולות נתמכות:</b>
+<pre>https://example.com
+alert:טקסט
+popup:טקסט
+copy:טקסט</pre>
+
+<b>📌 כמה כפתורים באותה שורה:</b>
+
+<pre>כפתור 1 - https://t.me/test1 &amp;&amp; כפתור 2 - https://t.me/test2</pre>
+
+<b>📌 עיצוב נתמך:</b>
+<pre>style:bg_primary
+style:bg_success
+style:bg_danger</pre>
+
+<b>📌 אייקון:</b>
+<pre>icon:123456 </pre>
+
+<b>📌 דוגמאות:</b>
+<pre>כניסה - https://t.me/test
+
+התראה - alert:שבת שלום - style: bg_danger
+
+פופאפ - popup:הקבוצה תיפתח במוצ&quot;ש
+
+העתקה - copy:https://t.me/test
+
+אישור - https://t.me/test - style:bg_success
+
+קבוצה - https://t.me/test - style:bg_primary - icon:5424972470023104089
+
+אתר - https://google.com &amp;&amp; תמיכה - https://t.me/support</pre>
+
+<b>⚠️ הערות:</b>
+<pre>• כל שורה חדשה = שורת כפתורים חדשה
+• &amp;&amp; = כמה כפתורים באותה שורה
+• ניתן לשלב style + icon יחד
+• ניתן להשתמש בלי עיצוב או אייקון</pre>", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
 Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'opener_buttons_1');
 $msgqutryid = $query->messageId;
 Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
@@ -2055,31 +2712,8 @@ Amp\File\write(__DIR__."/"."data/$filex/MsgOpenerMedia.txt", $botApiFileId);
 }
 
 if($check == "opener_buttons_1"){
- 
-if(!function_exists("isTextInCorrectFormat")){
-function isTextInCorrectFormat($messagetext) {
-    // Split the text into lines
-    $lines = explode("\n", $messagetext);
-    
-    // Define the regex pattern for matching each line
-    $pattern = "/^[^:]* - (https?:\/\/[^\s]+)$/i";
-    
-    foreach ($lines as $line) {
-        // Trim leading and trailing whitespace
-        $line = trim($line);
-        
-        // Check if the line matches the pattern
-        if (!preg_match($pattern, $line)) {
-            return false; // Found a line that doesn't match
-        }
-    }
-    
-    return true; // All lines match the pattern
-}
-}
 
-
-if (isTextInCorrectFormat($messagetext)) {
+if ($this->validateButtonsInput($messagetext)) {
 unlink(__DIR__."/data/$senderid/grs1.txt");
 
 Amp\File\write(__DIR__."/"."data/$filex/MsgOpenerButtons.txt", $messagetext);
@@ -2156,28 +2790,14 @@ $ENT = json_decode(Amp\File\read(__DIR__."/"."data/$filex/MsgOpener2.txt"),true)
 $ENT = null; 	
 }
 if (file_exists(__DIR__."/"."data/$filex/MsgOpenerButtons.txt")) {
-$BUTTONS = Amp\File\read(__DIR__."/"."data/$filex/MsgOpenerButtons.txt");  
+$BUTTONS = Amp\File\read(__DIR__."/"."data/$filex/MsgOpenerButtons.txt");
+$bot_API_markup_welcome = $this->parseButtons($BUTTONS);
+} else {
 
-$input = $BUTTONS;
-
-$pattern = '/(.+?)\s*-\s*(http[^\s]+)/i';
-
-preg_match_all($pattern, $input, $matches, PREG_SET_ORDER);
-
-$output = [];
-
-foreach ($matches as $index => $match) {
-    $buttonText = trim($match[1]);
-    $buttonUrl = trim($match[2]);
-
-$output[] = "$buttonText - $buttonUrl";
-$bot_API_markup_welcome[] = [['text'=>"$buttonText",'url'=>"$buttonUrl"]];
-}
-
-$bot_API_markup_welcome = [ 'inline_keyboard'=> $bot_API_markup_welcome,];
-
-}else{
-$bot_API_markup_welcome = null;
+    $bot_API_markup_welcome = [
+        '_' => 'replyInlineMarkup',
+        'rows' => [],
+    ];
 }
 
 $bot_API_markup[] = [['text'=>"מדיה 🖼",'callback_data'=>"הגדרמדיה_1"],['text'=>"👀 צפה",'callback_data'=>"צפהבמדיה_1"]];
@@ -2239,7 +2859,7 @@ $this->messages->deleteMessages(revoke: true, id: [$msgqutryid]);
 $OPENER = self::OPENER;
 $this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖➖");
 $this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
-$sentMessage = $this->messages->sendMessage(peer: $userid, message: $OPENER);
+$sentMessage = $this->messages->sendMessage(peer: $userid, message: $OPENER, reply_markup: $bot_API_markup_welcome);
 
 $this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת כשהקבוצה נפתחת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
 
@@ -2560,23 +3180,31 @@ $filex = "null";
 }
 
     if (file_exists(__DIR__."/"."data/$filex/MsgCloserButtons.txt")) {
-$BUTTONS = Amp\File\read(__DIR__."/"."data/$filex/MsgCloserButtons.txt");  
-$input = $BUTTONS;
+$BUTTONS = Amp\File\read(__DIR__."/"."data/$filex/MsgCloserButtons.txt");
+$bot_API_markup = $this->parseButtons($BUTTONS);
+} else {
 
-$pattern = '/(.+?)\s*-\s*(http[^\s]+)/i';
-preg_match_all($pattern, $input, $matches, PREG_SET_ORDER);
-//$output = [];
-foreach ($matches as $index => $match) {
-    $buttonText = trim($match[1]);
-    $buttonUrl = trim($match[2]);
-
-//	$output[] = "$buttonText - $buttonUrl";
-$bot_API_markup[] = [['text'=>"$buttonText",'url'=>"$buttonUrl"]];
-}
+    $bot_API_markup = [
+        '_' => 'replyInlineMarkup',
+        'rows' => [],
+    ];
 }
 
-$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"הודעתסגירה"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$bot_API_markup['rows'][] = [
+
+    '_' => 'keyboardButtonRow',
+
+    'buttons' => [
+
+        [
+            '_' => 'keyboardButtonCallback',
+
+            'text' => '🔙 חזור 🔙',
+
+            'data' => 'הודעתסגירה',
+        ]
+    ]
+];
 
 $query->editText($message = "צפייה בכפתורים:", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
 } catch (Throwable $e) {
@@ -2610,7 +3238,49 @@ $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
 $query->editText($message = "<b>שלח את הכפתורים שתרצה להוסיף בפורמט הבא:</b>
 <pre>Button text 1 - http://www.example.com/ \nButton text 2 - http://www.example2.com/</pre>
-", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+
+<b>🔘 שלח כפתורים בפורמט:</b>
+
+<pre>טקסט - פעולה</pre>
+
+<b>📌 פעולות נתמכות:</b>
+<pre>https://example.com
+alert:טקסט
+popup:טקסט
+copy:טקסט</pre>
+
+<b>📌 כמה כפתורים באותה שורה:</b>
+
+<pre>כפתור 1 - https://t.me/test1 &amp;&amp; כפתור 2 - https://t.me/test2</pre>
+
+<b>📌 עיצוב נתמך:</b>
+<pre>style:bg_primary
+style:bg_success
+style:bg_danger</pre>
+
+<b>📌 אייקון:</b>
+<pre>icon:123456 </pre>
+
+<b>📌 דוגמאות:</b>
+<pre>כניסה - https://t.me/test
+
+התראה - alert:שבת שלום - style: bg_danger
+
+פופאפ - popup:הקבוצה תיפתח במוצ&quot;ש
+
+העתקה - copy:https://t.me/test
+
+אישור - https://t.me/test - style:bg_success
+
+קבוצה - https://t.me/test - style:bg_primary - icon:5424972470023104089
+
+אתר - https://google.com &amp;&amp; תמיכה - https://t.me/support</pre>
+
+<b>⚠️ הערות:</b>
+<pre>• כל שורה חדשה = שורת כפתורים חדשה
+• &amp;&amp; = כמה כפתורים באותה שורה
+• ניתן לשלב style + icon יחד
+• ניתן להשתמש בלי עיצוב או אייקון</pre>", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
 Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'opener_buttons_2');
 $msgqutryid = $query->messageId;
 Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
@@ -2883,30 +3553,7 @@ Amp\File\write(__DIR__."/"."data/$filex/MsgCloserMedia.txt", $botApiFileId);
 
 if($check == "opener_buttons_2"){
  
-if(!function_exists("isTextInCorrectFormat")){
-function isTextInCorrectFormat($messagetext) {
-    // Split the text into lines
-    $lines = explode("\n", $messagetext);
-    
-    // Define the regex pattern for matching each line
-    $pattern = "/^[^:]* - (https?:\/\/[^\s]+)$/i";
-    
-    foreach ($lines as $line) {
-        // Trim leading and trailing whitespace
-        $line = trim($line);
-        
-        // Check if the line matches the pattern
-        if (!preg_match($pattern, $line)) {
-            return false; // Found a line that doesn't match
-        }
-    }
-    
-    return true; // All lines match the pattern
-}
-}
-
-
-if (isTextInCorrectFormat($messagetext)) {
+if ($this->validateButtonsInput($messagetext)) {
 unlink(__DIR__."/data/$senderid/grs1.txt");
 
 Amp\File\write(__DIR__."/"."data/$filex/MsgCloserButtons.txt", $messagetext);
@@ -2983,29 +3630,16 @@ $ENT = json_decode(Amp\File\read(__DIR__."/"."data/$filex/MsgCloser2.txt"),true)
 $ENT = null; 	
 }
 if (file_exists(__DIR__."/"."data/$filex/MsgCloserButtons.txt")) {
-$BUTTONS = Amp\File\read(__DIR__."/"."data/$filex/MsgCloserButtons.txt");  
+$BUTTONS = Amp\File\read(__DIR__."/"."data/$filex/MsgCloserButtons.txt");
+$bot_API_markup_welcome = $this->parseButtons($BUTTONS);
+} else {
 
-$input = $BUTTONS;
-
-$pattern = '/(.+?)\s*-\s*(http[^\s]+)/i';
-
-preg_match_all($pattern, $input, $matches, PREG_SET_ORDER);
-
-$output = [];
-
-foreach ($matches as $index => $match) {
-    $buttonText = trim($match[1]);
-    $buttonUrl = trim($match[2]);
-
-$output[] = "$buttonText - $buttonUrl";
-$bot_API_markup_welcome[] = [['text'=>"$buttonText",'url'=>"$buttonUrl"]];
+    $bot_API_markup_welcome = [
+        '_' => 'replyInlineMarkup',
+        'rows' => [],
+    ];
 }
 
-$bot_API_markup_welcome = [ 'inline_keyboard'=> $bot_API_markup_welcome,];
-
-}else{
-$bot_API_markup_welcome = null;
-}
 
 $bot_API_markup[] = [['text'=>"מדיה 🖼",'callback_data'=>"הגדרמדיה_2"],['text'=>"👀 צפה",'callback_data'=>"צפהבמדיה_2"]];
 $bot_API_markup[] = [['text'=>"טקסט 🔤",'callback_data'=>"הגדרטקסט_2"],['text'=>"👀 צפה",'callback_data'=>"צפהבטקסט_2"]];
@@ -3066,7 +3700,7 @@ $this->messages->deleteMessages(revoke: true, id: [$msgqutryid]);
 $OPENER = self::CLOSER;
 $this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖➖");
 $this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
-$sentMessage = $this->messages->sendMessage(peer: $userid, message: $OPENER);
+$sentMessage = $this->messages->sendMessage(peer: $userid, message: $OPENER, reply_markup: $bot_API_markup_welcome);
 
 $this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת סגירה מותאמת אישית שתשלח בערב שבת כשהקבוצה נסגרת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
 
@@ -3192,7 +3826,7 @@ public function StatsGroups(
                 ? 'פועל'
                 : 'כבוי';
 
-        $version = 'v2.0.0';
+        $version = 'v2.0.1';
 
         $statsMessage =
 "📊 <b>סטטיסטיקות</b> 📊
@@ -3474,28 +4108,14 @@ $ENT = json_decode(Amp\File\read(__DIR__."/"."data/$peer/MsgCloser2.txt"),true);
 $ENT = null; 	
 }
 if (file_exists(__DIR__."/"."data/$peer/MsgCloserButtons.txt")) {
-$BUTTONS = Amp\File\read(__DIR__."/"."data/$peer/MsgCloserButtons.txt");  
+$BUTTONS = Amp\File\read(__DIR__."/"."data/$peer/MsgCloserButtons.txt");
+$bot_API_markup_welcome = $this->parseButtons($BUTTONS);
+} else {
 
-$input = $BUTTONS;
-
-$pattern = '/(.+?)\s*-\s*(http[^\s]+)/i';
-
-preg_match_all($pattern, $input, $matches, PREG_SET_ORDER);
-
-$output = [];
-$bot_API_markup_welcome = [];
-foreach ($matches as $index => $match) {
-    $buttonText = trim($match[1]);
-    $buttonUrl = trim($match[2]);
-
-$output[] = "$buttonText - $buttonUrl";
-$bot_API_markup_welcome[] = [['text'=>"$buttonText",'url'=>"$buttonUrl"]];
-}
-
-$bot_API_markup_welcome = [ 'inline_keyboard'=> $bot_API_markup_welcome,];
-
-}else{
-$bot_API_markup_welcome = null;
+    $bot_API_markup_welcome = [
+        '_' => 'replyInlineMarkup',
+        'rows' => [],
+    ];
 }
 
 
@@ -3521,7 +4141,7 @@ $sentMessage = $this->messages->sendMessage(peer: $peer, message: "$TXT", entiti
 }else{
 
 $OPENER = self::CLOSER;
-$sentMessage = $this->messages->sendMessage(peer: $peer, message: $OPENER);
+$sentMessage = $this->messages->sendMessage(peer: $peer, message: $OPENER, reply_markup: $bot_API_markup_welcome);
 
 }
 
@@ -3735,28 +4355,14 @@ $ENT = json_decode(Amp\File\read(__DIR__."/"."data/$peer/MsgOpener2.txt"),true);
 $ENT = null; 	
 }
 if (file_exists(__DIR__."/"."data/$peer/MsgOpenerButtons.txt")) {
-$BUTTONS = Amp\File\read(__DIR__."/"."data/$peer/MsgOpenerButtons.txt");  
+$BUTTONS = Amp\File\read(__DIR__."/"."data/$peer/MsgOpenerButtons.txt");
+$bot_API_markup_welcome = $this->parseButtons($BUTTONS);
+} else {
 
-$input = $BUTTONS;
-
-$pattern = '/(.+?)\s*-\s*(http[^\s]+)/i';
-
-preg_match_all($pattern, $input, $matches, PREG_SET_ORDER);
-
-$output = [];
-$bot_API_markup_welcome = [];
-foreach ($matches as $index => $match) {
-    $buttonText = trim($match[1]);
-    $buttonUrl = trim($match[2]);
-
-$output[] = "$buttonText - $buttonUrl";
-$bot_API_markup_welcome[] = [['text'=>"$buttonText",'url'=>"$buttonUrl"]];
-}
-
-$bot_API_markup_welcome = [ 'inline_keyboard'=> $bot_API_markup_welcome,];
-
-}else{
-$bot_API_markup_welcome = null;
+    $bot_API_markup_welcome = [
+        '_' => 'replyInlineMarkup',
+        'rows' => [],
+    ];
 }
 
 if($MEDIA != null){
@@ -3781,7 +4387,7 @@ $sentMessage = $this->messages->sendMessage(peer: $peer, message: "$TXT", entiti
 }else{
 
 $OPENER = self::OPENER;
-$sentMessage = $this->messages->sendMessage(peer: $peer, message: $OPENER);
+$sentMessage = $this->messages->sendMessage(peer: $peer, message: $OPENER, reply_markup: $bot_API_markup_welcome);
 
 }
 
@@ -4878,7 +5484,7 @@ $query->editText($message = "<b>תפריט שידור, אנא בחר:</b>", $rep
 public function deleteLastBroadcast(callbackQuery $query)
 {
 try {
-$API = new \danog\MadelineProto\API(__DIR__.'/bot.madeline');
+$API = new \danog\MadelineProto\API(__DIR__.'/bot.shabbat');
 $manager = new BroadcastManager($API);
 BroadcastManager::setDataDir(__DIR__ . '/data');
 if (!$manager->hasLastBroadcast()) {
@@ -4895,7 +5501,7 @@ $manager->deleteLastBroadcastForAll($allUsers, $query->userId, 20);
 public function deleteAllBroadcast(callbackQuery $query)
 {
 try {
-$API = new \danog\MadelineProto\API(__DIR__.'/bot.madeline');
+$API = new \danog\MadelineProto\API(__DIR__.'/bot.shabbat');
 $manager = new BroadcastManager($API);
 BroadcastManager::setDataDir(__DIR__ . '/data');
 
@@ -4913,7 +5519,7 @@ $manager->deleteAllBroadcastsForAll($allUsers, $query->userId, 20);
 public function cancelPinned(callbackQuery $query)
 {
 try {
-$api = new \danog\MadelineProto\API(__DIR__.'/bot.madeline');
+$api = new \danog\MadelineProto\API(__DIR__.'/bot.shabbat');
 $manager = new BroadcastManager($api);
 BroadcastManager::setDataDir(__DIR__ . '/data');
 $query->answer($message = "אנא המתן...", $alert = false, $url = null, $cacheTime = 0);
@@ -4930,7 +5536,7 @@ public function LastBrodDATA(callbackQuery $query)
 {  
 try{
 
-$API = new \danog\MadelineProto\API(__DIR__.'/bot.madeline');
+$API = new \danog\MadelineProto\API(__DIR__.'/bot.shabbat');
 $manager = new BroadcastManager($API);
 BroadcastManager::setDataDir(__DIR__ . '/data');
 if ($manager->lastBroadcastData()) {
@@ -4958,7 +5564,7 @@ if($first_name == null){
 $first_name = "null";
 }
 
-$api = new \danog\MadelineProto\API(__DIR__.'/bot.madeline');
+$api = new \danog\MadelineProto\API(__DIR__.'/bot.shabbat');
 $manager = new BroadcastManager($api);
 BroadcastManager::setDataDir(__DIR__ . '/data');
 
@@ -5783,7 +6389,7 @@ $messages = [['message' => "$filexmsgidtxt", 'entities' => $filexmsgident, 'repl
 
 }
 
-$api = new \danog\MadelineProto\API(__DIR__.'/bot.madeline');
+$api = new \danog\MadelineProto\API(__DIR__.'/bot.shabbat');
 $manager = new BroadcastManager($api);
 BroadcastManager::setDataDir(__DIR__ . '/data');
 
