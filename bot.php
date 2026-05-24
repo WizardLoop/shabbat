@@ -6165,7 +6165,7 @@ $bot_API_markup[] = [['text'=>"📌 נעץ הודעה בצ'אט: ✖️",'callba
 
 $bot_API_markup[] = [['text'=>"📮 יעד תפוצה: $broadcast_send",'callback_data'=>"מצבתפוצה"]];
 
-$bot_API_markup[] = [['text'=>"👁 הצג כפתורי קישור",'callback_data'=>"צפהבכפתורים"]];
+$bot_API_markup[] = [['text'=>"👁 הצג כפתורי קישור",'callback_data'=>"צפהבכפתוריםמנהל"]];
 $bot_API_markup[] = [['text'=>"🔌 הוסף כפתורי קישור ➕",'callback_data'=>"הוספתכפתורים"]];
 
 $bot_API_markup[] = [['text'=>"✅ שדר הודעה ✅",'callback_data'=>"שדרהודעה"]];
@@ -6246,7 +6246,7 @@ $bot_API_markup[] = [['text'=>"📌 נעץ הודעה בצ'אט: ✖️",'callba
 }
 $bot_API_markup[] = [['text'=>"📮 יעד תפוצה: $broadcast_send",'callback_data'=>"מצבתפוצה"]];
 
-$bot_API_markup[] = [['text'=>"👁 הצג כפתורי קישור",'callback_data'=>"צפהבכפתורים"]];
+$bot_API_markup[] = [['text'=>"👁 הצג כפתורי קישור",'callback_data'=>"צפהבכפתוריםמנהל"]];
 $bot_API_markup[] = [['text'=>"🔌 הוסף כפתורי קישור ➕",'callback_data'=>"הוספתכפתורים"]];
 
 $bot_API_markup[] = [['text'=>"✅ שדר הודעה ✅",'callback_data'=>"שדרהודעה"]];
@@ -6634,7 +6634,7 @@ if(preg_match("/MESSAGE_NOT_MODIFIED/",$estring)){
 } catch (Throwable $e) {}
 }
 
-#[FilterButtonQueryData('צפהבכפתורים')] 
+#[FilterButtonQueryData('צפהבכפתוריםמנהל')] 
 public function buttonsmanageview(callbackQuery $query)
 {
 	try {
