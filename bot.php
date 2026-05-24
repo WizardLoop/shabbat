@@ -48,54 +48,38 @@ class Shabbat extends SimpleEventHandler
 {
 
 /*
-* test mode - change to true to check the cron
-*/
-private bool $testMode = false;
-private function getTestShabbatLockTimes(): array
-{
-    return [
-
-        /*
-        |--------------------------------------------------------------------------
-        | זמן סגירה לבדיקה
-        |--------------------------------------------------------------------------
-        */
-
-        'close_datetime' => '23/05/2026 19:00',
-
-        /*
-        |--------------------------------------------------------------------------
-        | זמן פתיחה לבדיקה
-        |--------------------------------------------------------------------------
-        */
-
-        'open_datetime' => '23/05/2026 19:10',
-
-        'close_time' => '19:00',
-
-        'open_time' => '19:10',
-
-        'close_date' => '23/05/2026',
-
-        'open_date' => '23/05/2026',
-    ];
-}
-private function getAlertTestTime(): string
-{
-    return '18:30';
-}
-
-/*
 * text - ברירת מחדל כניסה ויציאת שבת וחג
 */
 public const CLOSER = "הקבוצה שלנו שומרת שבת וחג! 🇮🇱\nותהיה סגורה עד זמן הבדלה/יציאה 🕯"; 
 public const OPENER = "הקבוצה פתוחה לכתיבת הודעות! 🇮🇱";	
 
-/*
+/* test mode
+* test mode - change to true to check the cron
+*/
+private bool $testMode = false;
+private string $testModeCloseDate = '23/05/2026';
+private string $testModeCloseTime = '19:00';
+private string $testModeOpenDate = '24/05/2026';
+private string $testModeOpenTime = '19:10';
+private string $testModeAlertTime = '13:35';
+private function getTestShabbatLockTimes(): array {
+    return [
+        'close_datetime' => $this->testModeCloseDate.' '.$this->testModeCloseTime,
+        'open_datetime' => $this->testModeOpenDate.' '.$this->testModeOpenTime,
+        'close_time' => $this->testModeCloseTime,
+        'open_time' => $this->testModeOpenTime,
+        'close_date' => $this->testModeCloseDate,
+        'open_date' => $this->testModeOpenDate,
+    ];
+}
+private function getAlertTestTime(): string {
+    return $this->testModeAlertTime;
+}
+
+/* zmanim handlers
  * זמני שבת
  */
-private function getZmanimForCities(): string
-{
+private function getZmanimForCities(): string {
     date_default_timezone_set('Asia/Jerusalem');
 
     $geonameIds = [
@@ -105,185 +89,412 @@ private function getZmanimForCities(): string
         'באר שבע' => 295530,
     ];
 
-    $zmanim = "⌚️ <u><b>זמני כניסת ויציאת השבת:</b></u>\n\n";
+    $zmanim =
+        "<tg-emoji emoji-id=\"5413704112220949842\">⌚️</tg-emoji> " .
+        "<u><b>זמני כניסת ויציאת השבת:</b></u>\n\n";
 
     $candleTimes   = [];
     $havdalahTimes = [];
-    $holidays      = [];
+    $holidays = [];
+    $holidayDates = [];
 
-    $date           = '';
-    $parashaText    = '';
-    $mevarchimText  = '';
-    $mevarchimMemo  = '';
+    $date          = '';
+    $parashaText   = '';
+    $mevarchimText = '';
+    $mevarchimMemo = '';
 
     $client = HttpClientBuilder::buildDefault();
 
     foreach ($geonameIds as $location => $geonameId) {
 
-        $url = "https://www.hebcal.com/shabbat?cfg=json&geonameid=$geonameId&ue=off&b=18&M=on&lg=he-x-NoNikud&tgt=_top";
+        $url =
+            "https://www.hebcal.com/shabbat" .
+            "?cfg=json" .
+            "&geonameid=$geonameId" .
+            "&ue=off" .
+            "&b=18" .
+            "&M=on" .
+            "&lg=he-x-NoNikud" .
+            "&tgt=_top";
 
-        $response = $client->request(new Request($url));
-        $body     = $response->getBody()->buffer();
+        try {
 
-        $json = json_decode($body, true);
+            $response = $client->request(
+                new Request($url)
+            );
 
-        if (!$json || !isset($json['items'])) {
-            $zmanim .= "⚠️ לא ניתן היה לשלוף את זמני השבת עבור: $location\n";
+            $body = $response
+                ->getBody()
+                ->buffer();
+
+            $json = json_decode($body, true);
+
+        } catch (\Throwable $e) {
+
+            $zmanim .=
+                "<tg-emoji emoji-id=\"5447644880824181073\">⚠️</tg-emoji> " .
+                "לא ניתן היה לשלוף את זמני השבת עבור: $location\n";
+
+            continue;
+        }
+
+        if (
+            !$json ||
+            !isset($json['items'])
+        ) {
+
+            $zmanim .=
+                "<tg-emoji emoji-id=\"5447644880824181073\">⚠️</tg-emoji> " .
+                "לא ניתן היה לשלוף את זמני השבת עבור: $location\n";
+
             continue;
         }
 
         $candles  = null;
         $havdalah = null;
 
+        /*
+        |--------------------------------------------------------------------------
+        | First pass - collect holiday dates only
+        |--------------------------------------------------------------------------
+        */
+
+        foreach ($json['items'] as $item) {
+
+            if (
+                ($item['category'] ?? null)
+                !== 'holiday'
+            ) {
+                continue;
+            }
+
+            $title =
+                $item['hebrew'] ?? '';
+
+            if (!$title) {
+                continue;
+            }
+
+            $dateKey =
+                substr($item['date'], 0, 10);
+
+            $holidayDates[$dateKey] = $title;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Main parsing
+        |--------------------------------------------------------------------------
+        */
+
         foreach ($json['items'] as $item) {
 
             switch ($item['category']) {
 
+                /*
+                |--------------------------------------------------------------------------
+                | Candles
+                |--------------------------------------------------------------------------
+                */
+
                 case 'candles':
 
-                    $itemDate   = new \DateTime($item['date']);
-                    $dayOfWeek  = (int)$itemDate->format('w'); // 5 = Friday
-                    $holidayName = $item['memo'] ?? null;
+                    $itemDate =
+                        new \DateTime(
+                            $item['date']
+                        );
 
-                    // שמירת זמני חגים
-                    if ($holidayName) {
+                    $dayOfWeek =
+                        (int) $itemDate
+                            ->format('w');
+
+                    $itemDay =
+                        $itemDate
+                            ->format('Y-m-d');
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Holiday candles
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (
+                        isset(
+                            $holidayDates[$itemDay]
+                        )
+                    ) {
+
+                        $holidayName =
+                            $holidayDates[$itemDay];
+
+                        if (
+                            !isset(
+                                $holidays[$holidayName]
+                            )
+                        ) {
+
+                            $holidays[$holidayName] = [
+
+                                'date' => $itemDay,
+
+                                'candles' => [],
+
+                                'havdalah' => [],
+                            ];
+                        }
+
                         $holidays[$holidayName]['candles'][$location] =
                             $itemDate->format('H:i');
                     }
 
-                    // כניסת שבת = כל הדלקת נרות ביום שישי
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Friday candles = Shabbat
+                    |--------------------------------------------------------------------------
+                    */
+
                     if ($dayOfWeek === 5) {
                         $candles = $item;
                     }
 
                 break;
 
+                /*
+                |--------------------------------------------------------------------------
+                | Havdalah
+                |--------------------------------------------------------------------------
+                */
+
                 case 'havdalah':
 
-                    $itemDate   = new \DateTime($item['date']);
-                    $dayOfWeek  = (int)$itemDate->format('w'); // 6 = Saturday
-                    $holidayName = $item['memo'] ?? null;
+                    $itemDate =
+                        new \DateTime(
+                            $item['date']
+                        );
 
-                    // שמירת זמני חגים
-                    if ($holidayName) {
+                    $dayOfWeek =
+                        (int) $itemDate
+                            ->format('w');
+
+                    $itemDay =
+                        $itemDate
+                            ->format('Y-m-d');
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Holiday havdalah
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (
+                        isset(
+                            $holidayDates[$itemDay]
+                        )
+                    ) {
+
+                        $holidayName =
+                            $holidayDates[$itemDay];
+
+                        if (
+                            !isset(
+                                $holidays[$holidayName]
+                            )
+                        ) {
+
+                            $holidays[$holidayName] = [
+
+                                'date' => $itemDay,
+
+                                'candles' => [],
+
+                                'havdalah' => [],
+                            ];
+                        }
+
                         $holidays[$holidayName]['havdalah'][$location] =
                             $itemDate->format('H:i');
                     }
 
-                    // יציאת שבת = כל הבדלה בשבת
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Saturday havdalah = Shabbat
+                    |--------------------------------------------------------------------------
+                    */
+
                     if ($dayOfWeek === 6) {
                         $havdalah = $item;
                     }
 
                 break;
 
+                /*
+                |--------------------------------------------------------------------------
+                | Parasha
+                |--------------------------------------------------------------------------
+                */
+
                 case 'parashat':
 
-                    $parashaText = $item['hebrew'];
+                    $parashaText =
+                        $item['hebrew'];
 
                 break;
 
-                case 'holiday':
-
-                    if ($location === 'ירושלים') {
-
-                        $hDate  = substr($item['date'], 0, 10);
-                        $hTitle = $item['hebrew'];
-
-                        if (!isset($holidays[$hTitle])) {
-                            $holidays[$hTitle] = [];
-                        }
-
-                        $holidays[$hTitle]['date'] = $hDate;
-                    }
-
-                break;
+                /*
+                |--------------------------------------------------------------------------
+                | Mevarchim
+                |--------------------------------------------------------------------------
+                */
 
                 case 'mevarchim':
 
-                    if ($location === 'ירושלים') {
+                    if (
+                        $location === 'ירושלים'
+                    ) {
 
-                        $mevarchimText = $item['hebrew'];
-                        $mevarchimMemo = $item['memo'] ?? '';
+                        $mevarchimText =
+                            $item['hebrew'];
+
+                        $mevarchimMemo =
+                            $item['memo'] ?? '';
                     }
 
                 break;
             }
         }
 
-        $candleTimes[$location] = isset($candles['date'])
-            ? (new \DateTime($candles['date']))->format('H:i')
-            : 'לא ידוע';
+        /*
+        |--------------------------------------------------------------------------
+        | Main Shabbat times
+        |--------------------------------------------------------------------------
+        */
 
-        $havdalahTimes[$location] = isset($havdalah['date'])
-            ? (new \DateTime($havdalah['date']))->format('H:i')
-            : 'לא ידוע';
+        $candleTimes[$location] =
+            isset($candles['date'])
+                ? (new \DateTime(
+                    $candles['date']
+                ))->format('H:i')
+                : 'לא ידוע';
 
-        if (empty($date) && isset($havdalah['date'])) {
-            $date = (new \DateTime($havdalah['date']))->format('d/m/Y');
+        $havdalahTimes[$location] =
+            isset($havdalah['date'])
+                ? (new \DateTime(
+                    $havdalah['date']
+                ))->format('H:i')
+                : 'לא ידוע';
+
+        if (
+            empty($date) &&
+            isset($havdalah['date'])
+        ) {
+
+            $date =
+                (new \DateTime(
+                    $havdalah['date']
+                ))->format('d/m/Y');
         }
     }
 
-    $zmanim .= "🗓 <u>תאריך:</u> $date\n";
+    $zmanim .=
+        "<tg-emoji emoji-id=\"5431897022456145283\">📆</tg-emoji> " .
+        "<u>תאריך:</u> $date\n";
 
     if ($parashaText) {
-        $zmanim .= "📖 <u>פרשת השבוע:</u> $parashaText\n";
+
+        $zmanim .=
+            "<tg-emoji emoji-id=\"5226512880362332956\">📖</tg-emoji> " .
+            "<u>פרשת השבוע:</u> $parashaText\n";
     }
 
     if ($mevarchimText) {
 
-        $memo = $mevarchimMemo
-            ? " ($mevarchimMemo)"
-            : '';
+        $memo =
+            $mevarchimMemo
+                ? " ($mevarchimMemo)"
+                : '';
 
-        $zmanim .= "🌒 <u>מברכים:</u> $mevarchimText$memo\n";
+        $zmanim .=
+            "<tg-emoji emoji-id=\"5188666899860298925\">🌒</tg-emoji> " .
+            "<u>מברכים:</u> " .
+            $mevarchimText .
+            $memo .
+            "\n";
     }
 
-    $zmanim .= "\n🕯 <u>כניסת שבת:</u>\n";
+    $zmanim .=
+        "\n<tg-emoji emoji-id=\"5350571717922167592\">🕯</tg-emoji> " .
+        "<u>כניסת שבת:</u>\n";
 
     foreach ($candleTimes as $loc => $time) {
-        $zmanim .= "$loc: <code>$time</code>\n";
+
+        $zmanim .=
+            "$loc: <code>$time</code>\n";
     }
 
-    $zmanim .= "\n🍷 <u>יציאת שבת:</u>\n";
+    $zmanim .=
+        "\n<tg-emoji emoji-id=\"5330280024673101519\">🍷</tg-emoji> " .
+        "<u>יציאת שבת:</u>\n";
 
     foreach ($havdalahTimes as $loc => $time) {
-        $zmanim .= "$loc: <code>$time</code>\n";
+
+        $zmanim .=
+            "$loc: <code>$time</code>\n";
     }
 
-    if ($holidays) {
+    $filteredHolidays = $holidays;
+    if ($filteredHolidays) {
 
         uasort(
-            $holidays,
+            $filteredHolidays,
             fn($a, $b) =>
-                strtotime($a['date'] ?? '') <=> strtotime($b['date'] ?? '')
+                strtotime($a['date'] ?? '')
+                <=>
+                strtotime($b['date'] ?? '')
         );
 
-        $zmanim .= "\n🎉 <u>חגים קרובים:</u>\n";
+        $zmanim .=
+            "\n<tg-emoji emoji-id=\"5436040291507247633\">🎉</tg-emoji> " .
+            "<u>חגים קרובים:</u>\n";
 
-        foreach ($holidays as $title => $info) {
+        foreach (
+            $filteredHolidays as $title => $info
+        ) {
 
-            $hDateFormatted = isset($info['date'])
-                ? (new \DateTime($info['date']))->format('d/m/Y')
-                : '---';
+            $hDateFormatted =
+                isset($info['date'])
+                    ? (new \DateTime(
+                        $info['date']
+                    ))->format('d/m/Y')
+                    : '---';
 
-            $zmanim .= "• $title ($hDateFormatted)\n";
+            $zmanim .=
+                "• $title ($hDateFormatted)\n";
 
             if (!empty($info['candles'])) {
 
-                $zmanim .= "   🕯 כניסה:\n";
+                $zmanim .=
+                    "   <tg-emoji emoji-id=\"5350571717922167592\">🕯</tg-emoji> כניסה:\n";
 
-                foreach ($info['candles'] as $loc => $time) {
-                    $zmanim .= "   $loc: <code>$time</code>\n";
+                foreach (
+                    $info['candles'] as $loc => $time
+                ) {
+
+                    $zmanim .=
+                        "   $loc: <code>$time</code>\n";
                 }
             }
 
             if (!empty($info['havdalah'])) {
 
-                $zmanim .= "   🍷 יציאה:\n";
+                $zmanim .=
+                    "   <tg-emoji emoji-id=\"5330280024673101519\">🍷</tg-emoji> יציאה:\n";
 
-                foreach ($info['havdalah'] as $loc => $time) {
-                    $zmanim .= "   $loc: <code>$time</code>\n";
+                foreach (
+                    $info['havdalah'] as $loc => $time
+                ) {
+
+                    $zmanim .=
+                        "   $loc: <code>$time</code>\n";
                 }
             }
         }
@@ -292,12 +503,11 @@ private function getZmanimForCities(): string
     return $zmanim;
 }
 
-/*
+/* dates for handle close and open groups
  * זמני סגירה ופתיחה בלבד
  */
-private int $closeBeforeMinutes = 10; # 10 דקות לפני שבת
-private function getShabbatLockTimes(): array
-{
+private int $closeBeforeMinutes = 10; # סגירה 10 דקות לפני שבת
+private function getShabbatLockTimes(): array {
     date_default_timezone_set('Asia/Jerusalem');
 
     $geonameId = 281184; // ירושלים
@@ -414,7 +624,158 @@ private function getShabbatLockTimes(): array
     ];
 }
 
-/*
+/* check if shabbat of holiday now
+* האם כרגע שבת/חג פעילים
+*/
+private function getShabbatCheckLock(): array {
+    date_default_timezone_set('Asia/Jerusalem');
+
+    $geonameId = 281184; // ירושלים
+
+    $url = "https://www.hebcal.com/shabbat?cfg=json&geonameid={$geonameId}&ue=off&b=18&M=on&lg=he-x-NoNikud&tgt=_top";
+
+    $client = HttpClientBuilder::buildDefault();
+
+    $response = $client->request(new Request($url));
+
+    $body = $response->getBody()->buffer();
+
+    $json = json_decode($body, true);
+
+    if (!$json || !isset($json['items'])) {
+
+        return [
+            'close_datetime' => null,
+            'open_datetime'  => null,
+            'close_time'     => null,
+            'open_time'      => null,
+            'close_date'     => null,
+            'open_date'      => null,
+        ];
+    }
+
+    $now = new \DateTime();
+
+    $candles = [];
+    $havdalahs = [];
+
+    foreach ($json['items'] as $item) {
+
+        if (
+            !isset($item['category']) ||
+            !isset($item['date'])
+        ) {
+            continue;
+        }
+
+        try {
+
+            $date = new \DateTime($item['date']);
+
+        } catch (\Throwable $e) {
+            continue;
+        }
+
+        if ($item['category'] === 'candles') {
+            $candles[] = $date;
+        }
+
+        if ($item['category'] === 'havdalah') {
+            $havdalahs[] = $date;
+        }
+    }
+
+    usort(
+        $candles,
+        fn($a, $b) => $a->getTimestamp() <=> $b->getTimestamp()
+    );
+
+    usort(
+        $havdalahs,
+        fn($a, $b) => $a->getTimestamp() <=> $b->getTimestamp()
+    );
+
+    $closeDateTime = $candles[0] ?? null;
+
+    $openDateTime = null;
+
+    if ($closeDateTime) {
+
+        foreach ($havdalahs as $havdalah) {
+
+            if ($havdalah > $closeDateTime) {
+
+                $openDateTime = $havdalah;
+                break;
+            }
+        }
+    }
+
+    return [
+
+        'close_datetime' => $closeDateTime
+            ? $closeDateTime->format('d/m/Y H:i')
+            : null,
+
+        'open_datetime' => $openDateTime
+            ? $openDateTime->format('d/m/Y H:i')
+            : null,
+
+        'close_time' => $closeDateTime
+            ? $closeDateTime->format('H:i')
+            : null,
+
+        'open_time' => $openDateTime
+            ? $openDateTime->format('H:i')
+            : null,
+
+        'close_date' => $closeDateTime
+            ? $closeDateTime->format('d/m/Y')
+            : null,
+
+        'open_date' => $openDateTime
+            ? $openDateTime->format('d/m/Y')
+            : null,
+    ];
+}
+private function isShabbatOrHolidayNow(): bool {
+    date_default_timezone_set('Asia/Jerusalem');
+
+    $zmanim = $this->getShabbatCheckLock();
+
+    if (
+        empty($zmanim['close_datetime']) ||
+        empty($zmanim['open_datetime'])
+    ) {
+        return false;
+    }
+
+    $closeDate = \DateTime::createFromFormat(
+        'd/m/Y H:i',
+        $zmanim['close_datetime']
+    );
+
+    $openDate = \DateTime::createFromFormat(
+        'd/m/Y H:i',
+        $zmanim['open_datetime']
+    );
+
+    if (
+        !$closeDate ||
+        !$openDate
+    ) {
+        return false;
+    }
+
+    $now = new \DateTime();
+
+    return (
+        $now >= $closeDate &&
+        $now < $openDate
+    );
+}
+
+/* set bot admins
 * מנהלים
 */
 public function getReportPeers() {
@@ -437,8 +798,6 @@ $this->channels->leaveChannel(channel: $message->chatId );
 } catch (Throwable $e) {}
 }
 
-/* ================ main handlers ================ */
-
 #[FilterCommandCaseInsensitive('start')]
 public function StartCommand(Incoming & PrivateMessage & IsNotEdited $message): void {
 try {
@@ -453,16 +812,84 @@ $first_name = "null";
 $me = $this->getSelf();
 $me_username = $me['username'];
 
-$txtbot = "היי <a href='mention:$senderid'>$first_name</a>, ברוך הבא 👋
-הרובוט שישמור את השבת בקבוצה שלך!
+$txtbot = "היי <a href='mention:$senderid'>$first_name</a>, ברוך הבא <tg-emoji emoji-id=\"5472055112702629499\">👋</tg-emoji>
+הרובוט שישמור את השבת/חג בקבוצה שלך!
 
-🕯 <u>הרובוט בקוד פתוח בגיטהאב:</u>
+<tg-emoji emoji-id=\"5350571717922167592\">🕯</tg-emoji> <u>הרובוט בקוד פתוח בגיטהאב:</u>
 github.com/wizardloop/shabbat";
 
-$bot_API_markup[] = [['text'=>"זמני כניסת השבת 🕯",'callback_data'=>"זמנישבת"]];
-$bot_API_markup[] = [['text'=>"הוסף אותי לקבוצה ➕",'url'=>"https://t.me/$me_username?startgroup&admin=restrict_members"]];
-$bot_API_markup[] = [['text'=>"📖 כל הפקודות 💡",'callback_data'=>"כלהפקודות"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$bot_API_markup = [
+    '_' => 'replyInlineMarkup',
+
+    'rows' => [
+
+        [
+            '_' => 'keyboardButtonRow',
+
+            'buttons' => [
+
+                [
+                    '_' => 'keyboardButtonCallback',
+
+                    'text' => 'זמני כניסת השבת 🕯',
+
+                    'data' => 'זמנישבת',
+
+                    'style' => [
+                        '_' => 'keyboardButtonStyle',
+
+                        'bg_success' => true
+
+                    ]
+                ]
+            ]
+        ],
+
+        [
+            '_' => 'keyboardButtonRow',
+
+            'buttons' => [
+
+                [
+                    '_' => 'keyboardButtonUrl',
+
+                    'text' => 'הוסף אותי לקבוצה ➕',
+
+                    'url' => "https://t.me/$me_username?startgroup&admin=restrict_members",
+
+                    'style' => [
+                        '_' => 'keyboardButtonStyle',
+
+                        'bg_primary' => true
+
+                    ]
+                ]
+            ]
+        ],
+
+        [
+            '_' => 'keyboardButtonRow',
+
+            'buttons' => [
+
+                [
+                    '_' => 'keyboardButtonCallback',
+
+                    'text' => '📖 כל הפקודות 💡',
+
+                    'data' => 'כלהפקודות',
+
+                    'style' => [
+                        '_' => 'keyboardButtonStyle',
+
+                        'bg_primary' => true
+
+                    ]
+                ]
+            ]
+        ]
+    ]
+];
 
 $inputReplyToMessage = ['_' => 'inputReplyToMessage', 'reply_to_msg_id' => $messageid];
 $this->messages->sendMessage(no_webpage: true, peer: $message->senderId, reply_to: $inputReplyToMessage, message: "$txtbot", reply_markup: $bot_API_markup, parse_mode: 'HTML');
@@ -493,16 +920,84 @@ $first_name = "null";
 $me = $this->getSelf();
 $me_username = $me['username'];
 
-$txtbot = "היי <a href='mention:$userid'>$first_name</a>, ברוך הבא 👋
-הרובוט שישמור את השבת בקבוצה שלך!
+$txtbot = "היי <a href='mention:$userid'>$first_name</a>, ברוך הבא <tg-emoji emoji-id=\"5472055112702629499\">👋</tg-emoji>
+הרובוט שישמור את השבת/חג בקבוצה שלך!
 
-🕯 <u>הרובוט בקוד פתוח בגיטהאב:</u>
+<tg-emoji emoji-id=\"5350571717922167592\">🕯</tg-emoji> <u>הרובוט בקוד פתוח בגיטהאב:</u>
 github.com/wizardloop/shabbat";
 
-$bot_API_markup[] = [['text'=>"זמני כניסת השבת 🕯",'callback_data'=>"זמנישבת"]];
-$bot_API_markup[] = [['text'=>"הוסף אותי לקבוצה ➕",'url'=>"https://t.me/$me_username?startgroup&admin=restrict_members"]];
-$bot_API_markup[] = [['text'=>"📖 כל הפקודות 💡",'callback_data'=>"כלהפקודות"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$bot_API_markup = [
+    '_' => 'replyInlineMarkup',
+
+    'rows' => [
+
+        [
+            '_' => 'keyboardButtonRow',
+
+            'buttons' => [
+
+                [
+                    '_' => 'keyboardButtonCallback',
+
+                    'text' => 'זמני כניסת השבת 🕯',
+
+                    'data' => 'זמנישבת',
+
+                    'style' => [
+                        '_' => 'keyboardButtonStyle',
+
+                        'bg_success' => true
+
+                    ]
+                ]
+            ]
+        ],
+
+        [
+            '_' => 'keyboardButtonRow',
+
+            'buttons' => [
+
+                [
+                    '_' => 'keyboardButtonUrl',
+
+                    'text' => 'הוסף אותי לקבוצה ➕',
+
+                    'url' => "https://t.me/$me_username?startgroup&admin=restrict_members",
+
+                    'style' => [
+                        '_' => 'keyboardButtonStyle',
+
+                        'bg_primary' => true
+
+                    ]
+                ]
+            ]
+        ],
+
+        [
+            '_' => 'keyboardButtonRow',
+
+            'buttons' => [
+
+                [
+                    '_' => 'keyboardButtonCallback',
+
+                    'text' => '📖 כל הפקודות 💡',
+
+                    'data' => 'כלהפקודות',
+
+                    'style' => [
+                        '_' => 'keyboardButtonStyle',
+
+                        'bg_primary' => true
+
+                    ]
+                ]
+            ]
+        ]
+    ]
+];
 
 $query->editText($message = "$txtbot", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = true, $scheduleDate = NULL);
     if (file_exists(__DIR__."/"."data/$userid/grs1.txt")) {
@@ -714,8 +1209,6 @@ $this->logger($e);
 $sentMessage = $this->messages->sendMessage(peer: $update['query_id'], message: $e->getMessage());
 }
 }
-	
-/* ================ group handlers ================ */
 
 #[FilterButtonQueryData('סגור')]
 public function closecommand(callbackQuery $query) {
@@ -785,10 +1278,6 @@ $txtbot = "<b>אין לי הרשאות ניהול מתאימות.</b>
 $this->messages->sendMessage(peer: $message->chatId, message: "$txtbot", parse_mode: 'HTML');
 }
 if($admrgh != null){
-	
-	
-
-
 
 if (file_exists(__DIR__."/"."data/DBgroups.txt")) {
 $filex = Amp\File\read(__DIR__."/"."data/DBgroups.txt");  
@@ -828,6 +1317,7 @@ $this->messages->sendMessage(peer: $message->chatId, message: "$txtbot", parse_m
     if (__DIR__."/".!file_exists("data/$chatid")) {
 mkdir(__DIR__."/"."data/$chatid");
 }
+
 }
 
 
@@ -973,7 +1463,6 @@ if (!file_exists(__DIR__."/"."data/DBgroups.txt")) {
 $txtbot = "<b>הקבוצה כבר הוסרה מבסיס נתונים!</b>";
 $this->messages->sendMessage(peer: $message->chatId, message: "$txtbot", parse_mode: 'HTML');
 }
-
 
 }
 }
@@ -1125,7 +1614,8 @@ $sentMessage = $this->messages->sendMessage(peer: $message->chatId, message: $er
     if (!file_exists(__DIR__."/"."data/$senderid")) {
 mkdir(__DIR__."/"."data/$senderid");
 }
-Amp\File\write(__DIR__."/"."data/$senderid/groupid.txt", "$chatid");
+
+try { \Amp\File\write(__DIR__."/"."data/$senderid/groupid.txt", "$chatid"); } catch (\Throwable) {}
 }
 }
 
@@ -1375,6 +1865,55 @@ $query->editText($message = "<b>הקבוצה לא תקבל מידי יום שי�
 }
 }
 
+#[FilterButtonQueryData('הודעותלפניואחרי')]
+public function MessagesON(callbackQuery $query) {
+try {
+$userid = $query->userId;   
+$chatid = $query->chatId; 
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
+$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
+Amp\File\write(__DIR__."/"."data/$filex/alertshabat2.txt", "on");
+}
+
+$bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהלהגדרות"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+$query->editText($message = "<b>הקבוצה תקבל מידי יום שישי/חג הודעה שתשלח בכניסה(כשהקבוצה נסגרת) וביציאה(כשהקבוצה נפתחת)!</b> ✅", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+} catch (Throwable $e) {
+}
+}
+
+#[FilterButtonQueryData('הודעותלפניואחרי1')]
+public function MessagesOFF(callbackQuery $query) {
+try {
+$userid = $query->userId;   
+$chatid = $query->chatId; 
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
+$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
+if (file_exists(__DIR__."/"."data/$filex/alertshabat2.txt")) {
+unlink(__DIR__."/"."data/$filex/alertshabat2.txt");
+}
+}
+
+$bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהלהגדרות"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+$query->editText($message = "<b>הקבוצה לא תקבל מידי יום שישי/חג הודעת פתיחה/סגירה!</b> ❌", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+} catch (Throwable $e) {
+}
+}
 
 /*
 * parser group buttons
@@ -1981,59 +2520,8 @@ private function validateButtonsInput(string $input): bool {
     return true;
 }
 
-
-#[FilterButtonQueryData('הודעותלפניואחרי')]
-public function MessagesON(callbackQuery $query) {
-try {
-$userid = $query->userId;   
-$chatid = $query->chatId; 
-$User_Full = $this->getInfo($userid);
-$first_name = $User_Full['User']['first_name']?? null;
-if($first_name == null){
-$first_name = "null";
-}
-
-if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
-$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
-Amp\File\write(__DIR__."/"."data/$filex/alertshabat2.txt", "on");
-}
-
-$bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהלהגדרות"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-
-$query->editText($message = "<b>הקבוצה תקבל מידי יום שישי/חג הודעה שתשלח בכניסה(כשהקבוצה נסגרת) וביציאה(כשהקבוצה נפתחת)!</b> ✅", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
-} catch (Throwable $e) {
-}
-}
-
-#[FilterButtonQueryData('הודעותלפניואחרי1')]
-public function MessagesOFF(callbackQuery $query) {
-try {
-$userid = $query->userId;   
-$chatid = $query->chatId; 
-$User_Full = $this->getInfo($userid);
-$first_name = $User_Full['User']['first_name']?? null;
-if($first_name == null){
-$first_name = "null";
-}
-
-if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
-$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
-if (file_exists(__DIR__."/"."data/$filex/alertshabat2.txt")) {
-unlink(__DIR__."/"."data/$filex/alertshabat2.txt");
-}
-}
-
-$bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהלהגדרות"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-
-$query->editText($message = "<b>הקבוצה לא תקבל מידי יום שישי/חג הודעת פתיחה/סגירה!</b> ❌", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
-} catch (Throwable $e) {
-}
-}
-
 #[FilterButtonQueryData('הודעתפתיחה')]
-public function OpenMessage(callbackQuery $query) {
+public function openMessageGroup(callbackQuery $query) {
 try {
 $userid = $query->userId;   
 $chatid = $query->chatId; 
@@ -2043,22 +2531,55 @@ if($first_name == null){
 $first_name = "null";
 }
 
-$bot_API_markup[] = [['text'=>"מדיה 🖼",'callback_data'=>"הגדרמדיה_1"],['text'=>"👀 צפה",'callback_data'=>"צפהבמדיה_1"]];
-$bot_API_markup[] = [['text'=>"טקסט 🔤",'callback_data'=>"הגדרטקסט_1"],['text'=>"👀 צפה",'callback_data'=>"צפהבטקסט_1"]];
-$bot_API_markup[] = [['text'=>"כפתורים ⌨️",'callback_data'=>"הגדרכפתורים_1"],['text'=>"👀 צפה",'callback_data'=>"צפהבכפתורים_1"]];
-$bot_API_markup[] = [['text'=>"תצוגה מקדימה מלאה 👁",'callback_data'=>"תצוגהמקדימהפתיחה_1"]];
+try { \Amp\File\write(__DIR__."/"."data/$userid/VAR-MENU", "openMsg"); } catch (\Throwable) {}
+
+$bot_API_markup[] = [['text'=>"מדיה 🖼",'callback_data'=>"הגדרמדיה"],['text'=>"👀 צפה",'callback_data'=>"צפהבמדיה"]];
+$bot_API_markup[] = [['text'=>"טקסט 🔤",'callback_data'=>"הגדרטקסט"],['text'=>"👀 צפה",'callback_data'=>"צפהבטקסט"]];
+$bot_API_markup[] = [['text'=>"כפתורים ⌨️",'callback_data'=>"הגדרכפתורים"],['text'=>"👀 צפה",'callback_data'=>"צפהבכפתורים"]];
+$bot_API_markup[] = [['text'=>"תצוגה מקדימה מלאה 👁",'callback_data'=>"תצוגהמקדימהפתיחה"]];
 $bot_API_markup[] = [['text'=>"חזרה להגדרות",'callback_data'=>"חזרהלהגדרות"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
 $query->editText($message = "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת/חג כשהקבוצה נפתחת!", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+
     if (file_exists(__DIR__."/"."data/$userid/grs1.txt")) {
 unlink(__DIR__."/"."data/$userid/grs1.txt");
 }
+
 } catch (Throwable $e) {}
 }
 
-#[FilterButtonQueryData('חזרההודעתפתיחה')]
-public function OpenMessage2(callbackQuery $query) {
+#[FilterButtonQueryData('הודעתסגירה')]
+public function closeGroupMessage(callbackQuery $query) {
+try {
+$userid = $query->userId;   
+$chatid = $query->chatId; 
+$User_Full = $this->getInfo($userid);
+$first_name = $User_Full['User']['first_name']?? null;
+if($first_name == null){
+$first_name = "null";
+}
+
+try { \Amp\File\write(__DIR__."/"."data/$userid/VAR-MENU", "closeMsg"); } catch (\Throwable) {}
+
+$bot_API_markup[] = [['text'=>"מדיה 🖼",'callback_data'=>"הגדרמדיה"],['text'=>"👀 צפה",'callback_data'=>"צפהבמדיה"]];
+$bot_API_markup[] = [['text'=>"טקסט 🔤",'callback_data'=>"הגדרטקסט"],['text'=>"👀 צפה",'callback_data'=>"צפהבטקסט"]];
+$bot_API_markup[] = [['text'=>"כפתורים ⌨️",'callback_data'=>"הגדרכפתורים"],['text'=>"👀 צפה",'callback_data'=>"צפהבכפתורים"]];
+$bot_API_markup[] = [['text'=>"תצוגה מקדימה מלאה 👁",'callback_data'=>"תצוגהמקדימהפתיחה"]];
+$bot_API_markup[] = [['text'=>"חזרה להגדרות",'callback_data'=>"חזרהלהגדרות"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+$query->editText($message = "כאן תוכל להגדיר הודעת סגירה מותאמת אישית שתשלח בערב שבת/חג כשהקבוצה נסגרת!", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+
+    if (file_exists(__DIR__."/"."data/$userid/grs1.txt")) {
+unlink(__DIR__."/"."data/$userid/grs1.txt");
+}
+
+} catch (Throwable $e) {}
+}
+
+#[FilterButtonQueryData('חזרהתפריטהודעה')]
+public function backGroupMessage(callbackQuery $query) {
 try {
 $userid = $query->userId;   
 $chatid = $query->chatId; 
@@ -2069,14 +2590,26 @@ if($first_name == null){
 $first_name = "null";
 }
 
-$bot_API_markup[] = [['text'=>"מדיה 🖼",'callback_data'=>"הגדרמדיה_1"],['text'=>"👀 צפה",'callback_data'=>"צפהבמדיה_1"]];
-$bot_API_markup[] = [['text'=>"טקסט 🔤",'callback_data'=>"הגדרטקסט_1"],['text'=>"👀 צפה",'callback_data'=>"צפהבטקסט_1"]];
-$bot_API_markup[] = [['text'=>"כפתורים ⌨️",'callback_data'=>"הגדרכפתורים_1"],['text'=>"👀 צפה",'callback_data'=>"צפהבכפתורים_1"]];
-$bot_API_markup[] = [['text'=>"תצוגה מקדימה מלאה 👁",'callback_data'=>"תצוגהמקדימהפתיחה_1"]];
+if (file_exists(__DIR__."/"."data/$userid/VAR-MENU")) {
+$menu = \Amp\File\read(__DIR__."/"."data/$userid/VAR-MENU");
+}else{ $menu = 'unknown'; }
+
+if($menu === 'openMsg') {
+$menuTxt = "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת/חג כשהקבוצה נפתחת!";
+}elseif($menu === 'closeMsg') {
+$menuTxt = "כאן תוכל להגדיר הודעת סגירה מותאמת אישית שתשלח בערב שבת/חג כשהקבוצה נסגרת!";
+}else{
+$menuTxt = "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת/חג כשהקבוצה נפתחת או נסגרת!";
+}
+
+$bot_API_markup[] = [['text'=>"מדיה 🖼",'callback_data'=>"הגדרמדיה"],['text'=>"👀 צפה",'callback_data'=>"צפהבמדיה"]];
+$bot_API_markup[] = [['text'=>"טקסט 🔤",'callback_data'=>"הגדרטקסט"],['text'=>"👀 צפה",'callback_data'=>"צפהבטקסט"]];
+$bot_API_markup[] = [['text'=>"כפתורים ⌨️",'callback_data'=>"הגדרכפתורים"],['text'=>"👀 צפה",'callback_data'=>"צפהבכפתורים"]];
+$bot_API_markup[] = [['text'=>"תצוגה מקדימה מלאה 👁",'callback_data'=>"תצוגהמקדימהפתיחה"]];
 $bot_API_markup[] = [['text'=>"חזרה להגדרות",'callback_data'=>"חזרהלהגדרות"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
-$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת/חג כשהקבוצה נפתחת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+$this->messages->sendMessage(peer: $userid, message: $menuTxt, reply_markup: $bot_API_markup, parse_mode: 'HTML');
 
 			try {
 $this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
@@ -2088,7 +2621,7 @@ unlink(__DIR__."/"."data/$userid/grs1.txt");
 } catch (Throwable $e) {}
 }
 
-#[FilterButtonQueryData('הגדרטקסט_1')] 
+#[FilterButtonQueryData('הגדרטקסט')] 
 public function GroupTextSet1(callbackQuery $query) {
 	try {
 $userid = $query->userId;    
@@ -2104,24 +2637,56 @@ $filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");
 $filex = "null"; 	
 }
 
+if (file_exists(__DIR__."/"."data/$userid/VAR-MENU")) {
+$menu = \Amp\File\read(__DIR__."/"."data/$userid/VAR-MENU");
+}else{ $menu = 'unknown'; }
+
+if($menu === 'openMsg') {
+$menuTxt = "<b>שלח את הודעת הפתיחה:</b>";
+
+try { Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'opener_text_1'); } catch (Throwable $e) {}
+
 if (file_exists(__DIR__."/"."data/$filex/MsgOpener.txt")) {	
-$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתפתיחה"],['text'=>"🗑 הסר את הטקסט",'callback_data'=>"מחקטקסט_1"]];
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתפתיחה"],['text'=>"🗑 הסר את הטקסט",'callback_data'=>"מחקטקסט"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 }else{
 $bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתפתיחה"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 }
 
-$query->editText($message = "<b>שלח את הודעת הפתיחה:</b>
+}elseif($menu === 'closeMsg') {
+$menuTxt = "<b>שלח את הודעת הסגירה:</b>";
+try { Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'opener_text_2'); } catch (Throwable $e) {}
+
+if (file_exists(__DIR__."/"."data/$filex/MsgCloser.txt")) {	
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתסגירה"],['text'=>"🗑 הסר את הטקסט",'callback_data'=>"מחקטקסט"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+}else{
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+}
+}else{
+$menuTxt = "<b>שלח את הודעת הפתיחה:</b>";
+try { Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'opener_text_1'); } catch (Throwable $e) {}
+
+if (file_exists(__DIR__."/"."data/$filex/MsgOpener.txt")) {	
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתפתיחה"],['text'=>"🗑 הסר את הטקסט",'callback_data'=>"מחקטקסט"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+}else{
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתפתיחה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+}
+}
+
+$query->editText($message = "$menuTxt
 <i>עד 1024 תווים, ניתן להשתמש בכל סיגנונות העיצוב.</i>
 ", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
-Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'opener_text_1');
 $msgqutryid = $query->messageId;
 Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
 } catch (Throwable $e) {}
 }
 
-#[FilterButtonQueryData('מחקטקסט_1')] 
+#[FilterButtonQueryData('מחקטקסט')] 
 public function RemoveText1(callbackQuery $query) {
 	try {
 $userid = $query->userId;    
@@ -2131,14 +2696,14 @@ if($first_name == null){
 $first_name = "null";
 }
 
-$bot_API_markup[] = [['text'=>"לא ❌",'callback_data'=>"הגדרטקסט_1"],['text'=>"כן ✅",'callback_data'=>"מחקטקסט_1אישור"]];
+$bot_API_markup[] = [['text'=>"לא ❌",'callback_data'=>"הגדרטקסט"],['text'=>"כן ✅",'callback_data'=>"מחקטקסטאישור"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
-$query->editText($message = "האם אתה באמת בטוח שאתה רוצה למחוק את הטקסט של הודעת הפתיחה?", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+$query->editText($message = "האם אתה באמת בטוח שאתה רוצה למחוק את הטקסט?", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
 } catch (Throwable $e) {}
 }
 
-#[FilterButtonQueryData('מחקטקסט_1אישור')] 
+#[FilterButtonQueryData('מחקטקסטאישור')] 
 public function RemoveText1_1(callbackQuery $query) {
 	try {
 $userid = $query->userId;    
@@ -2154,21 +2719,41 @@ $filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");
 $filex = "null"; 	
 }
 
+if (file_exists(__DIR__."/"."data/$userid/VAR-MENU")) {
+$menu = \Amp\File\read(__DIR__."/"."data/$userid/VAR-MENU");
+}else{ $menu = 'unknown'; }
+
+if($menu === 'openMsg') {
 if (file_exists(__DIR__."/"."data/$filex/MsgOpener.txt")) {	
 unlink(__DIR__."/"."data/$filex/MsgOpener.txt");
 }
 if (file_exists(__DIR__."/"."data/$filex/MsgOpener2.txt")) {	
 unlink(__DIR__."/"."data/$filex/MsgOpener2.txt");
 }
+}elseif($menu === 'closeMsg') {
+if (file_exists(__DIR__."/"."data/$filex/MsgCloser.txt")) {	
+unlink(__DIR__."/"."data/$filex/MsgCloser.txt");
+}
+if (file_exists(__DIR__."/"."data/$filex/MsgCloser2.txt")) {	
+unlink(__DIR__."/"."data/$filex/MsgCloser2.txt");
+}
+}else{
+if (file_exists(__DIR__."/"."data/$filex/MsgOpener.txt")) {	
+unlink(__DIR__."/"."data/$filex/MsgOpener.txt");
+}
+if (file_exists(__DIR__."/"."data/$filex/MsgOpener2.txt")) {	
+unlink(__DIR__."/"."data/$filex/MsgOpener2.txt");
+}
+}
 
-$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"הודעתפתיחה"]];
+$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"חזרהתפריטהודעה"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
 $query->editText($message = "<b>הטקסט הוסר</b> 🗑", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
 } catch (Throwable $e) {}
 }
 
-#[FilterButtonQueryData('צפהבטקסט_1')] 
+#[FilterButtonQueryData('צפהבטקסט')] 
 public function GroupTextView1(callbackQuery $query) {
 	try {
 $userid = $query->userId;    
@@ -2184,6 +2769,12 @@ $filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");
 }else{
 $filex = "null"; 	
 }
+
+if (file_exists(__DIR__."/"."data/$userid/VAR-MENU")) {
+$menu = \Amp\File\read(__DIR__."/"."data/$userid/VAR-MENU");
+}else{ $menu = 'unknown'; }
+
+if($menu === 'openMsg') {
 
 if (file_exists(__DIR__."/"."data/$filex/MsgOpener.txt")) {
 $TXT = Amp\File\read(__DIR__."/"."data/$filex/MsgOpener.txt"); 
@@ -2203,10 +2794,57 @@ $query->answer($message = "ההודעה לא מוגדרת.", $alert = true, $url
 }else{
 $query->answer($message = "ההודעה לא מוגדרת.", $alert = true, $url = null, $cacheTime = 0);
 }
+
+}elseif($menu === 'closeMsg') {
+
+if (file_exists(__DIR__."/"."data/$filex/MsgCloser.txt")) {
+$TXT = Amp\File\read(__DIR__."/"."data/$filex/MsgCloser.txt"); 
+if($TXT != null){
+if (file_exists(__DIR__."/"."data/$filex/MsgCloser2.txt")) {
+$ENT = json_decode(Amp\File\read(__DIR__."/"."data/$filex/MsgCloser2.txt"),true);  
+}else{
+$ENT = null; 	
+}
+
+$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$this->messages->editMessage(no_webpage: true, peer: $userid, id: $msgqutryid, message: $TXT, reply_markup: $bot_API_markup, entities: $ENT);
+}else{
+$query->answer($message = "ההודעה לא מוגדרת.", $alert = true, $url = null, $cacheTime = 0);
+}
+}else{
+$query->answer($message = "ההודעה לא מוגדרת.", $alert = true, $url = null, $cacheTime = 0);
+}
+
+
+}else{
+
+if (file_exists(__DIR__."/"."data/$filex/MsgOpener.txt")) {
+$TXT = Amp\File\read(__DIR__."/"."data/$filex/MsgOpener.txt"); 
+if($TXT != null){
+if (file_exists(__DIR__."/"."data/$filex/MsgOpener2.txt")) {
+$ENT = json_decode(Amp\File\read(__DIR__."/"."data/$filex/MsgOpener2.txt"),true);  
+}else{
+$ENT = null; 	
+}
+
+$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"הודעתפתיחה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+$this->messages->editMessage(no_webpage: true, peer: $userid, id: $msgqutryid, message: $TXT, reply_markup: $bot_API_markup, entities: $ENT);
+}else{
+$query->answer($message = "ההודעה לא מוגדרת.", $alert = true, $url = null, $cacheTime = 0);
+}
+}else{
+$query->answer($message = "ההודעה לא מוגדרת.", $alert = true, $url = null, $cacheTime = 0);
+}
+
+
+}
+
 } catch (Throwable $e) {}
 }
 
-#[FilterButtonQueryData('הגדרמדיה_1')] 
+#[FilterButtonQueryData('הגדרמדיה')] 
 public function GroupMsgMedia1(callbackQuery $query) {
 	try {
 $userid = $query->userId;    
@@ -2222,24 +2860,52 @@ $filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");
 $filex = "null"; 	
 }
 
+if (file_exists(__DIR__."/"."data/$userid/VAR-MENU")) {
+$menu = \Amp\File\read(__DIR__."/"."data/$userid/VAR-MENU");
+}else{ $menu = 'unknown'; }
+
+if($menu === 'openMsg') {
+
 if (file_exists(__DIR__."/"."data/$filex/MsgOpenerMedia.txt")) {	
-$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתפתיחה"],['text'=>"🗑 הסר את המדיה",'callback_data'=>"מחקמדיה_1"]];
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתפתיחה"],['text'=>"🗑 הסר את המדיה",'callback_data'=>"מחקמדיה"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 }else{
 $bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתפתיחה"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 }
+Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'opener_media_1');
+}elseif($menu === 'closeMsg') {
 
-$query->editText($message = "<b>שלח את המדיה החדשה לפתיחה:</b>
+if (file_exists(__DIR__."/"."data/$filex/MsgCloserMedia.txt")) {	
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתסגירה"],['text'=>"🗑 הסר את המדיה",'callback_data'=>"מחקמדיה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+}else{
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+}
+Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'opener_media_2');
+}else{
+if (file_exists(__DIR__."/"."data/$filex/MsgOpenerMedia.txt")) {	
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתפתיחה"],['text'=>"🗑 הסר את המדיה",'callback_data'=>"מחקמדיה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+}else{
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתפתיחה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+}
+Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'opener_media_1');
+
+}
+
+$query->editText($message = "<b>שלח את המדיה החדשה:</b>
 <i>מדיה מותרת: תמונות, סרטונים, קבצים, מדבקות, קובצי GIF, אודיו, הודעות קוליות, סרטונים עגולים ועוד..(כל סוגי המדיה הנתמכים)</i>
 ", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
-Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'opener_media_1');
+
 $msgqutryid = $query->messageId;
 Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
 } catch (Throwable $e) {}
 }
 
-#[FilterButtonQueryData('צפהבמדיה_1')] 
+#[FilterButtonQueryData('צפהבמדיה')] 
 public function GroupMsgMediaView1(callbackQuery $query) {
 	try {
 $userid = $query->userId;    
@@ -2256,10 +2922,16 @@ $filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");
 $filex = "null"; 	
 }
 
+if (file_exists(__DIR__."/"."data/$userid/VAR-MENU")) {
+$menu = \Amp\File\read(__DIR__."/"."data/$userid/VAR-MENU");
+}else{ $menu = 'unknown'; }
+
+if($menu === 'openMsg') {
+
 if (file_exists(__DIR__."/"."data/$filex/MsgOpenerMedia.txt")) {
 $MEDIA = Amp\File\read(__DIR__."/"."data/$filex/MsgOpenerMedia.txt");  
 
-$bot_API_markup[] = [['text'=>"🔙 חזרה 🔙",'callback_data'=>"חזרההודעתפתיחה"]];
+$bot_API_markup[] = [['text'=>"🔙 חזרה 🔙",'callback_data'=>"חזרהתפריטהודעה"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
 			try {
@@ -2276,10 +2948,56 @@ $this->messages->deleteMessages(revoke: true, id: [$msgqutryid]);
 $query->answer($message = "ההודעה לא מוגדרת.", $alert = true, $url = null, $cacheTime = 0);
 }
 
+}elseif($menu === 'closeMsg') {
+
+if (file_exists(__DIR__."/"."data/$filex/MsgCloserMedia.txt")) {
+$MEDIA = Amp\File\read(__DIR__."/"."data/$filex/MsgCloserMedia.txt");  
+
+$bot_API_markup[] = [['text'=>"🔙 חזרה 🔙",'callback_data'=>"חזרהתפריטהודעה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+			try {
+$sentMessage = $this->messages->sendMedia(peer: $userid, media: $MEDIA, reply_markup: $bot_API_markup);
+} catch (Throwable $e) {
+$sentMessage = $this->messages->sendMessage(peer: $userid, message: $e->getMessage(), reply_markup: $bot_API_markup);
+}
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
+} catch (Throwable $e) {}
+
+}else{
+$query->answer($message = "ההודעה לא מוגדרת.", $alert = true, $url = null, $cacheTime = 0);
+}
+
+}else{
+if (file_exists(__DIR__."/"."data/$filex/MsgOpenerMedia.txt")) {
+$MEDIA = Amp\File\read(__DIR__."/"."data/$filex/MsgOpenerMedia.txt");  
+
+$bot_API_markup[] = [['text'=>"🔙 חזרה 🔙",'callback_data'=>"חזרהתפריטהודעה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+			try {
+$sentMessage = $this->messages->sendMedia(peer: $userid, media: $MEDIA, reply_markup: $bot_API_markup);
+} catch (Throwable $e) {
+$sentMessage = $this->messages->sendMessage(peer: $userid, message: $e->getMessage(), reply_markup: $bot_API_markup);
+}
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
+} catch (Throwable $e) {}
+
+}else{
+$query->answer($message = "ההודעה לא מוגדרת.", $alert = true, $url = null, $cacheTime = 0);
+}
+
+}
+
+
 } catch (Throwable $e) {}
 }
 
-#[FilterButtonQueryData('מחקמדיה_1')] 
+#[FilterButtonQueryData('מחקמדיה')] 
 public function RemoveMedia1(callbackQuery $query) {
 	try {
 $userid = $query->userId;    
@@ -2289,14 +3007,14 @@ if($first_name == null){
 $first_name = "null";
 }
 
-$bot_API_markup[] = [['text'=>"לא ❌",'callback_data'=>"הגדרמדיה_1"],['text'=>"כן ✅",'callback_data'=>"מחקמדיה_1אישור"]];
+$bot_API_markup[] = [['text'=>"לא ❌",'callback_data'=>"הגדרמדיה"],['text'=>"כן ✅",'callback_data'=>"מחקמדיהאישור"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
-$query->editText($message = "האם אתה באמת בטוח שאתה רוצה למחוק את המדיה של הודעת הפתיחה?", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+$query->editText($message = "האם אתה באמת בטוח שאתה רוצה למחוק את המדיה?", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
 } catch (Throwable $e) {}
 }
 
-#[FilterButtonQueryData('מחקמדיה_1אישור')] 
+#[FilterButtonQueryData('מחקמדיהאישור')] 
 public function RemoveMedia1_1(callbackQuery $query) {
 	try {
 $userid = $query->userId;    
@@ -2312,18 +3030,38 @@ $filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");
 $filex = "null"; 	
 }
 
+if (file_exists(__DIR__."/"."data/$userid/VAR-MENU")) {
+$menu = \Amp\File\read(__DIR__."/"."data/$userid/VAR-MENU");
+}else{ $menu = 'unknown'; }
+
+if($menu === 'openMsg') {
+
 if (file_exists(__DIR__."/"."data/$filex/MsgOpenerMedia.txt")) {
 unlink(__DIR__."/"."data/$filex/MsgOpenerMedia.txt");  
 }
 
-$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"הודעתפתיחה"]];
+}elseif($menu === 'closeMsg') {
+
+if (file_exists(__DIR__."/"."data/$filex/MsgCloserMedia.txt")) {
+unlink(__DIR__."/"."data/$filex/MsgCloserMedia.txt");  
+}
+
+}else{
+
+if (file_exists(__DIR__."/"."data/$filex/MsgOpenerMedia.txt")) {
+unlink(__DIR__."/"."data/$filex/MsgOpenerMedia.txt");  
+}
+
+}
+
+$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"חזרהתפריטהודעה"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
 $query->editText($message = "<b>המדיה הוסרה</b> 🗑", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
 } catch (Throwable $e) {}
 }
 
-#[FilterButtonQueryData('צפהבכפתורים_1')] 
+#[FilterButtonQueryData('צפהבכפתורים')] 
 public function buttonsmanageviewgroup1(callbackQuery $query) {
 	try {
 $userid = $query->userId;    
@@ -2339,6 +3077,13 @@ $filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");
 }else{
 $filex = "null"; 	
 }
+
+if (file_exists(__DIR__."/"."data/$userid/VAR-MENU")) {
+$menu = \Amp\File\read(__DIR__."/"."data/$userid/VAR-MENU");
+}else{ $menu = 'unknown'; }
+
+if($menu === 'openMsg') {
+
 
     if (file_exists(__DIR__."/"."data/$filex/MsgOpenerButtons.txt")) {
 $BUTTONS = Amp\File\read(__DIR__."/"."data/$filex/MsgOpenerButtons.txt");
@@ -2367,13 +3112,75 @@ $bot_API_markup['rows'][] = [
     ]
 ];
 
+}elseif($menu === 'closeMsg') {
+
+
+    if (file_exists(__DIR__."/"."data/$filex/MsgCloserButtons.txt")) {
+$BUTTONS = Amp\File\read(__DIR__."/"."data/$filex/MsgCloserButtons.txt");
+$bot_API_markup = $this->parseButtons($BUTTONS);
+} else {
+
+    $bot_API_markup = [
+        '_' => 'replyInlineMarkup',
+        'rows' => [],
+    ];
+}
+
+$bot_API_markup['rows'][] = [
+
+    '_' => 'keyboardButtonRow',
+
+    'buttons' => [
+
+        [
+            '_' => 'keyboardButtonCallback',
+
+            'text' => '🔙 חזור 🔙',
+
+            'data' => 'הודעתסגירה',
+        ]
+    ]
+];
+
+}else{
+
+
+    if (file_exists(__DIR__."/"."data/$filex/MsgOpenerButtons.txt")) {
+$BUTTONS = Amp\File\read(__DIR__."/"."data/$filex/MsgOpenerButtons.txt");
+$bot_API_markup = $this->parseButtons($BUTTONS);
+} else {
+
+    $bot_API_markup = [
+        '_' => 'replyInlineMarkup',
+        'rows' => [],
+    ];
+}
+
+$bot_API_markup['rows'][] = [
+
+    '_' => 'keyboardButtonRow',
+
+    'buttons' => [
+
+        [
+            '_' => 'keyboardButtonCallback',
+
+            'text' => '🔙 חזור 🔙',
+
+            'data' => 'הודעתפתיחה',
+        ]
+    ]
+];
+
+}
+
 $query->editText($message = "צפייה בכפתורים:", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
 } catch (Throwable $e) {
 $query->editText($message = $e->getMessage());
 }
 }
 
-#[FilterButtonQueryData('הגדרכפתורים_1')] 
+#[FilterButtonQueryData('הגדרכפתורים')] 
 public function GroupMsgButtonSet1(callbackQuery $query) {
 	try {
 $userid = $query->userId;    
@@ -2388,6 +3195,14 @@ $filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");
 }else{
 $filex = "null"; 	
 }
+
+if (file_exists(__DIR__."/"."data/$userid/VAR-MENU")) {
+$menu = \Amp\File\read(__DIR__."/"."data/$userid/VAR-MENU");
+}else{ $menu = 'unknown'; }
+
+if($menu === 'openMsg') {
+
+
 
 if (file_exists(__DIR__."/"."data/$filex/MsgOpenerButtons.txt")) {	
 $bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתפתיחה"],['text'=>"🗑 הסר כפתורים",'callback_data'=>"מחקכפתורים_1"]];
@@ -2445,10 +3260,134 @@ style:bg_danger</pre>
 Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'opener_buttons_1');
 $msgqutryid = $query->messageId;
 Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
+
+}elseif($menu === 'closeMsg') {
+
+
+if (file_exists(__DIR__."/"."data/$filex/MsgCloserButtons.txt")) {	
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתסגירה"],['text'=>"🗑 הסר כפתורים",'callback_data'=>"מחקכפתורים_2"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+}else{
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתסגירה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+}
+
+$query->editText($message = "<b>שלח את הכפתורים שתרצה להוסיף בפורמט הבא:</b>
+<pre>Button text 1 - http://www.example.com/ \nButton text 2 - http://www.example2.com/</pre>
+
+<b>🔘 שלח כפתורים בפורמט:</b>
+
+<pre>טקסט - פעולה</pre>
+
+<b>📌 פעולות נתמכות:</b>
+<pre>https://example.com
+alert:טקסט
+popup:טקסט
+copy:טקסט</pre>
+
+<b>📌 כמה כפתורים באותה שורה:</b>
+
+<pre>כפתור 1 - https://t.me/test1 &amp;&amp; כפתור 2 - https://t.me/test2</pre>
+
+<b>📌 עיצוב נתמך:</b>
+<pre>style:bg_primary
+style:bg_success
+style:bg_danger</pre>
+
+<b>📌 אייקון:</b>
+<pre>icon:123456 </pre>
+
+<b>📌 דוגמאות:</b>
+<pre>כניסה - https://t.me/test
+
+התראה - alert:שבת שלום - style: bg_danger
+
+פופאפ - popup:הקבוצה תיפתח במוצ&quot;ש
+
+העתקה - copy:https://t.me/test
+
+אישור - https://t.me/test - style:bg_success
+
+קבוצה - https://t.me/test - style:bg_primary - icon:5424972470023104089
+
+אתר - https://google.com &amp;&amp; תמיכה - https://t.me/support</pre>
+
+<b>⚠️ הערות:</b>
+<pre>• כל שורה חדשה = שורת כפתורים חדשה
+• &amp;&amp; = כמה כפתורים באותה שורה
+• ניתן לשלב style + icon יחד
+• ניתן להשתמש בלי עיצוב או אייקון</pre>", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'opener_buttons_2');
+$msgqutryid = $query->messageId;
+Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
+
+}else{
+
+
+
+if (file_exists(__DIR__."/"."data/$filex/MsgOpenerButtons.txt")) {	
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתפתיחה"],['text'=>"🗑 הסר כפתורים",'callback_data'=>"מחקכפתורים_1"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+}else{
+$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתפתיחה"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+}
+
+$query->editText($message = "<b>שלח את הכפתורים שתרצה להוסיף בפורמט הבא:</b>
+<pre>Button text 1 - http://www.example.com/ \nButton text 2 - http://www.example2.com/</pre>
+
+<b>🔘 שלח כפתורים בפורמט:</b>
+
+<pre>טקסט - פעולה</pre>
+
+<b>📌 פעולות נתמכות:</b>
+<pre>https://example.com
+alert:טקסט
+popup:טקסט
+copy:טקסט</pre>
+
+<b>📌 כמה כפתורים באותה שורה:</b>
+
+<pre>כפתור 1 - https://t.me/test1 &amp;&amp; כפתור 2 - https://t.me/test2</pre>
+
+<b>📌 עיצוב נתמך:</b>
+<pre>style:bg_primary
+style:bg_success
+style:bg_danger</pre>
+
+<b>📌 אייקון:</b>
+<pre>icon:123456 </pre>
+
+<b>📌 דוגמאות:</b>
+<pre>כניסה - https://t.me/test
+
+התראה - alert:שבת שלום - style: bg_danger
+
+פופאפ - popup:הקבוצה תיפתח במוצ&quot;ש
+
+העתקה - copy:https://t.me/test
+
+אישור - https://t.me/test - style:bg_success
+
+קבוצה - https://t.me/test - style:bg_primary - icon:5424972470023104089
+
+אתר - https://google.com &amp;&amp; תמיכה - https://t.me/support</pre>
+
+<b>⚠️ הערות:</b>
+<pre>• כל שורה חדשה = שורת כפתורים חדשה
+• &amp;&amp; = כמה כפתורים באותה שורה
+• ניתן לשלב style + icon יחד
+• ניתן להשתמש בלי עיצוב או אייקון</pre>", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'opener_buttons_1');
+$msgqutryid = $query->messageId;
+Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
+
+}
+
 } catch (Throwable $e) {}
 }
 
-#[FilterButtonQueryData('מחקכפתורים_1')] 
+#[FilterButtonQueryData('מחקכפתורים')] 
 public function RemoveButtons1(callbackQuery $query) {
 	try {
 $userid = $query->userId;    
@@ -2458,14 +3397,14 @@ if($first_name == null){
 $first_name = "null";
 }
 
-$bot_API_markup[] = [['text'=>"לא ❌",'callback_data'=>"הגדרכפתורים_1"],['text'=>"כן ✅",'callback_data'=>"מחקכפתורים_1אישור"]];
+$bot_API_markup[] = [['text'=>"לא ❌",'callback_data'=>"הגדרכפתורים"],['text'=>"כן ✅",'callback_data'=>"מחקכפתוריםאישור"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
-$query->editText($message = "האם אתה באמת בטוח שאתה רוצה למחוק את הכפתורים של הודעת הפתיחה?", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
+$query->editText($message = "האם אתה באמת בטוח שאתה רוצה למחוק את הכפתורים?", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
 } catch (Throwable $e) {}
 }
 
-#[FilterButtonQueryData('מחקכפתורים_1אישור')] 
+#[FilterButtonQueryData('מחקכפתוריםאישור')] 
 public function RemoveButtons1_1(callbackQuery $query) {
 	try {
 $userid = $query->userId;    
@@ -2481,11 +3420,31 @@ $filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");
 $filex = "null"; 	
 }
 
+if (file_exists(__DIR__."/"."data/$userid/VAR-MENU")) {
+$menu = \Amp\File\read(__DIR__."/"."data/$userid/VAR-MENU");
+}else{ $menu = 'unknown'; }
+
+if($menu === 'openMsg') {
+
 if (file_exists(__DIR__."/"."data/$filex/MsgOpenerButtons.txt")) {
 unlink(__DIR__."/"."data/$filex/MsgOpenerButtons.txt");  
 }
 
-$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"הודעתפתיחה"]];
+}elseif($menu === 'closeMsg') {
+
+if (file_exists(__DIR__."/"."data/$filex/MsgCloserButtons.txt")) {
+unlink(__DIR__."/"."data/$filex/MsgCloserButtons.txt");  
+}
+
+}else{
+
+if (file_exists(__DIR__."/"."data/$filex/MsgOpenerButtons.txt")) {
+unlink(__DIR__."/"."data/$filex/MsgOpenerButtons.txt");  
+}
+
+}
+
+$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"חזרהתפריטהודעה"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
 $query->editText($message = "<b>הכפתורים הוסרו</b> 🗑", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
@@ -2752,619 +3711,6 @@ $Updates = $this->messages->editMessage(peer: $senderid, id: $filexmsgid, messag
 
 }
 
-}
-}
-} catch (Throwable $e) {}
-}
-
-#[FilterButtonQueryData('תצוגהמקדימהפתיחה_1')] 
-public function view_welcomeMessage_full(callbackQuery $query) {
-	try {
-$userid = $query->userId;    
-$msgqutryid = $query->messageId;
-$User_Full = $this->getInfo($userid);
-$first_name = $User_Full['User']['first_name']?? null;
-if($first_name == null){
-$first_name = "null";
-}
-
-if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
-$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
-}else{
-$filex = "null"; 	
-}
-
-if (file_exists(__DIR__."/"."data/$filex/MsgOpenerMedia.txt")) {
-$MEDIA = Amp\File\read(__DIR__."/"."data/$filex/MsgOpenerMedia.txt");  
-}else{
-$MEDIA = null; 	
-}
-if (file_exists(__DIR__."/"."data/$filex/MsgOpener.txt")) {
-$TXT = Amp\File\read(__DIR__."/"."data/$filex/MsgOpener.txt"); 
-}else{
-$TXT = null; 	
-}
-if (file_exists(__DIR__."/"."data/$filex/MsgOpener2.txt")) {
-$ENT = json_decode(Amp\File\read(__DIR__."/"."data/$filex/MsgOpener2.txt"),true);  
-}else{
-$ENT = null; 	
-}
-if (file_exists(__DIR__."/"."data/$filex/MsgOpenerButtons.txt")) {
-$BUTTONS = Amp\File\read(__DIR__."/"."data/$filex/MsgOpenerButtons.txt");
-$bot_API_markup_welcome = $this->parseButtons($BUTTONS);
-} else {
-
-    $bot_API_markup_welcome = [
-        '_' => 'replyInlineMarkup',
-        'rows' => [],
-    ];
-}
-
-$bot_API_markup[] = [['text'=>"מדיה 🖼",'callback_data'=>"הגדרמדיה_1"],['text'=>"👀 צפה",'callback_data'=>"צפהבמדיה_1"]];
-$bot_API_markup[] = [['text'=>"טקסט 🔤",'callback_data'=>"הגדרטקסט_1"],['text'=>"👀 צפה",'callback_data'=>"צפהבטקסט_1"]];
-$bot_API_markup[] = [['text'=>"כפתורים ⌨️",'callback_data'=>"הגדרכפתורים_1"],['text'=>"👀 צפה",'callback_data'=>"צפהבכפתורים_1"]];
-$bot_API_markup[] = [['text'=>"תצוגה מקדימה מלאה 👁",'callback_data'=>"תצוגהמקדימהפתיחה_1"]];
-$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"חזרהלהגדרות"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-
-if($MEDIA != null){
-
-if($TXT != null){
-
-			try {
-$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
-} catch (Throwable $e) {}
-
-$this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖➖");
-$this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
-$sentMessage = $this->messages->sendMedia(peer: $userid, message: "$TXT",  entities: $ENT, media: $MEDIA, reply_markup: $bot_API_markup_welcome);
-
-$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת כשהקבוצה נפתחת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
-
-}else{
-	
-			try {
-$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
-} catch (Throwable $e) {}
-
-$OPENER = self::OPENER;
-$this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖➖");
-$this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
-$sentMessage = $this->messages->sendMedia(peer: $userid, message: $OPENER, media: $MEDIA, reply_markup: $bot_API_markup_welcome);	
-
-$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת כשהקבוצה נפתחת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
-
-}
-
-}else{
-
-if($TXT != null){
-	
-			try {
-$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
-} catch (Throwable $e) {}
-
-$this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖➖");
-$this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
-$sentMessage = $this->messages->sendMessage(peer: $userid, message: "$TXT", entities: $ENT, reply_markup: $bot_API_markup_welcome);
-
-$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת כשהקבוצה נפתחת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
-
-}else{
-
-			try {
-$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
-} catch (Throwable $e) {}
-
-$OPENER = self::OPENER;
-$this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖➖");
-$this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
-$sentMessage = $this->messages->sendMessage(peer: $userid, message: $OPENER, reply_markup: $bot_API_markup_welcome);
-
-$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת כשהקבוצה נפתחת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
-
-}
-
-
-}
-
-} catch (Throwable $e) {}
-}
-
-#[FilterButtonQueryData('הודעתסגירה')]
-public function CloseMessage(callbackQuery $query) {
-try {
-$userid = $query->userId;   
-$chatid = $query->chatId; 
-$User_Full = $this->getInfo($userid);
-$first_name = $User_Full['User']['first_name']?? null;
-if($first_name == null){
-$first_name = "null";
-}
-
-$bot_API_markup[] = [['text'=>"מדיה 🖼",'callback_data'=>"הגדרמדיה_2"],['text'=>"👀 צפה",'callback_data'=>"צפהבמדיה_2"]];
-$bot_API_markup[] = [['text'=>"טקסט 🔤",'callback_data'=>"הגדרטקסט_2"],['text'=>"👀 צפה",'callback_data'=>"צפהבטקסט_2"]];
-$bot_API_markup[] = [['text'=>"כפתורים ⌨️",'callback_data'=>"הגדרכפתורים_2"],['text'=>"👀 צפה",'callback_data'=>"צפהבכפתורים_2"]];
-$bot_API_markup[] = [['text'=>"תצוגה מקדימה מלאה 👁",'callback_data'=>"תצוגהמקדימהפתיחה_2"]];
-$bot_API_markup[] = [['text'=>"חזרה להגדרות",'callback_data'=>"חזרהלהגדרות"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-
-$query->editText($message = "כאן תוכל להגדיר הודעת סגירה מותאמת אישית שתשלח בערב שבת/חג כשהקבוצה נסגרת!", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
-    if (file_exists(__DIR__."/"."data/$userid/grs1.txt")) {
-unlink(__DIR__."/"."data/$userid/grs1.txt");
-}
-} catch (Throwable $e) {}
-}
-
-#[FilterButtonQueryData('חזרההודעתסגירה')]
-public function CloseMessage2(callbackQuery $query) {
-try {
-$userid = $query->userId;   
-$chatid = $query->chatId; 
-$msgqutryid = $query->messageId;
-$User_Full = $this->getInfo($userid);
-$first_name = $User_Full['User']['first_name']?? null;
-if($first_name == null){
-$first_name = "null";
-}
-
-$bot_API_markup[] = [['text'=>"מדיה 🖼",'callback_data'=>"הגדרמדיה_2"],['text'=>"👀 צפה",'callback_data'=>"צפהבמדיה_2"]];
-$bot_API_markup[] = [['text'=>"טקסט 🔤",'callback_data'=>"הגדרטקסט_2"],['text'=>"👀 צפה",'callback_data'=>"צפהבטקסט_2"]];
-$bot_API_markup[] = [['text'=>"כפתורים ⌨️",'callback_data'=>"הגדרכפתורים_2"],['text'=>"👀 צפה",'callback_data'=>"צפהבכפתורים_2"]];
-$bot_API_markup[] = [['text'=>"תצוגה מקדימה מלאה 👁",'callback_data'=>"תצוגהמקדימהפתיחה_2"]];
-$bot_API_markup[] = [['text'=>"חזרה להגדרות",'callback_data'=>"חזרהלהגדרות"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-
-$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת סגירה מותאמת אישית שתשלח בערב שבת/חג כשהקבוצה נסגרת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
-
-			try {
-$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
-} catch (Throwable $e) {}
-
-    if (file_exists(__DIR__."/"."data/$userid/grs1.txt")) {
-unlink(__DIR__."/"."data/$userid/grs1.txt");
-}
-} catch (Throwable $e) {}
-}
-
-#[FilterButtonQueryData('הגדרטקסט_2')] 
-public function GroupTextSet2(callbackQuery $query) {
-	try {
-$userid = $query->userId;    
-$User_Full = $this->getInfo($userid);
-$first_name = $User_Full['User']['first_name']?? null;
-if($first_name == null){
-$first_name = "null";
-}
-
-if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
-$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
-}else{
-$filex = "null"; 	
-}
-
-if (file_exists(__DIR__."/"."data/$filex/MsgCloser.txt")) {	
-$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתסגירה"],['text'=>"🗑 הסר את הטקסט",'callback_data'=>"מחקטקסט_2"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-}else{
-$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתסגירה"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-}
-
-$query->editText($message = "<b>שלח את הודעת הסגירה:</b>
-<i>עד 1024 תווים, ניתן להשתמש בכל סיגנונות העיצוב.</i>
-", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
-Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'opener_text_2');
-$msgqutryid = $query->messageId;
-Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
-} catch (Throwable $e) {}
-}
-
-#[FilterButtonQueryData('מחקטקסט_2')] 
-public function RemoveText2(callbackQuery $query) {
-	try {
-$userid = $query->userId;    
-$User_Full = $this->getInfo($userid);
-$first_name = $User_Full['User']['first_name']?? null;
-if($first_name == null){
-$first_name = "null";
-}
-
-$bot_API_markup[] = [['text'=>"לא ❌",'callback_data'=>"הגדרטקסט_2"],['text'=>"כן ✅",'callback_data'=>"מחקטקסט_2אישור"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-
-$query->editText($message = "האם אתה באמת בטוח שאתה רוצה למחוק את הטקסט של הודעת הסגירה?", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
-} catch (Throwable $e) {}
-}
-
-#[FilterButtonQueryData('מחקטקסט_2אישור')] 
-public function RemoveText2_1(callbackQuery $query) {
-	try {
-$userid = $query->userId;    
-$User_Full = $this->getInfo($userid);
-$first_name = $User_Full['User']['first_name']?? null;
-if($first_name == null){
-$first_name = "null";
-}
-
-if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
-$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
-}else{
-$filex = "null"; 	
-}
-
-if (file_exists(__DIR__."/"."data/$filex/MsgCloser.txt")) {	
-unlink(__DIR__."/"."data/$filex/MsgCloser.txt");
-}
-if (file_exists(__DIR__."/"."data/$filex/MsgCloser2.txt")) {	
-unlink(__DIR__."/"."data/$filex/MsgCloser2.txt");
-}
-
-$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"הודעתסגירה"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-
-$query->editText($message = "<b>הטקסט הוסר</b> 🗑", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
-} catch (Throwable $e) {}
-}
-
-#[FilterButtonQueryData('צפהבטקסט_2')] 
-public function GroupTextView2(callbackQuery $query) {
-	try {
-$userid = $query->userId;    
-$msgqutryid = $query->messageId;
-$User_Full = $this->getInfo($userid);
-$first_name = $User_Full['User']['first_name']?? null;
-if($first_name == null){
-$first_name = "null";
-}
-
-if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
-$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
-}else{
-$filex = "null"; 	
-}
-
-if (file_exists(__DIR__."/"."data/$filex/MsgCloser.txt")) {
-$TXT = Amp\File\read(__DIR__."/"."data/$filex/MsgCloser.txt"); 
-if($TXT != null){
-if (file_exists(__DIR__."/"."data/$filex/MsgCloser2.txt")) {
-$ENT = json_decode(Amp\File\read(__DIR__."/"."data/$filex/MsgCloser2.txt"),true);  
-}else{
-$ENT = null; 	
-}
-
-$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"הודעתסגירה"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-$this->messages->editMessage(no_webpage: true, peer: $userid, id: $msgqutryid, message: $TXT, reply_markup: $bot_API_markup, entities: $ENT);
-}else{
-$query->answer($message = "ההודעה לא מוגדרת.", $alert = true, $url = null, $cacheTime = 0);
-}
-}else{
-$query->answer($message = "ההודעה לא מוגדרת.", $alert = true, $url = null, $cacheTime = 0);
-}
-} catch (Throwable $e) {}
-}
-
-#[FilterButtonQueryData('הגדרמדיה_2')] 
-public function GroupMsgMedia2(callbackQuery $query) {
-	try {
-$userid = $query->userId;    
-$User_Full = $this->getInfo($userid);
-$first_name = $User_Full['User']['first_name']?? null;
-if($first_name == null){
-$first_name = "null";
-}
-
-if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
-$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
-}else{
-$filex = "null"; 	
-}
-
-if (file_exists(__DIR__."/"."data/$filex/MsgCloserMedia.txt")) {	
-$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתסגירה"],['text'=>"🗑 הסר את המדיה",'callback_data'=>"מחקמדיה_2"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-}else{
-$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתסגירה"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-}
-
-$query->editText($message = "<b>שלח את המדיה החדשה לסגירה:</b>
-<i>מדיה מותרת: תמונות, סרטונים, קבצים, מדבקות, קובצי GIF, אודיו, הודעות קוליות, סרטונים עגולים ועוד..(כל סוגי המדיה הנתמכים)</i>
-", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
-Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'opener_media_2');
-$msgqutryid = $query->messageId;
-Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
-} catch (Throwable $e) {}
-}
-
-#[FilterButtonQueryData('צפהבמדיה_2')] 
-public function GroupMsgMediaView2(callbackQuery $query) {
-	try {
-$userid = $query->userId;    
-$msgqutryid = $query->messageId;
-$User_Full = $this->getInfo($userid);
-$first_name = $User_Full['User']['first_name']?? null;
-if($first_name == null){
-$first_name = "null";
-}
-
-if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
-$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
-}else{
-$filex = "null"; 	
-}
-
-if (file_exists(__DIR__."/"."data/$filex/MsgCloserMedia.txt")) {
-$MEDIA = Amp\File\read(__DIR__."/"."data/$filex/MsgCloserMedia.txt");  
-
-$bot_API_markup[] = [['text'=>"🔙 חזרה 🔙",'callback_data'=>"חזרההודעתסגירה"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-
-			try {
-$sentMessage = $this->messages->sendMedia(peer: $userid, media: $MEDIA, reply_markup: $bot_API_markup);
-} catch (Throwable $e) {
-$sentMessage = $this->messages->sendMessage(peer: $userid, message: $e->getMessage(), reply_markup: $bot_API_markup);
-}
-
-			try {
-$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
-} catch (Throwable $e) {}
-
-}else{
-$query->answer($message = "ההודעה לא מוגדרת.", $alert = true, $url = null, $cacheTime = 0);
-}
-
-} catch (Throwable $e) {}
-}
-
-#[FilterButtonQueryData('מחקמדיה_2')] 
-public function RemoveMedia2(callbackQuery $query) {
-	try {
-$userid = $query->userId;    
-$User_Full = $this->getInfo($userid);
-$first_name = $User_Full['User']['first_name']?? null;
-if($first_name == null){
-$first_name = "null";
-}
-
-$bot_API_markup[] = [['text'=>"לא ❌",'callback_data'=>"הגדרמדיה_2"],['text'=>"כן ✅",'callback_data'=>"מחקמדיה_2אישור"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-
-$query->editText($message = "האם אתה באמת בטוח שאתה רוצה למחוק את המדיה של הודעת הסגירה?", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
-} catch (Throwable $e) {}
-}
-
-#[FilterButtonQueryData('מחקמדיה_2אישור')] 
-public function RemoveMedia2_1(callbackQuery $query) {
-	try {
-$userid = $query->userId;    
-$User_Full = $this->getInfo($userid);
-$first_name = $User_Full['User']['first_name']?? null;
-if($first_name == null){
-$first_name = "null";
-}
-
-if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
-$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
-}else{
-$filex = "null"; 	
-}
-
-if (file_exists(__DIR__."/"."data/$filex/MsgCloserMedia.txt")) {
-unlink(__DIR__."/"."data/$filex/MsgCloserMedia.txt");  
-}
-
-$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"הודעתסגירה"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-
-$query->editText($message = "<b>המדיה הוסרה</b> 🗑", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
-} catch (Throwable $e) {}
-}
-
-#[FilterButtonQueryData('צפהבכפתורים_2')] 
-public function buttonsmanageviewgroup2(callbackQuery $query) {
-	try {
-$userid = $query->userId;    
-$User_Full = $this->getInfo($userid);
-$first_name = $User_Full['User']['first_name']?? null;
-if($first_name == null){
-$first_name = "null";
-}
-$username = $User_Full['User']['username']?? null;
-
-if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
-$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
-}else{
-$filex = "null"; 	
-}
-
-    if (file_exists(__DIR__."/"."data/$filex/MsgCloserButtons.txt")) {
-$BUTTONS = Amp\File\read(__DIR__."/"."data/$filex/MsgCloserButtons.txt");
-$bot_API_markup = $this->parseButtons($BUTTONS);
-} else {
-
-    $bot_API_markup = [
-        '_' => 'replyInlineMarkup',
-        'rows' => [],
-    ];
-}
-
-$bot_API_markup['rows'][] = [
-
-    '_' => 'keyboardButtonRow',
-
-    'buttons' => [
-
-        [
-            '_' => 'keyboardButtonCallback',
-
-            'text' => '🔙 חזור 🔙',
-
-            'data' => 'הודעתסגירה',
-        ]
-    ]
-];
-
-$query->editText($message = "צפייה בכפתורים:", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
-} catch (Throwable $e) {
-$query->editText($message = $e->getMessage(), $replyMarkup = $bot_API_markup, $noWebpage = false, $scheduleDate = NULL);
-}
-}
-
-#[FilterButtonQueryData('הגדרכפתורים_2')] 
-public function GroupMsgButtonSet2(callbackQuery $query) {
-	try {
-$userid = $query->userId;    
-$User_Full = $this->getInfo($userid);
-$first_name = $User_Full['User']['first_name']?? null;
-if($first_name == null){
-$first_name = "null";
-}
-
-if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
-$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
-}else{
-$filex = "null"; 	
-}
-
-if (file_exists(__DIR__."/"."data/$filex/MsgCloserButtons.txt")) {	
-$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתסגירה"],['text'=>"🗑 הסר כפתורים",'callback_data'=>"מחקכפתורים_2"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-}else{
-$bot_API_markup[] = [['text'=>"חזור 🔙",'callback_data'=>"הודעתסגירה"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-}
-
-$query->editText($message = "<b>שלח את הכפתורים שתרצה להוסיף בפורמט הבא:</b>
-<pre>Button text 1 - http://www.example.com/ \nButton text 2 - http://www.example2.com/</pre>
-
-<b>🔘 שלח כפתורים בפורמט:</b>
-
-<pre>טקסט - פעולה</pre>
-
-<b>📌 פעולות נתמכות:</b>
-<pre>https://example.com
-alert:טקסט
-popup:טקסט
-copy:טקסט</pre>
-
-<b>📌 כמה כפתורים באותה שורה:</b>
-
-<pre>כפתור 1 - https://t.me/test1 &amp;&amp; כפתור 2 - https://t.me/test2</pre>
-
-<b>📌 עיצוב נתמך:</b>
-<pre>style:bg_primary
-style:bg_success
-style:bg_danger</pre>
-
-<b>📌 אייקון:</b>
-<pre>icon:123456 </pre>
-
-<b>📌 דוגמאות:</b>
-<pre>כניסה - https://t.me/test
-
-התראה - alert:שבת שלום - style: bg_danger
-
-פופאפ - popup:הקבוצה תיפתח במוצ&quot;ש
-
-העתקה - copy:https://t.me/test
-
-אישור - https://t.me/test - style:bg_success
-
-קבוצה - https://t.me/test - style:bg_primary - icon:5424972470023104089
-
-אתר - https://google.com &amp;&amp; תמיכה - https://t.me/support</pre>
-
-<b>⚠️ הערות:</b>
-<pre>• כל שורה חדשה = שורת כפתורים חדשה
-• &amp;&amp; = כמה כפתורים באותה שורה
-• ניתן לשלב style + icon יחד
-• ניתן להשתמש בלי עיצוב או אייקון</pre>", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
-Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'opener_buttons_2');
-$msgqutryid = $query->messageId;
-Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
-} catch (Throwable $e) {}
-}
-
-#[FilterButtonQueryData('מחקכפתורים_2')] 
-public function RemoveButtons2(callbackQuery $query) {
-	try {
-$userid = $query->userId;    
-$User_Full = $this->getInfo($userid);
-$first_name = $User_Full['User']['first_name']?? null;
-if($first_name == null){
-$first_name = "null";
-}
-
-$bot_API_markup[] = [['text'=>"לא ❌",'callback_data'=>"הגדרכפתורים_2"],['text'=>"כן ✅",'callback_data'=>"מחקכפתורים_2אישור"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-
-$query->editText($message = "האם אתה באמת בטוח שאתה רוצה למחוק את הכפתורים של הודעת הסגירה?", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
-} catch (Throwable $e) {}
-}
-
-#[FilterButtonQueryData('מחקכפתורים_2אישור')] 
-public function RemoveButtons2_1(callbackQuery $query) {
-	try {
-$userid = $query->userId;    
-$User_Full = $this->getInfo($userid);
-$first_name = $User_Full['User']['first_name']?? null;
-if($first_name == null){
-$first_name = "null";
-}
-
-if (file_exists(__DIR__."/"."data/$userid/groupid.txt")) {
-$filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");  
-}else{
-$filex = "null"; 	
-}
-
-if (file_exists(__DIR__."/"."data/$filex/MsgCloserButtons.txt")) {
-unlink(__DIR__."/"."data/$filex/MsgCloserButtons.txt");  
-}
-
-$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"הודעתסגירה"]];
-$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
-
-$query->editText($message = "<b>הכפתורים הוסרו</b> 🗑", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
-} catch (Throwable $e) {}
-}
-
-#[Handler]
-public function HandleGroupMsgSet2(Incoming & PrivateMessage & IsNotEdited $message): void {
-		try {
-$messagetext = $message->message;
-$entities = $message->entities;
-$messagefile = $message->media;
-$grouped_id = $message->groupedId;
-$messageid = $message->id;
-$senderid = $message->senderId;
-$User_Full = $this->getInfo($message->senderId);
-$first_name = $User_Full['User']['first_name']?? null;
-if($first_name == null){
-$first_name = "null";
-}
-$last_name = $User_Full['User']['last_name']?? null;
-if($last_name == null){
-$last_name = "null";
-}
-$username = $User_Full['User']['username']?? null;
-if($username == null){
-$username = "null";
-}
-
-if(!preg_match('/^\/([Ss]tart)/',$messagetext)){  
-
-    if (file_exists(__DIR__."/data/$senderid/grs1.txt")) {
-$check = Amp\File\read(__DIR__."/data/$senderid/grs1.txt");    
-
-if (file_exists(__DIR__."/"."data/$senderid/groupid.txt")) {
-$filex = Amp\File\read(__DIR__."/"."data/$senderid/groupid.txt");  
-}else{
-$filex = "null"; 	
-}
-
 if($check == "opener_text_2"){ 
 
 if($grouped_id != null){
@@ -3592,13 +3938,14 @@ $Updates = $this->messages->editMessage(peer: $senderid, id: $filexmsgid, messag
 
 }
 
+
 }
 }
 } catch (Throwable $e) {}
 }
 
-#[FilterButtonQueryData('תצוגהמקדימהפתיחה_2')] 
-public function view_welcomeMessage_ful12(callbackQuery $query) {
+#[FilterButtonQueryData('תצוגהמקדימהפתיחה')] 
+public function view_welcomeMessage_full(callbackQuery $query) {
 	try {
 $userid = $query->userId;    
 $msgqutryid = $query->messageId;
@@ -3613,6 +3960,105 @@ $filex = Amp\File\read(__DIR__."/"."data/$userid/groupid.txt");
 }else{
 $filex = "null"; 	
 }
+
+if (file_exists(__DIR__."/"."data/$userid/VAR-MENU")) {
+$menu = \Amp\File\read(__DIR__."/"."data/$userid/VAR-MENU");
+}else{ $menu = 'unknown'; }
+
+if($menu === 'openMsg') {
+
+if (file_exists(__DIR__."/"."data/$filex/MsgOpenerMedia.txt")) {
+$MEDIA = Amp\File\read(__DIR__."/"."data/$filex/MsgOpenerMedia.txt");  
+}else{
+$MEDIA = null; 	
+}
+if (file_exists(__DIR__."/"."data/$filex/MsgOpener.txt")) {
+$TXT = Amp\File\read(__DIR__."/"."data/$filex/MsgOpener.txt"); 
+}else{
+$TXT = null; 	
+}
+if (file_exists(__DIR__."/"."data/$filex/MsgOpener2.txt")) {
+$ENT = json_decode(Amp\File\read(__DIR__."/"."data/$filex/MsgOpener2.txt"),true);  
+}else{
+$ENT = null; 	
+}
+if (file_exists(__DIR__."/"."data/$filex/MsgOpenerButtons.txt")) {
+$BUTTONS = Amp\File\read(__DIR__."/"."data/$filex/MsgOpenerButtons.txt");
+$bot_API_markup_welcome = $this->parseButtons($BUTTONS);
+} else {
+$bot_API_markup_welcome = null;
+}
+
+$bot_API_markup[] = [['text'=>"מדיה 🖼",'callback_data'=>"הגדרמדיה"],['text'=>"👀 צפה",'callback_data'=>"צפהבמדיה"]];
+$bot_API_markup[] = [['text'=>"טקסט 🔤",'callback_data'=>"הגדרטקסט"],['text'=>"👀 צפה",'callback_data'=>"צפהבטקסט"]];
+$bot_API_markup[] = [['text'=>"כפתורים ⌨️",'callback_data'=>"הגדרכפתורים"],['text'=>"👀 צפה",'callback_data'=>"צפהבכפתורים"]];
+$bot_API_markup[] = [['text'=>"תצוגה מקדימה מלאה 👁",'callback_data'=>"תצוגהמקדימהפתיחה"]];
+$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"חזרהלהגדרות"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+if($MEDIA != null){
+
+if($TXT != null){
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
+} catch (Throwable $e) {}
+
+$this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖➖");
+$this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
+$sentMessage = $this->messages->sendMedia(peer: $userid, message: "$TXT",  entities: $ENT, media: $MEDIA, reply_markup: $bot_API_markup_welcome);
+
+$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת כשהקבוצה נפתחת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+}else{
+	
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
+} catch (Throwable $e) {}
+
+$OPENER = self::OPENER;
+$this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖➖");
+$this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
+$sentMessage = $this->messages->sendMedia(peer: $userid, message: $OPENER, media: $MEDIA, reply_markup: $bot_API_markup_welcome);	
+
+$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת כשהקבוצה נפתחת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+}
+
+}else{
+
+if($TXT != null){
+	
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
+} catch (Throwable $e) {}
+
+$this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖➖");
+$this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
+$sentMessage = $this->messages->sendMessage(peer: $userid, message: "$TXT", entities: $ENT, reply_markup: $bot_API_markup_welcome);
+
+$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת כשהקבוצה נפתחת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+}else{
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
+} catch (Throwable $e) {}
+
+$OPENER = self::OPENER;
+$this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖➖");
+$this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
+$sentMessage = $this->messages->sendMessage(peer: $userid, message: $OPENER, reply_markup: $bot_API_markup_welcome);
+
+$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת כשהקבוצה נפתחת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+}
+
+
+}
+
+
+}elseif($menu === 'closeMsg') {
 
 if (file_exists(__DIR__."/"."data/$filex/MsgCloserMedia.txt")) {
 $MEDIA = Amp\File\read(__DIR__."/"."data/$filex/MsgCloserMedia.txt");  
@@ -3633,18 +4079,13 @@ if (file_exists(__DIR__."/"."data/$filex/MsgCloserButtons.txt")) {
 $BUTTONS = Amp\File\read(__DIR__."/"."data/$filex/MsgCloserButtons.txt");
 $bot_API_markup_welcome = $this->parseButtons($BUTTONS);
 } else {
-
-    $bot_API_markup_welcome = [
-        '_' => 'replyInlineMarkup',
-        'rows' => [],
-    ];
+$bot_API_markup_welcome = null;
 }
 
-
-$bot_API_markup[] = [['text'=>"מדיה 🖼",'callback_data'=>"הגדרמדיה_2"],['text'=>"👀 צפה",'callback_data'=>"צפהבמדיה_2"]];
-$bot_API_markup[] = [['text'=>"טקסט 🔤",'callback_data'=>"הגדרטקסט_2"],['text'=>"👀 צפה",'callback_data'=>"צפהבטקסט_2"]];
-$bot_API_markup[] = [['text'=>"כפתורים ⌨️",'callback_data'=>"הגדרכפתורים_2"],['text'=>"👀 צפה",'callback_data'=>"צפהבכפתורים_2"]];
-$bot_API_markup[] = [['text'=>"תצוגה מקדימה מלאה 👁",'callback_data'=>"תצוגהמקדימהפתיחה_2"]];
+$bot_API_markup[] = [['text'=>"מדיה 🖼",'callback_data'=>"הגדרמדיה"],['text'=>"👀 צפה",'callback_data'=>"צפהבמדיה"]];
+$bot_API_markup[] = [['text'=>"טקסט 🔤",'callback_data'=>"הגדרטקסט"],['text'=>"👀 צפה",'callback_data'=>"צפהבטקסט"]];
+$bot_API_markup[] = [['text'=>"כפתורים ⌨️",'callback_data'=>"הגדרכפתורים"],['text'=>"👀 צפה",'callback_data'=>"צפהבכפתורים"]];
+$bot_API_markup[] = [['text'=>"תצוגה מקדימה מלאה 👁",'callback_data'=>"תצוגהמקדימהפתיחה"]];
 $bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"חזרהלהגדרות"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
@@ -3660,7 +4101,7 @@ $this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖�
 $this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
 $sentMessage = $this->messages->sendMedia(peer: $userid, message: "$TXT",  entities: $ENT, media: $MEDIA, reply_markup: $bot_API_markup_welcome);
 
-$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת סגירה מותאמת אישית שתשלח בערב שבת כשהקבוצה נסגרת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת סגירה מותאמת אישית שתשלח בערב החג/שבת כשהקבוצה נסגרת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
 
 }else{
 	
@@ -3673,7 +4114,7 @@ $this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖�
 $this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
 $sentMessage = $this->messages->sendMedia(peer: $userid, message: $OPENER, media: $MEDIA, reply_markup: $bot_API_markup_welcome);	
 
-$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת סגירה מותאמת אישית שתשלח בערב שבת כשהקבוצה נסגרת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת סגירה מותאמת אישית שתשלח בערב החג/שבת כשהקבוצה נסגרת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
 
 }
 
@@ -3689,7 +4130,7 @@ $this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖�
 $this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
 $sentMessage = $this->messages->sendMessage(peer: $userid, message: "$TXT", entities: $ENT, reply_markup: $bot_API_markup_welcome);
 
-$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת סגירה מותאמת אישית שתשלח בערב שבת כשהקבוצה נסגרת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת סגירה מותאמת אישית שתשלח בערב החג/שבת כשהקבוצה נסגרת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
 
 }else{
 
@@ -3702,7 +4143,102 @@ $this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖�
 $this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
 $sentMessage = $this->messages->sendMessage(peer: $userid, message: $OPENER, reply_markup: $bot_API_markup_welcome);
 
-$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת סגירה מותאמת אישית שתשלח בערב שבת כשהקבוצה נסגרת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת סגירה מותאמת אישית שתשלח בערב החג/שבת כשהקבוצה נסגרת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+}
+
+
+}
+
+}else{
+
+if (file_exists(__DIR__."/"."data/$filex/MsgOpenerMedia.txt")) {
+$MEDIA = Amp\File\read(__DIR__."/"."data/$filex/MsgOpenerMedia.txt");  
+}else{
+$MEDIA = null; 	
+}
+if (file_exists(__DIR__."/"."data/$filex/MsgOpener.txt")) {
+$TXT = Amp\File\read(__DIR__."/"."data/$filex/MsgOpener.txt"); 
+}else{
+$TXT = null; 	
+}
+if (file_exists(__DIR__."/"."data/$filex/MsgOpener2.txt")) {
+$ENT = json_decode(Amp\File\read(__DIR__."/"."data/$filex/MsgOpener2.txt"),true);  
+}else{
+$ENT = null; 	
+}
+if (file_exists(__DIR__."/"."data/$filex/MsgOpenerButtons.txt")) {
+$BUTTONS = Amp\File\read(__DIR__."/"."data/$filex/MsgOpenerButtons.txt");
+$bot_API_markup_welcome = $this->parseButtons($BUTTONS);
+} else {
+$bot_API_markup_welcome = null;
+}
+
+$bot_API_markup[] = [['text'=>"מדיה 🖼",'callback_data'=>"הגדרמדיה"],['text'=>"👀 צפה",'callback_data'=>"צפהבמדיה"]];
+$bot_API_markup[] = [['text'=>"טקסט 🔤",'callback_data'=>"הגדרטקסט"],['text'=>"👀 צפה",'callback_data'=>"צפהבטקסט"]];
+$bot_API_markup[] = [['text'=>"כפתורים ⌨️",'callback_data'=>"הגדרכפתורים"],['text'=>"👀 צפה",'callback_data'=>"צפהבכפתורים"]];
+$bot_API_markup[] = [['text'=>"תצוגה מקדימה מלאה 👁",'callback_data'=>"תצוגהמקדימהפתיחה"]];
+$bot_API_markup[] = [['text'=>"🔙 חזור 🔙",'callback_data'=>"חזרהלהגדרות"]];
+$bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
+
+if($MEDIA != null){
+
+if($TXT != null){
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
+} catch (Throwable $e) {}
+
+$this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖➖");
+$this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
+$sentMessage = $this->messages->sendMedia(peer: $userid, message: "$TXT",  entities: $ENT, media: $MEDIA, reply_markup: $bot_API_markup_welcome);
+
+$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת פתיחה/סגירה מותאמת אישית שתשלח במוצאי שבת כשהקבוצה נפתחת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+}else{
+	
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
+} catch (Throwable $e) {}
+
+$OPENER = self::OPENER;
+$this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖➖");
+$this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
+$sentMessage = $this->messages->sendMedia(peer: $userid, message: $OPENER, media: $MEDIA, reply_markup: $bot_API_markup_welcome);	
+
+$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת פתיחה/סגירה מותאמת אישית שתשלח במוצאי שבת כשהקבוצה נפתחת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+}
+
+}else{
+
+if($TXT != null){
+	
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
+} catch (Throwable $e) {}
+
+$this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖➖");
+$this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
+$sentMessage = $this->messages->sendMessage(peer: $userid, message: "$TXT", entities: $ENT, reply_markup: $bot_API_markup_welcome);
+
+$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת כשהקבוצה נפתחת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+}else{
+
+			try {
+$this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
+} catch (Throwable $e) {}
+
+$OPENER = self::OPENER;
+$this->messages->sendMessage(peer: $userid, message: "➖➖➖➖➖➖➖➖➖");
+$this->messages->sendMessage(peer: $userid, message: "👇🏻 תצוגה מקדימה מלאה");
+$sentMessage = $this->messages->sendMessage(peer: $userid, message: $OPENER, reply_markup: $bot_API_markup_welcome);
+
+$this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדיר הודעת פתיחה מותאמת אישית שתשלח במוצאי שבת כשהקבוצה נפתחת!", reply_markup: $bot_API_markup, parse_mode: 'HTML');
+
+}
+
 
 }
 
@@ -3781,7 +4317,16 @@ public function StatsGroups(
 
         $totalGroups = $supergroups + $normalGroups;
 
-        $zmanim = $this->getShabbatLockTimes();
+        if ($this->isShabbatOrHolidayNow()) {
+
+            $zmanim = $this->getShabbatCheckLock();
+
+        } else {
+
+            $zmanim = $this->testMode
+                ? $this->getTestShabbatLockTimes()
+                : $this->getShabbatLockTimes();
+        }
 
         $closeDateTime =
             $zmanim['close_datetime'] ?? 'Unknown';
@@ -3789,44 +4334,15 @@ public function StatsGroups(
         $openDateTime =
             $zmanim['open_datetime'] ?? 'Unknown';
 
-        $closeDateObj = \DateTime::createFromFormat(
-            'd/m/Y H:i',
-            $closeDateTime
-        );
 
-        $openDateObj = \DateTime::createFromFormat(
-            'd/m/Y H:i',
-            $openDateTime
-        );
+        $isLockedNow = $this->isShabbatOrHolidayNow();
 
-        $isLockedNow = false;
+        $systemStatus = $isLockedNow ? 'סגור' : 'פתוח';
 
-        if (
-            $closeDateObj &&
-            $openDateObj
-        ) {
 
-            $nowTs = time();
+        $testModeStatus = $this->testMode ? 'פועל' : 'כבוי';
 
-            $closeTs = $closeDateObj->getTimestamp();
-
-            $openTs = $openDateObj->getTimestamp();
-
-            $isLockedNow =
-                $closeTs <= $nowTs &&
-                $openTs > $nowTs;
-        }
-
-        $systemStatus = $isLockedNow
-            ? 'סגור'
-            : 'פתוח';
-
-        $testModeStatus =
-            $this->testMode
-                ? 'פועל'
-                : 'כבוי';
-
-        $version = 'v2.0.1';
+        $version = 'v2.0.2 Beta';
 
         $statsMessage =
 "📊 <b>סטטיסטיקות</b> 📊
@@ -3869,7 +4385,7 @@ public function StatsGroups(
 
 /* ================ cron ================ */
 #[Cron(period: 60.0)] 
-public function shabatCron(): void {
+public function shabatCronClose(): void {
 try {
 	
 date_default_timezone_set("Asia/Jerusalem");
@@ -3891,6 +4407,7 @@ if ($closeDateTime) {
 }
 $openDateTime  = $zmanim['open_datetime'];
 $now = date('d/m/Y H:i');
+$nowTs = time();
 
 $closeLockFile = __DIR__ . "/close_lock.txt";
 $alreadyClosed = false;
@@ -3905,190 +4422,96 @@ if (file_exists($closeLockFile)) {
     }
 }
 
-$nowTs = time();
+$closeDateObj = \DateTime::createFromFormat('d/m/Y H:i',$closeDateTime);
+$closeTs = $closeDateObj? $closeDateObj->getTimestamp(): 0;
 
-$closeDateObj = \DateTime::createFromFormat(
-    'd/m/Y H:i',
-    $closeDateTime
-);
+if ($closeTs <= $nowTs && ($nowTs - $closeTs) < 360 && !$alreadyClosed) {
 
-$closeTs = $closeDateObj
-    ? $closeDateObj->getTimestamp()
-    : 0;
-
-if (
-    $closeTs <= $nowTs &&
-    ($nowTs - $closeTs) < 120 &&
-    !$alreadyClosed
-) {
-
-    Amp\File\write($closeLockFile, $closeDateTime);
-
+$processedGroups = 0;
 if (file_exists(__DIR__."/"."data/DBgroups.txt")) {
 $userstoasend = Amp\File\read(__DIR__."/"."data/DBgroups.txt");  
 $usersArray = explode("\n", $userstoasend);
 $usersArray = array_filter($usersArray);
 $userstoasend1 = ($usersArray);
 
-
-
 foreach ($userstoasend1 as $peer) {
 try {
 $info = $this->getInfo($peer);
-$checkar1 = $info['Chat']['default_banned_rights']['view_messages'];
-$checkar2 = $info['Chat']['default_banned_rights']['send_messages'];
-$checkar3 = $info['Chat']['default_banned_rights']['send_media'];
-$checkar4 = $info['Chat']['default_banned_rights']['send_stickers'];
-$checkar5 = $info['Chat']['default_banned_rights']['send_gifs'];
-$checkar6 = $info['Chat']['default_banned_rights']['send_games'];
-$checkar7 = $info['Chat']['default_banned_rights']['send_inline'];
-$checkar8 = $info['Chat']['default_banned_rights']['embed_links'];
-$checkar9 = $info['Chat']['default_banned_rights']['send_polls'];
-$checkar10 = $info['Chat']['default_banned_rights']['change_info'];
-$checkar11 = $info['Chat']['default_banned_rights']['invite_users'];
-$checkar12 = $info['Chat']['default_banned_rights']['pin_messages'];
-$checkar13 = $info['Chat']['default_banned_rights']['manage_topics'];
-$checkar14 = $info['Chat']['default_banned_rights']['send_photos'];
-$checkar15 = $info['Chat']['default_banned_rights']['send_videos'];
-$checkar16 = $info['Chat']['default_banned_rights']['send_roundvideos'];
-$checkar17 = $info['Chat']['default_banned_rights']['send_audios'];
-$checkar18 = $info['Chat']['default_banned_rights']['send_voices'];
-$checkar19 = $info['Chat']['default_banned_rights']['send_docs'];
-$checkar20 = $info['Chat']['default_banned_rights']['send_plain'];
-$checkartime = $info['Chat']['default_banned_rights']['until_date'];
-if($checkar1 != false){
-$checkar1 = "true";
-}else{
-$checkar1 = "false";
-}
-if($checkar2 != false){
-$checkar2 = "true";
-}else{
-$checkar2 = "false";
-}
-if($checkar3 != false){
-$checkar3 = "true";
-}else{
-$checkar3 = "false";
-}
-if($checkar4 != false){
-$checkar4 = "true";
-}else{
-$checkar4 = "false";
-}
-if($checkar5 != false){
-$checkar5 = "true";
-}else{
-$checkar5 = "false";
-}
-if($checkar6 != false){
-$checkar6 = "true";
-}else{
-$checkar6 = "false";
-}
-if($checkar7 != false){
-$checkar7 = "true";
-}else{
-$checkar7 = "false";
-}
-if($checkar8 != false){
-$checkar8 = "true";
-}else{
-$checkar8 = "false";
-}
-if($checkar9 != false){
-$checkar9 = "true";
-}else{
-$checkar9 = "false";
-}
-if($checkar10 != false){
-$checkar10 = "true";
-}else{
-$checkar10 = "false";
-}
-if($checkar11 != false){
-$checkar11 = "true";
-}else{
-$checkar11 = "false";
-}
-if($checkar12 != false){
-$checkar12 = "true";
-}else{
-$checkar12 = "false";
-}
-if($checkar13 != false){
-$checkar13 = "true";
-}else{
-$checkar13 = "false";
-}
-if($checkar14 != false){
-$checkar14 = "true";
-}else{
-$checkar14 = "false";
-}
-if($checkar15 != false){
-$checkar15 = "true";
-}else{
-$checkar15 = "false";
-}
-if($checkar16 != false){
-$checkar16 = "true";
-}else{
-$checkar16 = "false";
-}
-if($checkar17 != false){
-$checkar17 = "true";
-}else{
-$checkar17 = "false";
-}
-if($checkar18 != false){
-$checkar18 = "true";
-}else{
-$checkar18 = "false";
-}
-if($checkar19 != false){
-$checkar19 = "true";
-}else{
-$checkar19 = "false";
-}
-if($checkar20 != false){
-$checkar20 = "true";
-}else{
-$checkar20 = "false";
-}
-$checkartime20 = (string) $checkartime;
+$rights = $info['Chat']['default_banned_rights'] ?? [];
 
+$alreadyLocked = (bool) ($info['Chat']['default_banned_rights']['send_messages'] ?? false);
+
+if (!$alreadyLocked) {
 
 try {
-Amp\File\write(__DIR__."/"."data/$peer/chatb1.txt",$checkar1."\n".$checkar2."\n".$checkar3."\n".$checkar4."\n".$checkar5."\n".$checkar6."\n".$checkar7."\n".$checkar8."\n".$checkar9."\n".$checkar10."\n".$checkar11."\n".$checkar12."\n".$checkar13."\n".$checkar14."\n".$checkar15."\n".$checkar16."\n".$checkar17."\n".$checkar18."\n".$checkar19."\n".$checkar20."\n".$checkartime20);
-} finally {
-$this->sleep(0.1);
-$chatBannedRights = ['_'                => 'chatBannedRights', 
-                    'view_messages'     => false, 
-                    'send_messages'     => true, 
-                    'send_media'        => true, 
-                    'send_stickers'     => true, 
-                    'send_gifs'         => true, 
-                    'send_games'        => true, 
-                    'send_inline'       => true, 
-                    'embed_links'       => true, 
-                    'send_polls'        => true, 
-                    'change_info'       => true, 
-                    'invite_users'      => true, 
-                    'pin_messages'      => true,
-                    'manage_topics'     => true, 
-                    'send_photos'       => true, 
-                    'send_videos'       => true, 
-                    'send_roundvideos'  => true, 
-                    'send_audios'       => true, 
-                    'send_voices'       => true, 
-                    'send_docs'         => true,
-                    'send_plain'        => true, 
-                    'until_date'        => 0,
-                ];
-	
-$Updates1 = $this->messages->editChatDefaultBannedRights(peer: $peer, banned_rights: $chatBannedRights, );
-}
+
+    try {
+
+        \Amp\File\write(
+            __DIR__ . "/data/$peer/chatb1.json",
+            json_encode(
+                $rights,
+                JSON_PRETTY_PRINT |
+                JSON_UNESCAPED_UNICODE
+            )
+        );
+
+    } catch (\Throwable $e) {}
+
+    $chatBannedRights = $rights;
+
+    if (empty($chatBannedRights)) {
+
+        $chatBannedRights = [];
+    }
+
+    $chatBannedRights['_'] =
+        'chatBannedRights';
+
+    $rightsToBlock = [
+
+        'send_messages',
+        'send_media',
+        'send_stickers',
+        'send_gifs',
+        'send_games',
+        'send_inline',
+        'embed_links',
+        'send_polls',
+        'change_info',
+        'invite_users',
+        'pin_messages',
+        'manage_topics',
+        'send_photos',
+        'send_videos',
+        'send_roundvideos',
+        'send_audios',
+        'send_voices',
+        'send_docs',
+        'send_plain',
+        'edit_rank',
+        'send_reactions',
+    ];
+
+    foreach ($rightsToBlock as $right) {
+
+        $chatBannedRights[$right] = true;
+    }
+
+    $chatBannedRights['view_messages'] = false;
+
+    $chatBannedRights['until_date'] = 0;
+
+    $Updates1 =
+        $this->messages
+            ->editChatDefaultBannedRights(
+                peer: $peer,
+                banned_rights: $chatBannedRights
+            );
+
+    $processedGroups++;
+
+} catch (\Throwable $e) {}
 
 if (file_exists(__DIR__."/"."data/$peer/alertshabat2.txt")) {
 
@@ -4111,11 +4534,7 @@ if (file_exists(__DIR__."/"."data/$peer/MsgCloserButtons.txt")) {
 $BUTTONS = Amp\File\read(__DIR__."/"."data/$peer/MsgCloserButtons.txt");
 $bot_API_markup_welcome = $this->parseButtons($BUTTONS);
 } else {
-
-    $bot_API_markup_welcome = [
-        '_' => 'replyInlineMarkup',
-        'rows' => [],
-    ];
+$bot_API_markup_welcome = null;
 }
 
 
@@ -4153,17 +4572,188 @@ $sentMessage = $this->messages->sendMessage(peer: $peer, message: $OPENER, reply
 
 
 }
-$this->sleep(0.1);
 
-} catch (Throwable $e) {
+}
+
+} catch (\Throwable $e) {
 continue;
 } 
 }
 
+}
+
+if ($processedGroups > 0) {
+    \Amp\File\write($closeLockFile, $closeDateTime);
+}
+
+}
+
+} catch (\Throwable $e) {
+}
+}
+
+#[Cron(period: 60.0)] 
+public function shabatCronOpen(): void {
+try {
+	
+date_default_timezone_set("Asia/Jerusalem");
+
+$zmanim = $this->testMode ? $this->getTestShabbatLockTimes(): $this->getShabbatLockTimes();
+
+$closeDateTime = $zmanim['close_datetime'];
+$closeDateOnly = null;
+if ($closeDateTime) {
+
+    $closeDate = \DateTime::createFromFormat(
+        'd/m/Y H:i',
+        $closeDateTime
+    );
+
+    if ($closeDate !== false) {
+        $closeDateOnly = $closeDate->format('d/m/Y');
+    }
+}
+$openDateTime  = $zmanim['open_datetime'];
+$now = date('d/m/Y H:i');
+$nowTs = time();
+
+$openLockFile = __DIR__ . "/open_lock.txt";
+$alreadyOpened = false;
+if (file_exists($openLockFile)) {
+
+    $lockData = trim(Amp\File\read($openLockFile));
+
+    if ($lockData === $openDateTime) {
+        $alreadyOpened = true;
+    }
+}
+
+$openDateObj = \DateTime::createFromFormat('d/m/Y H:i', $openDateTime);
+$openTs = $openDateObj? $openDateObj->getTimestamp(): 0;
+
+if ($openTs <= $nowTs && ($nowTs - $openTs) < 360 && !$alreadyOpened) {
+
+$openedGroups = 0;
+if (file_exists(__DIR__."/"."data/DBgroups.txt")) {
+$userstoasend = Amp\File\read(__DIR__."/"."data/DBgroups.txt");  
+$usersArray = explode("\n", $userstoasend);
+$usersArray = array_filter($usersArray);
+$userstoasend1 = ($usersArray);
+
+foreach ($userstoasend1 as $peer) {
+
+try {
+
+if (file_exists(__DIR__."/"."data/$peer/chatb1.json")) {
+$chatBannedRights2 = json_decode(Amp\File\read(__DIR__ . "/data/$peer/chatb1.json"),true);
+
+if (!is_array($chatBannedRights2)) {
+$chatBannedRights2 = ['_' => 'chatBannedRights', 'send_messages' => false, 'until_date' => 0];
+//    continue;
+}
+
+try {
+$Updates2 = $this->messages->editChatDefaultBannedRights(peer: $peer, banned_rights: $chatBannedRights2, );
+$openedGroups++;
+try { \Amp\File\delete(__DIR__ . "/data/$peer/chatb1.json"); } catch (\Throwable $e) {}
+} catch (\Throwable $e) {}
+
+if (file_exists(__DIR__."/"."data/$peer/alertshabat2.txt")) {
+
+if (file_exists(__DIR__."/"."data/$peer/MsgOpenerMedia.txt")) {
+$MEDIA = Amp\File\read(__DIR__."/"."data/$peer/MsgOpenerMedia.txt");  
+}else{
+$MEDIA = null; 	
+}
+if (file_exists(__DIR__."/"."data/$peer/MsgOpener.txt")) {
+$TXT = Amp\File\read(__DIR__."/"."data/$peer/MsgOpener.txt"); 
+}else{
+$TXT = null; 	
+}
+if (file_exists(__DIR__."/"."data/$peer/MsgOpener2.txt")) {
+$ENT = json_decode(Amp\File\read(__DIR__."/"."data/$peer/MsgOpener2.txt"),true);  
+}else{
+$ENT = null; 	
+}
+if (file_exists(__DIR__."/"."data/$peer/MsgOpenerButtons.txt")) {
+$BUTTONS = Amp\File\read(__DIR__."/"."data/$peer/MsgOpenerButtons.txt");
+$bot_API_markup_welcome = $this->parseButtons($BUTTONS);
+} else {
+$bot_API_markup_welcome = null;
+}
+
+if($MEDIA != null){
+
+if($TXT != null){
+
+$sentMessage = $this->messages->sendMedia(peer: $peer, message: "$TXT",  entities: $ENT, media: $MEDIA, reply_markup: $bot_API_markup_welcome);
+
+}else{
+
+$OPENER = self::OPENER;
+$sentMessage = $this->messages->sendMedia(peer: $peer, message: $OPENER, media: $MEDIA, reply_markup: $bot_API_markup_welcome);	
+
+}
+
+}else{
+
+if($TXT != null){
+
+$sentMessage = $this->messages->sendMessage(peer: $peer, message: "$TXT", entities: $ENT, reply_markup: $bot_API_markup_welcome);
+
+}else{
+
+$OPENER = self::OPENER;
+$sentMessage = $this->messages->sendMessage(peer: $peer, message: $OPENER, reply_markup: $bot_API_markup_welcome);
+
+}
 
 
 }
 
+}
+
+}
+
+} catch (\Throwable $e) {
+continue;
+}
+
+}
+
+
+}
+
+if ($openedGroups > 0) {
+    \Amp\File\write($openLockFile, $openDateTime);
+}
+
+}
+
+} catch (\Throwable $e) {
+}
+}
+
+#[Cron(period: 60.0)] 
+public function shabatCronAlert(): void {
+try {
+	
+date_default_timezone_set("Asia/Jerusalem");
+
+$zmanim = $this->testMode ? $this->getTestShabbatLockTimes(): $this->getShabbatLockTimes();
+
+$closeDateTime = $zmanim['close_datetime'];
+$closeDateOnly = null;
+if ($closeDateTime) {
+
+    $closeDate = \DateTime::createFromFormat(
+        'd/m/Y H:i',
+        $closeDateTime
+    );
+
+    if ($closeDate !== false) {
+        $closeDateOnly = $closeDate->format('d/m/Y');
+    }
 }
 
 $alertLockFile = __DIR__ . "/alert_lock.txt";
@@ -4177,18 +4767,14 @@ if (file_exists($alertLockFile)) {
     }
 }
 
-if (
-    $closeDateOnly &&
-    date('d/m/Y') === $closeDateOnly &&
-    date('H:i') === (
-    $this->testMode
-        ? $this->getAlertTestTime()
-        : '13:30') &&
-    !$alreadyAlerted
-) {
+$targetTime = $this->testMode? $this->getAlertTestTime(): '13:35';
+$currentMinutes = ((int) date('H') * 60) + (int) date('i');
+[$targetHour, $targetMinute] = array_map('intval', explode(':', $targetTime));
+$targetMinutes = ($targetHour * 60) + $targetMinute;
 
-    Amp\File\write($alertLockFile, $closeDateOnly);
+if ($closeDateOnly && date('d/m/Y') === $closeDateOnly && abs($currentMinutes - $targetMinutes) <= 5 && !$alreadyAlerted) {
 
+$alertedGroups = 0;
 if (file_exists(__DIR__."/"."data/DBgroups.txt")) {
 $userstoasend = Amp\File\read(__DIR__."/"."data/DBgroups.txt");  
 $usersArray = explode("\n", $userstoasend);
@@ -4214,10 +4800,10 @@ $keyboardButtonRow1 = ['_' => 'keyboardButtonRow', 'buttons' => [$keyboardButton
 $bot_API_markup = ['_' => 'replyInlineMarkup', 'rows' => [$keyboardButtonRow1]];
 
 $sendmoadaa1 = $this->messages->sendMessage(peer: $peer, message: $ShabatTimes, reply_markup: $bot_API_markup, parse_mode: 'html');
-$this->sleep(0.1);
-}
 
-} catch (Throwable $e) {
+$alertedGroups++;
+}
+} catch (\Throwable $e) {
 continue;
 }
 }
@@ -4226,191 +4812,13 @@ continue;
 
 }
 
-}
-
-$openLockFile = __DIR__ . "/open_lock.txt";
-$alreadyOpened = false;
-if (file_exists($openLockFile)) {
-
-    $lockData = trim(Amp\File\read($openLockFile));
-
-    if ($lockData === $openDateTime) {
-        $alreadyOpened = true;
-    }
-}
-
-$openDateObj = \DateTime::createFromFormat(
-    'd/m/Y H:i',
-    $openDateTime
-);
-
-$openTs = $openDateObj
-    ? $openDateObj->getTimestamp()
-    : 0;
-
-if (
-    $openTs <= $nowTs &&
-    ($nowTs - $openTs) < 120 &&
-    !$alreadyOpened
-) {
-
-    Amp\File\write($openLockFile, $openDateTime);
-
-if (file_exists(__DIR__."/"."data/DBgroups.txt")) {
-$userstoasend = Amp\File\read(__DIR__."/"."data/DBgroups.txt");  
-$usersArray = explode("\n", $userstoasend);
-$usersArray = array_filter($usersArray);
-$userstoasend1 = ($usersArray);
-
-foreach ($userstoasend1 as $peer) {
-try {
-
-if (file_exists(__DIR__."/"."data/$peer/chatb1.txt")) {
-$lines = file(__DIR__."/"."data/$peer/chatb1.txt");
-$lines = array_pad($lines, 21, "false\n");
-$dillerr1 = $lines[0];
-$dillerr2 = $lines[1];
-$dillerr3 = $lines[2];
-$dillerr4 = $lines[3];
-$dillerr5 = $lines[4];
-$dillerr6 = $lines[5];
-$dillerr7 = $lines[6];
-$dillerr8 = $lines[7];
-$dillerr9 = $lines[8];
-$dillerr10 = $lines[9];
-$dillerr11 = $lines[10];
-$dillerr12 = $lines[11];
-$dillerr13 = $lines[12];
-$dillerr14 = $lines[13];
-$dillerr15 = $lines[14];
-$dillerr16 = $lines[15];
-$dillerr17 = $lines[16];
-$dillerr18 = $lines[17];
-$dillerr19 = $lines[18];
-$dillerr20 = $lines[19];
-$dillerr21 = $lines[20];
-
-$checkarnew1 = filter_var($dillerr1, FILTER_VALIDATE_BOOLEAN);
-$checkarnew2 = filter_var($dillerr2, FILTER_VALIDATE_BOOLEAN);
-$checkarnew3 = filter_var($dillerr3, FILTER_VALIDATE_BOOLEAN);
-$checkarnew4 = filter_var($dillerr4, FILTER_VALIDATE_BOOLEAN);
-$checkarnew5 = filter_var($dillerr5, FILTER_VALIDATE_BOOLEAN);
-$checkarnew6 = filter_var($dillerr6, FILTER_VALIDATE_BOOLEAN);
-$checkarnew7 = filter_var($dillerr7, FILTER_VALIDATE_BOOLEAN);
-$checkarnew8 = filter_var($dillerr8, FILTER_VALIDATE_BOOLEAN);
-$checkarnew9 = filter_var($dillerr9, FILTER_VALIDATE_BOOLEAN);
-$checkarnew10 = filter_var($dillerr10, FILTER_VALIDATE_BOOLEAN);
-$checkarnew11 = filter_var($dillerr11, FILTER_VALIDATE_BOOLEAN);
-$checkarnew12 = filter_var($dillerr12, FILTER_VALIDATE_BOOLEAN);
-$checkarnew13 = filter_var($dillerr13, FILTER_VALIDATE_BOOLEAN);
-$checkarnew14 = filter_var($dillerr14, FILTER_VALIDATE_BOOLEAN);
-$checkarnew15 = filter_var($dillerr15, FILTER_VALIDATE_BOOLEAN);
-$checkarnew16 = filter_var($dillerr16, FILTER_VALIDATE_BOOLEAN);
-$checkarnew17 = filter_var($dillerr17, FILTER_VALIDATE_BOOLEAN);
-$checkarnew18 = filter_var($dillerr18, FILTER_VALIDATE_BOOLEAN);
-$checkarnew19 = filter_var($dillerr19, FILTER_VALIDATE_BOOLEAN);
-$checkarnew20 = filter_var($dillerr20, FILTER_VALIDATE_BOOLEAN);
-$checkarnew21 = intval($dillerr21);
-
-$chatBannedRights2 = ['_'                => 'chatBannedRights', 
-                    'view_messages'     => $checkarnew1,
-                    'send_messages'     => $checkarnew2, 
-                    'send_media'        => $checkarnew3, 
-                    'send_stickers'     => $checkarnew4, 
-                    'send_gifs'         => $checkarnew5, 
-                    'send_games'        => $checkarnew6, 
-                    'send_inline'       => $checkarnew7, 
-                    'embed_links'       => $checkarnew8, 
-                    'send_polls'        => $checkarnew9, 
-                    'change_info'       => $checkarnew10, 
-                    'invite_users'      => $checkarnew11, 
-                    'pin_messages'      => $checkarnew12,
-                    'manage_topics'     => $checkarnew13, 
-                    'send_photos'       => $checkarnew14, 
-                    'send_videos'       => $checkarnew15, 
-                    'send_roundvideos'  => $checkarnew16, 
-                    'send_audios'       => $checkarnew17, 
-                    'send_voices'       => $checkarnew18, 
-                    'send_docs'         => $checkarnew19,
-                    'send_plain'        => $checkarnew20, 
-                    'until_date'        => $checkarnew21,
-                ];
-
-$Updates2 = $this->messages->editChatDefaultBannedRights(peer: $peer, banned_rights: $chatBannedRights2, );
-if (file_exists(__DIR__."/"."data/$peer/alertshabat2.txt")) {
-
-if (file_exists(__DIR__."/"."data/$peer/MsgOpenerMedia.txt")) {
-$MEDIA = Amp\File\read(__DIR__."/"."data/$peer/MsgOpenerMedia.txt");  
-}else{
-$MEDIA = null; 	
-}
-if (file_exists(__DIR__."/"."data/$peer/MsgOpener.txt")) {
-$TXT = Amp\File\read(__DIR__."/"."data/$peer/MsgOpener.txt"); 
-}else{
-$TXT = null; 	
-}
-if (file_exists(__DIR__."/"."data/$peer/MsgOpener2.txt")) {
-$ENT = json_decode(Amp\File\read(__DIR__."/"."data/$peer/MsgOpener2.txt"),true);  
-}else{
-$ENT = null; 	
-}
-if (file_exists(__DIR__."/"."data/$peer/MsgOpenerButtons.txt")) {
-$BUTTONS = Amp\File\read(__DIR__."/"."data/$peer/MsgOpenerButtons.txt");
-$bot_API_markup_welcome = $this->parseButtons($BUTTONS);
-} else {
-
-    $bot_API_markup_welcome = [
-        '_' => 'replyInlineMarkup',
-        'rows' => [],
-    ];
-}
-
-if($MEDIA != null){
-
-if($TXT != null){
-
-$sentMessage = $this->messages->sendMedia(peer: $peer, message: "$TXT",  entities: $ENT, media: $MEDIA, reply_markup: $bot_API_markup_welcome);
-
-}else{
-
-$OPENER = self::OPENER;
-$sentMessage = $this->messages->sendMedia(peer: $peer, message: $OPENER, media: $MEDIA, reply_markup: $bot_API_markup_welcome);	
-
-}
-
-}else{
-
-if($TXT != null){
-
-$sentMessage = $this->messages->sendMessage(peer: $peer, message: "$TXT", entities: $ENT, reply_markup: $bot_API_markup_welcome);
-
-}else{
-
-$OPENER = self::OPENER;
-$sentMessage = $this->messages->sendMessage(peer: $peer, message: $OPENER, reply_markup: $bot_API_markup_welcome);
-
-}
-
-
-}
-
-
-
-
-}
-$this->sleep(0.1);
-}
-} catch (Throwable $e) {
-continue;
-}
-}
-
-
+if ($alertedGroups > 0) {
+    \Amp\File\write($alertLockFile, $closeDateOnly);
 }
 
 }
 
-} catch (Throwable $e) {
+} catch (\Throwable $e) {
 }
 }
 
@@ -4594,9 +5002,16 @@ public function testzmanim(
 
     try {
 
-        $zmanim = $this->testMode
-            ? $this->getTestShabbatLockTimes()
-            : $this->getShabbatLockTimes();
+        if ($this->isShabbatOrHolidayNow()) {
+
+            $zmanim = $this->getShabbatCheckLock();
+
+        } else {
+
+            $zmanim = $this->testMode
+                ? $this->getTestShabbatLockTimes()
+                : $this->getShabbatLockTimes();
+        }
 
         $text =
             "🧪 Debug Zmanim\n\n" .
@@ -5570,7 +5985,7 @@ BroadcastManager::setDataDir(__DIR__ . '/data');
 
 if(!$manager->progress()){
 
-$bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"חזרהלפאנל"]];
+$bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"חזרהמנהל2"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
 $query->editText($message = "<b>נא שלח את ההודעה שתרצה לשלוח:</b>", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
@@ -5647,7 +6062,7 @@ if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
 $bot_API_markup = ['inline_keyboard' => 
     [
         [
-['text'=>"❌ ביטול ❌",'callback_data'=>"פאנל"]
+['text'=>"❌ ביטול ❌",'callback_data'=>"חזרהמנהל2"]
         ]
     ]
 ];
@@ -5755,7 +6170,7 @@ $bot_API_markup[] = [['text'=>"🔌 הוסף כפתורי קישור ➕",'callb
 
 $bot_API_markup[] = [['text'=>"✅ שדר הודעה ✅",'callback_data'=>"שדרהודעה"]];
 
-$bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"חזרהלפאנל"]];
+$bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"חזרהמנהל2"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
  if (file_exists(__DIR__."/data/$senderid/txt.txt")) {
@@ -5836,7 +6251,7 @@ $bot_API_markup[] = [['text'=>"🔌 הוסף כפתורי קישור ➕",'callb
 
 $bot_API_markup[] = [['text'=>"✅ שדר הודעה ✅",'callback_data'=>"שדרהודעה"]];
 
-$bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"פאנל"]];
+$bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"חזרהמנהל2"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
  if (file_exists(__DIR__."/data/$userid/txt.txt")) {
