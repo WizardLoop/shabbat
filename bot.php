@@ -4328,12 +4328,9 @@ public function StatsGroups(
                 : $this->getShabbatLockTimes();
         }
 
-        $closeDateTime =
-            $zmanim['close_datetime'] ?? 'Unknown';
+        $closeDateTime = $zmanim['close_datetime'] ?? 'ממתין למחזור הזמנים הבא';
 
-        $openDateTime =
-            $zmanim['open_datetime'] ?? 'Unknown';
-
+        $openDateTime = $zmanim['open_datetime'] ?? 'ממתין למחזור הזמנים הבא';
 
         $isLockedNow = $this->isShabbatOrHolidayNow();
 
@@ -4342,7 +4339,7 @@ public function StatsGroups(
 
         $testModeStatus = $this->testMode ? 'פועל' : 'כבוי';
 
-        $version = 'v2.0.2 Beta';
+        $version = 'v2.0.3';
 
         $statsMessage =
 "📊 <b>סטטיסטיקות</b> 📊
@@ -4583,7 +4580,9 @@ continue;
 }
 
 if ($processedGroups > 0) {
-    \Amp\File\write($closeLockFile, $closeDateTime);
+    try { \Amp\File\write($closeLockFile, $closeDateTime); } catch (\Throwable $e) {}
+    $closeLockFileForOpen = __DIR__ . "/state_open.txt";
+    try { \Amp\File\write($closeLockFileForOpen, json_encode(['close_datetime' => $closeDateTime, 'open_datetime'  => $openDateTime,])); } catch (\Throwable $e) {}
 }
 
 }
@@ -4597,8 +4596,12 @@ public function shabatCronOpen(): void {
 try {
 	
 date_default_timezone_set("Asia/Jerusalem");
+$now = date('d/m/Y H:i');
+$nowTs = time();
 
-$zmanim = $this->testMode ? $this->getTestShabbatLockTimes(): $this->getShabbatLockTimes();
+$closeLockFileForOpen = __DIR__ . "/state_open.txt";
+if (!file_exists($closeLockFileForOpen)) {
+$zmanim = $this->testMode ? $this->getTestShabbatLockTimes(): $this->getShabbatCheckLock();
 
 $closeDateTime = $zmanim['close_datetime'];
 $closeDateOnly = null;
@@ -4614,8 +4617,35 @@ if ($closeDateTime) {
     }
 }
 $openDateTime  = $zmanim['open_datetime'];
-$now = date('d/m/Y H:i');
-$nowTs = time();
+}else{
+$openDateTime = null;
+
+    $lockData = json_decode(
+        Amp\File\read($closeLockFileForOpen),
+        true
+    );
+
+$openDateTime = $lockData['open_datetime'] ?? null;
+}
+
+if (!$openDateTime) {
+$zmanim = $this->testMode ? $this->getTestShabbatLockTimes(): $this->getShabbatCheckLock();
+
+$closeDateTime = $zmanim['close_datetime'];
+$closeDateOnly = null;
+if ($closeDateTime) {
+
+    $closeDate = \DateTime::createFromFormat(
+        'd/m/Y H:i',
+        $closeDateTime
+    );
+
+    if ($closeDate !== false) {
+        $closeDateOnly = $closeDate->format('d/m/Y');
+    }
+}
+$openDateTime  = $zmanim['open_datetime'];
+}
 
 $openLockFile = __DIR__ . "/open_lock.txt";
 $alreadyOpened = false;
@@ -4726,6 +4756,13 @@ continue;
 
 if ($openedGroups > 0) {
     \Amp\File\write($openLockFile, $openDateTime);
+    try {
+
+        \Amp\File\delete(
+            __DIR__ . "/state_open.txt"
+        );
+
+    } catch (\Throwable $e) {}
 }
 
 }
@@ -4993,6 +5030,300 @@ USERNAME: $username
 /* ================ admin handlers ================ */
 
 /*
+* closeGroupManually
+*/
+#[FilterCommandCaseInsensitive('closegroups')]
+public function closeGroupManually(
+    Incoming & PrivateMessage & FromAdmin & IsNotEdited $message
+): void {
+
+    try {
+
+$processedGroups = 0;
+if (file_exists(__DIR__."/"."data/DBgroups.txt")) {
+$userstoasend = Amp\File\read(__DIR__."/"."data/DBgroups.txt");  
+$usersArray = explode("\n", $userstoasend);
+$usersArray = array_filter($usersArray);
+$userstoasend1 = ($usersArray);
+
+foreach ($userstoasend1 as $peer) {
+try {
+$info = $this->getInfo($peer);
+$rights = $info['Chat']['default_banned_rights'] ?? [];
+
+$alreadyLocked = (bool) ($info['Chat']['default_banned_rights']['send_messages'] ?? false);
+
+if (!$alreadyLocked) {
+
+try {
+
+    try {
+
+        \Amp\File\write(
+            __DIR__ . "/data/$peer/chatb1.json",
+            json_encode(
+                $rights,
+                JSON_PRETTY_PRINT |
+                JSON_UNESCAPED_UNICODE
+            )
+        );
+
+    } catch (\Throwable $e) {}
+
+    $chatBannedRights = $rights;
+
+    if (empty($chatBannedRights)) {
+
+        $chatBannedRights = [];
+    }
+
+    $chatBannedRights['_'] =
+        'chatBannedRights';
+
+    $rightsToBlock = [
+
+        'send_messages',
+        'send_media',
+        'send_stickers',
+        'send_gifs',
+        'send_games',
+        'send_inline',
+        'embed_links',
+        'send_polls',
+        'change_info',
+        'invite_users',
+        'pin_messages',
+        'manage_topics',
+        'send_photos',
+        'send_videos',
+        'send_roundvideos',
+        'send_audios',
+        'send_voices',
+        'send_docs',
+        'send_plain',
+        'edit_rank',
+        'send_reactions',
+    ];
+
+    foreach ($rightsToBlock as $right) {
+
+        $chatBannedRights[$right] = true;
+    }
+
+    $chatBannedRights['view_messages'] = false;
+
+    $chatBannedRights['until_date'] = 0;
+
+    $Updates1 =
+        $this->messages
+            ->editChatDefaultBannedRights(
+                peer: $peer,
+                banned_rights: $chatBannedRights
+            );
+
+    $processedGroups++;
+
+} catch (\Throwable $e) {}
+
+if (file_exists(__DIR__."/"."data/$peer/alertshabat2.txt")) {
+
+if (file_exists(__DIR__."/"."data/$peer/MsgCloserMedia.txt")) {
+$MEDIA = Amp\File\read(__DIR__."/"."data/$peer/MsgCloserMedia.txt");  
+}else{
+$MEDIA = null; 	
+}
+if (file_exists(__DIR__."/"."data/$peer/MsgCloser.txt")) {
+$TXT = Amp\File\read(__DIR__."/"."data/$peer/MsgCloser.txt"); 
+}else{
+$TXT = null; 	
+}
+if (file_exists(__DIR__."/"."data/$peer/MsgCloser2.txt")) {
+$ENT = json_decode(Amp\File\read(__DIR__."/"."data/$peer/MsgCloser2.txt"),true);  
+}else{
+$ENT = null; 	
+}
+if (file_exists(__DIR__."/"."data/$peer/MsgCloserButtons.txt")) {
+$BUTTONS = Amp\File\read(__DIR__."/"."data/$peer/MsgCloserButtons.txt");
+$bot_API_markup_welcome = $this->parseButtons($BUTTONS);
+} else {
+$bot_API_markup_welcome = null;
+}
+
+
+if($MEDIA != null){
+
+if($TXT != null){
+
+$sentMessage = $this->messages->sendMedia(peer: $peer, message: "$TXT",  entities: $ENT, media: $MEDIA, reply_markup: $bot_API_markup_welcome);
+
+}else{
+	
+$OPENER = self::CLOSER;
+$sentMessage = $this->messages->sendMedia(peer: $peer, message: $OPENER, media: $MEDIA, reply_markup: $bot_API_markup_welcome);	
+
+}
+
+}else{
+
+if($TXT != null){
+	
+$sentMessage = $this->messages->sendMessage(peer: $peer, message: "$TXT", entities: $ENT, reply_markup: $bot_API_markup_welcome);
+
+}else{
+
+$OPENER = self::CLOSER;
+$sentMessage = $this->messages->sendMessage(peer: $peer, message: $OPENER, reply_markup: $bot_API_markup_welcome);
+
+}
+
+
+}
+
+
+
+
+
+}
+
+}
+
+} catch (\Throwable $e) {
+continue;
+} 
+}
+
+}
+
+        $this->messages->sendMessage(
+            peer: $message->chatId,
+            message: "groups closed!"
+        );
+
+    } catch (\Throwable $e) {
+
+        $this->messages->sendMessage(
+            peer: $message->chatId,
+            message: "❌ Error:\n\n" . $e->getMessage()
+        );
+    }
+}
+
+/*
+* openGroupManually
+*/
+#[FilterCommandCaseInsensitive('opengroups')]
+public function openGroupManually(
+    Incoming & PrivateMessage & FromAdmin & IsNotEdited $message
+): void {
+
+    try {
+
+$openedGroups = 0;
+if (file_exists(__DIR__."/"."data/DBgroups.txt")) {
+$userstoasend = Amp\File\read(__DIR__."/"."data/DBgroups.txt");  
+$usersArray = explode("\n", $userstoasend);
+$usersArray = array_filter($usersArray);
+$userstoasend1 = ($usersArray);
+
+foreach ($userstoasend1 as $peer) {
+
+try {
+
+if (file_exists(__DIR__."/"."data/$peer/chatb1.json")) {
+$chatBannedRights2 = json_decode(Amp\File\read(__DIR__ . "/data/$peer/chatb1.json"),true);
+
+if (!is_array($chatBannedRights2)) {
+$chatBannedRights2 = ['_' => 'chatBannedRights', 'send_messages' => false, 'until_date' => 0];
+//    continue;
+}
+
+try {
+$Updates2 = $this->messages->editChatDefaultBannedRights(peer: $peer, banned_rights: $chatBannedRights2, );
+$openedGroups++;
+try { \Amp\File\delete(__DIR__ . "/data/$peer/chatb1.json"); } catch (\Throwable $e) {}
+} catch (\Throwable $e) {}
+
+if (file_exists(__DIR__."/"."data/$peer/alertshabat2.txt")) {
+
+if (file_exists(__DIR__."/"."data/$peer/MsgOpenerMedia.txt")) {
+$MEDIA = Amp\File\read(__DIR__."/"."data/$peer/MsgOpenerMedia.txt");  
+}else{
+$MEDIA = null; 	
+}
+if (file_exists(__DIR__."/"."data/$peer/MsgOpener.txt")) {
+$TXT = Amp\File\read(__DIR__."/"."data/$peer/MsgOpener.txt"); 
+}else{
+$TXT = null; 	
+}
+if (file_exists(__DIR__."/"."data/$peer/MsgOpener2.txt")) {
+$ENT = json_decode(Amp\File\read(__DIR__."/"."data/$peer/MsgOpener2.txt"),true);  
+}else{
+$ENT = null; 	
+}
+if (file_exists(__DIR__."/"."data/$peer/MsgOpenerButtons.txt")) {
+$BUTTONS = Amp\File\read(__DIR__."/"."data/$peer/MsgOpenerButtons.txt");
+$bot_API_markup_welcome = $this->parseButtons($BUTTONS);
+} else {
+$bot_API_markup_welcome = null;
+}
+
+if($MEDIA != null){
+
+if($TXT != null){
+
+$sentMessage = $this->messages->sendMedia(peer: $peer, message: "$TXT",  entities: $ENT, media: $MEDIA, reply_markup: $bot_API_markup_welcome);
+
+}else{
+
+$OPENER = self::OPENER;
+$sentMessage = $this->messages->sendMedia(peer: $peer, message: $OPENER, media: $MEDIA, reply_markup: $bot_API_markup_welcome);	
+
+}
+
+}else{
+
+if($TXT != null){
+
+$sentMessage = $this->messages->sendMessage(peer: $peer, message: "$TXT", entities: $ENT, reply_markup: $bot_API_markup_welcome);
+
+}else{
+
+$OPENER = self::OPENER;
+$sentMessage = $this->messages->sendMessage(peer: $peer, message: $OPENER, reply_markup: $bot_API_markup_welcome);
+
+}
+
+
+}
+
+}
+
+}
+
+} catch (\Throwable $e) {
+continue;
+}
+
+}
+
+
+}
+
+        $this->messages->sendMessage(
+            peer: $message->chatId,
+            message: "groups opened!"
+        );
+
+    } catch (\Throwable $e) {
+
+        $this->messages->sendMessage(
+            peer: $message->chatId,
+            message: "❌ Error:\n\n" . $e->getMessage()
+        );
+    }
+}
+
+/*
 * debug - זמנים
 */
 #[FilterCommandCaseInsensitive('testzmanim')]
@@ -5021,27 +5352,27 @@ public function testzmanim(
             "\n\n" .
 
             "close_datetime: " .
-            ($zmanim['close_datetime'] ?? 'null') .
+            ($zmanim['close_datetime'] ?? 'ממתין למחזור הזמנים הבא') .
             "\n" .
 
             "open_datetime: " .
-            ($zmanim['open_datetime'] ?? 'null') .
+            ($zmanim['open_datetime'] ?? 'ממתין למחזור הזמנים הבא') .
             "\n\n" .
 
             "close_date: " .
-            ($zmanim['close_date'] ?? 'null') .
+            ($zmanim['close_date'] ?? 'ממתין למחזור הזמנים הבא') .
             "\n" .
 
             "close_time: " .
-            ($zmanim['close_time'] ?? 'null') .
+            ($zmanim['close_time'] ?? 'ממתין למחזור הזמנים הבא') .
             "\n\n" .
 
             "open_date: " .
-            ($zmanim['open_date'] ?? 'null') .
+            ($zmanim['open_date'] ?? 'ממתין למחזור הזמנים הבא') .
             "\n" .
 
             "open_time: " .
-            ($zmanim['open_time'] ?? 'null');
+            ($zmanim['open_time'] ?? 'ממתין למחזור הזמנים הבא');
 
         $this->messages->sendMessage(
             peer: $message->chatId,
@@ -5154,6 +5485,18 @@ foreach ($this->getAdminIds() as $adminId) {
                     '_' => 'botCommand',
                     'command' => 'testzmanim',
                     'description' => 'דיבוג זמנים 🧪'
+                ],
+
+                [
+                    '_' => 'botCommand',
+                    'command' => 'closegroups',
+                    'description' => 'סגור קבוצות'
+                ],
+
+                [
+                    '_' => 'botCommand',
+                    'command' => 'opengroups',
+                    'description' => 'פתח קבוצות'
                 ],
 
                 [
