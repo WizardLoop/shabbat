@@ -1,0 +1,2009 @@
+{
+    "schema_version": 1,
+    "lock_sha256": "a6a66ad9af4ccd6ef0fa7e62f7a7e28a1ae73cf07e8545552710bc9b8477e9bf",
+    "packages": [
+        {
+            "name": "amphp/amp",
+            "version": "v3.1.3",
+            "direct": true,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/amphp/amp.git",
+            "source_commit": "73c38b323ff8d790abf0f76c56fcc892bda4111a",
+            "source_permalink": "https://github.com/amphp/amp/tree/73c38b323ff8d790abf0f76c56fcc892bda4111a",
+            "license_files": [
+                {
+                    "file": "vendor/amphp/amp/LICENSE",
+                    "sha256": "84904cb068b00a937d61104d0ae336bff1aa3518c0329d13dae8b71880dc2429"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "amphp/byte-stream",
+            "version": "v2.1.2",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/amphp/byte-stream.git",
+            "source_commit": "55a6bd071aec26fa2a3e002618c20c35e3df1b46",
+            "source_permalink": "https://github.com/amphp/byte-stream/tree/55a6bd071aec26fa2a3e002618c20c35e3df1b46",
+            "license_files": [
+                {
+                    "file": "vendor/amphp/byte-stream/LICENSE",
+                    "sha256": "5054607a36e0b2c287274145c01e3358ca62e79754d947159b7ace87cdd78305"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "amphp/cache",
+            "version": "v2.0.1",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/amphp/cache.git",
+            "source_commit": "46912e387e6aa94933b61ea1ead9cf7540b7797c",
+            "source_permalink": "https://github.com/amphp/cache/tree/46912e387e6aa94933b61ea1ead9cf7540b7797c",
+            "license_files": [
+                {
+                    "file": "vendor/amphp/cache/LICENSE",
+                    "sha256": "a6d83873b76621737538da8481d4f737fa5ffa15dd3abe6e4c3a112f6f5ea1ac"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "amphp/dns",
+            "version": "v2.4.1",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/amphp/dns.git",
+            "source_commit": "ec5948bfafac808f410406e18bc7b52a2d4629b7",
+            "source_permalink": "https://github.com/amphp/dns/tree/ec5948bfafac808f410406e18bc7b52a2d4629b7",
+            "license_files": [
+                {
+                    "file": "vendor/amphp/dns/LICENSE",
+                    "sha256": "93dc2b2aae85651379265cbb4906d2b054020ac9cc4ee70e5040f79751e34651"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "amphp/file",
+            "version": "v3.2.0",
+            "direct": true,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/amphp/file.git",
+            "source_commit": "28b38a805d2c235bb581d24415e78a42cd03aedc",
+            "source_permalink": "https://github.com/amphp/file/tree/28b38a805d2c235bb581d24415e78a42cd03aedc",
+            "license_files": [
+                {
+                    "file": "vendor/amphp/file/LICENSE",
+                    "sha256": "75ff14768ed3b0898ea24b8ff76e9615c21d1d4e6f7ba1d258cc55cb9689ca73"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "amphp/hpack",
+            "version": "v3.2.2",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/amphp/hpack.git",
+            "source_commit": "291da27078e7e149a9bad4d08ff05bf7d81c89f4",
+            "source_permalink": "https://github.com/amphp/hpack/tree/291da27078e7e149a9bad4d08ff05bf7d81c89f4",
+            "license_files": [
+                {
+                    "file": "vendor/amphp/hpack/LICENSE",
+                    "sha256": "93dc2b2aae85651379265cbb4906d2b054020ac9cc4ee70e5040f79751e34651"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "amphp/http",
+            "version": "v2.1.2",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/amphp/http.git",
+            "source_commit": "3680d80bd38b5d6f3c2cef2214ca6dd6cef26588",
+            "source_permalink": "https://github.com/amphp/http/tree/3680d80bd38b5d6f3c2cef2214ca6dd6cef26588",
+            "license_files": [
+                {
+                    "file": "vendor/amphp/http/LICENSE",
+                    "sha256": "95d9a352435f98f90b68c443bc8f6378701d1b708c8f5150a13509a9ceae4379"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "amphp/http-client",
+            "version": "v5.3.6",
+            "direct": true,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/amphp/http-client.git",
+            "source_commit": "ca155026acafa74a612d776a97202d53077fee86",
+            "source_permalink": "https://github.com/amphp/http-client/tree/ca155026acafa74a612d776a97202d53077fee86",
+            "license_files": [
+                {
+                    "file": "vendor/amphp/http-client/LICENSE",
+                    "sha256": "5867f0443d153c8bc1510680d5dd922ad4db2bbc7445af9dd09d849a3efd7690"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "amphp/http-client-cookies",
+            "version": "v2.0.0",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/amphp/http-client-cookies.git",
+            "source_commit": "4124b37ffa4d15034e70d5d30e6fb9605ed6c1a7",
+            "source_permalink": "https://github.com/amphp/http-client-cookies/tree/4124b37ffa4d15034e70d5d30e6fb9605ed6c1a7",
+            "license_files": [
+                {
+                    "file": "vendor/amphp/http-client-cookies/LICENSE",
+                    "sha256": "80a36409928641ee64ab2932c9a3a3876f7e2ee0f1b886dfa7c30404d7bd3767"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "amphp/http-server",
+            "version": "v3.4.7",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/amphp/http-server.git",
+            "source_commit": "aa96ca38c5f822a827236543d5417d0c2a782ef0",
+            "source_permalink": "https://github.com/amphp/http-server/tree/aa96ca38c5f822a827236543d5417d0c2a782ef0",
+            "license_files": [
+                {
+                    "file": "vendor/amphp/http-server/LICENSE",
+                    "sha256": "75ff14768ed3b0898ea24b8ff76e9615c21d1d4e6f7ba1d258cc55cb9689ca73"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "amphp/log",
+            "version": "v2.0.0",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/amphp/log.git",
+            "source_commit": "bf1562b8a18a3f30efa069ed740f412ac70a8a6c",
+            "source_permalink": "https://github.com/amphp/log/tree/bf1562b8a18a3f30efa069ed740f412ac70a8a6c",
+            "license_files": [
+                {
+                    "file": "vendor/amphp/log/LICENSE",
+                    "sha256": "fc5149c45b0b34f924ad2ceee71216358599bce2e281892ef6d87fa9acd48006"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "amphp/mysql",
+            "version": "v3.1.1",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/amphp/mysql.git",
+            "source_commit": "ea3a5e07dc3dddc267669337ded2a98f02d86223",
+            "source_permalink": "https://github.com/amphp/mysql/tree/ea3a5e07dc3dddc267669337ded2a98f02d86223",
+            "license_files": [
+                {
+                    "file": "vendor/amphp/mysql/LICENSE",
+                    "sha256": "4daf770ec2fb0eef9a9e1c2764c6cebfacafaeb13ab6cf48c1afdab27ef7a4ca"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "amphp/parallel",
+            "version": "v2.4.0",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/amphp/parallel.git",
+            "source_commit": "37f5b2754fadc229c00f9416bd68fb8d04529a81",
+            "source_permalink": "https://github.com/amphp/parallel/tree/37f5b2754fadc229c00f9416bd68fb8d04529a81",
+            "license_files": [
+                {
+                    "file": "vendor/amphp/parallel/LICENSE",
+                    "sha256": "93dc2b2aae85651379265cbb4906d2b054020ac9cc4ee70e5040f79751e34651"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "amphp/parser",
+            "version": "v1.1.1",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/amphp/parser.git",
+            "source_commit": "3cf1f8b32a0171d4b1bed93d25617637a77cded7",
+            "source_permalink": "https://github.com/amphp/parser/tree/3cf1f8b32a0171d4b1bed93d25617637a77cded7",
+            "license_files": [
+                {
+                    "file": "vendor/amphp/parser/LICENSE",
+                    "sha256": "16ac45b95d11c9e4b805ae5392d069cab777f8085779ad3869b47030ccf47734"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "amphp/pipeline",
+            "version": "v1.2.7",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/amphp/pipeline.git",
+            "source_commit": "cf2d67696c2015ea7c7fd8f6ec5f8ed7c2d17c17",
+            "source_permalink": "https://github.com/amphp/pipeline/tree/cf2d67696c2015ea7c7fd8f6ec5f8ed7c2d17c17",
+            "license_files": [
+                {
+                    "file": "vendor/amphp/pipeline/LICENSE",
+                    "sha256": "dd9b5da37883d21ecc6fe466ac0a4644d8caf7ea7cd5ff17f47c5f167e131091"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "amphp/postgres",
+            "version": "v2.2.1",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/amphp/postgres.git",
+            "source_commit": "b68c4d5929d0ec1701781dbbb0bb81dd8d0a42d7",
+            "source_permalink": "https://github.com/amphp/postgres/tree/b68c4d5929d0ec1701781dbbb0bb81dd8d0a42d7",
+            "license_files": [
+                {
+                    "file": "vendor/amphp/postgres/LICENSE",
+                    "sha256": "4832233a325492ffa9dc1cb5c654a53e69c00adaec7f45d50a896d9d9c77a9df"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "amphp/process",
+            "version": "v2.1.0",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/amphp/process.git",
+            "source_commit": "583959df17d00304ad7b0b32285373f985935643",
+            "source_permalink": "https://github.com/amphp/process/tree/583959df17d00304ad7b0b32285373f985935643",
+            "license_files": [
+                {
+                    "file": "vendor/amphp/process/LICENSE",
+                    "sha256": "5b8738686f873967502b48ff6b52d03a2065ea124146d4db7688ff469873b373"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "amphp/redis",
+            "version": "v2.0.4",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/amphp/redis.git",
+            "source_commit": "964bcf6c2574645058371925a3668240a622bdab",
+            "source_permalink": "https://github.com/amphp/redis/tree/964bcf6c2574645058371925a3668240a622bdab",
+            "license_files": [
+                {
+                    "file": "vendor/amphp/redis/LICENSE",
+                    "sha256": "93dc2b2aae85651379265cbb4906d2b054020ac9cc4ee70e5040f79751e34651"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "amphp/serialization",
+            "version": "v1.1.0",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/amphp/serialization.git",
+            "source_commit": "fdf2834d78cebb0205fb2672676c1b1eb84371f0",
+            "source_permalink": "https://github.com/amphp/serialization/tree/fdf2834d78cebb0205fb2672676c1b1eb84371f0",
+            "license_files": [
+                {
+                    "file": "vendor/amphp/serialization/LICENSE",
+                    "sha256": "9cbfa9126ef8d331fdada832a7f7048fbd9723870ad79844f2e38b56398c3662"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "amphp/socket",
+            "version": "v2.4.1",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/amphp/socket.git",
+            "source_commit": "b347be5aff6b2cc025208bb4d896607eb470c018",
+            "source_permalink": "https://github.com/amphp/socket/tree/b347be5aff6b2cc025208bb4d896607eb470c018",
+            "license_files": [
+                {
+                    "file": "vendor/amphp/socket/LICENSE",
+                    "sha256": "75ff14768ed3b0898ea24b8ff76e9615c21d1d4e6f7ba1d258cc55cb9689ca73"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "amphp/sql",
+            "version": "v2.1.1",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/amphp/sql.git",
+            "source_commit": "258bafe5ecf8a0491d86681f2a2af1dee2933a69",
+            "source_permalink": "https://github.com/amphp/sql/tree/258bafe5ecf8a0491d86681f2a2af1dee2933a69",
+            "license_files": [
+                {
+                    "file": "vendor/amphp/sql/LICENSE",
+                    "sha256": "d1224ddb6b3741731e97eb3a734cd157a6da4b050e2a3d700ad68a9bf2407e16"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "amphp/sql-common",
+            "version": "v2.0.4",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/amphp/sql-common.git",
+            "source_commit": "735da17ef0a66e7139c9f7584af5c3f9827f83c0",
+            "source_permalink": "https://github.com/amphp/sql-common/tree/735da17ef0a66e7139c9f7584af5c3f9827f83c0",
+            "license_files": [
+                {
+                    "file": "vendor/amphp/sql-common/LICENSE",
+                    "sha256": "d1224ddb6b3741731e97eb3a734cd157a6da4b050e2a3d700ad68a9bf2407e16"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "amphp/sync",
+            "version": "v2.3.0",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/amphp/sync.git",
+            "source_commit": "217097b785130d77cfcc58ff583cf26cd1770bf1",
+            "source_permalink": "https://github.com/amphp/sync/tree/217097b785130d77cfcc58ff583cf26cd1770bf1",
+            "license_files": [
+                {
+                    "file": "vendor/amphp/sync/LICENSE",
+                    "sha256": "0e4919a5d6d70ae53b3291c932d055d1734172a539db060bd8c8f392a13ff0f1"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "amphp/websocket",
+            "version": "v2.0.4",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/amphp/websocket.git",
+            "source_commit": "963904b6a883c4b62d9222d1d9749814fac96a3b",
+            "source_permalink": "https://github.com/amphp/websocket/tree/963904b6a883c4b62d9222d1d9749814fac96a3b",
+            "license_files": [
+                {
+                    "file": "vendor/amphp/websocket/LICENSE",
+                    "sha256": "93dc2b2aae85651379265cbb4906d2b054020ac9cc4ee70e5040f79751e34651"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "amphp/websocket-client",
+            "version": "v2.0.2",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/amphp/websocket-client.git",
+            "source_commit": "dc033fdce0af56295a23f63ac4f579b34d470d6c",
+            "source_permalink": "https://github.com/amphp/websocket-client/tree/dc033fdce0af56295a23f63ac4f579b34d470d6c",
+            "license_files": [
+                {
+                    "file": "vendor/amphp/websocket-client/LICENSE",
+                    "sha256": "0e4919a5d6d70ae53b3291c932d055d1734172a539db060bd8c8f392a13ff0f1"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "bacon/bacon-qr-code",
+            "version": "v3.1.1",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "BSD-2-Clause"
+            ],
+            "source_url": "https://github.com/Bacon/BaconQrCode.git",
+            "source_commit": "4da2233e72eeecd9be3b62e0dc2cc9ed8e2e31c2",
+            "source_permalink": "https://github.com/Bacon/BaconQrCode/tree/4da2233e72eeecd9be3b62e0dc2cc9ed8e2e31c2",
+            "license_files": [
+                {
+                    "file": "vendor/bacon/bacon-qr-code/LICENSE",
+                    "sha256": "973af1db913b076a85e09732c75df802a6b8a61a63701c38f2ce6d471c213260"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/async-orm",
+            "version": "1.1.4",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "Apache-2.0"
+            ],
+            "source_url": "https://github.com/danog/AsyncOrm.git",
+            "source_commit": "495f335d8ddb9dae8b773025911191f31c45e9ea",
+            "source_permalink": "https://github.com/danog/AsyncOrm/tree/495f335d8ddb9dae8b773025911191f31c45e9ea",
+            "license_files": [
+                {
+                    "file": "vendor/danog/async-orm/LICENSE",
+                    "sha256": "8c6db340475136df3c1201d458fa5755698eace76e510471ecc9d857d6083dac"
+                },
+                {
+                    "file": "vendor/danog/async-orm/NOTICE",
+                    "sha256": "3dfd6d3468a650d538cdfc3f94d42200a3517c72864c9224a78a6e86900d6fc6"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/better-prometheus",
+            "version": "0.1.1",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "Apache-2.0"
+            ],
+            "source_url": "https://github.com/danog/better-prometheus.git",
+            "source_commit": "74e19343be41905572290878ca9fd0ef08ba0c5e",
+            "source_permalink": "https://github.com/danog/better-prometheus/tree/74e19343be41905572290878ca9fd0ef08ba0c5e",
+            "license_files": [
+                {
+                    "file": "vendor/danog/better-prometheus/LICENSE",
+                    "sha256": "8c6db340475136df3c1201d458fa5755698eace76e510471ecc9d857d6083dac"
+                },
+                {
+                    "file": "vendor/danog/better-prometheus/NOTICE",
+                    "sha256": "7ee673a8f098e3569a5af6f61f722bc735d340d92414a72a2dd4e35e38619eac"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/dns-over-https",
+            "version": "1.0.1",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/danog/dns-over-https.git",
+            "source_commit": "142b8d439e7a582d66b13d9f1119820dd3110884",
+            "source_permalink": "https://github.com/danog/dns-over-https/tree/142b8d439e7a582d66b13d9f1119820dd3110884",
+            "license_files": [
+                {
+                    "file": "vendor/danog/dns-over-https/LICENSE",
+                    "sha256": "eff216d768cf4549198f24abbdb80f55fec10afb5876920291993d8d59c3aa47"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/ipc",
+            "version": "1.0.1",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/danog/ipc.git",
+            "source_commit": "505e672b76af6ec623f7ef78efb2416f62ef8e29",
+            "source_permalink": "https://github.com/danog/ipc/tree/505e672b76af6ec623f7ef78efb2416f62ef8e29",
+            "license_files": [
+                {
+                    "file": "vendor/danog/ipc/LICENSE",
+                    "sha256": "21aa06129a162cf89ab5bad3bd16cb7366ccd1fd6858a294be3092f336c1a227"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/libdns-json",
+            "version": "0.2.1",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/danog/LibDNSJson.git",
+            "source_commit": "cd2981a386a32ff62d447a9553e203384651ba90",
+            "source_permalink": "https://github.com/danog/LibDNSJson/tree/cd2981a386a32ff62d447a9553e203384651ba90",
+            "license_files": [
+                {
+                    "file": "vendor/danog/libdns-json/LICENSE",
+                    "sha256": "eff216d768cf4549198f24abbdb80f55fec10afb5876920291993d8d59c3aa47"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/loop",
+            "version": "1.1.1",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/danog/loop.git",
+            "source_commit": "83c42b26c1d8d070c56bc9c03e2e8a147b45c60f",
+            "source_permalink": "https://github.com/danog/loop/tree/83c42b26c1d8d070c56bc9c03e2e8a147b45c60f",
+            "license_files": [
+                {
+                    "file": "vendor/danog/loop/LICENSE",
+                    "sha256": "30f46fa760c0c1f5d98504008487928f496c61043c304a3fe1624e15b3a7fb77"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/madelineproto",
+            "version": "8.7.0",
+            "direct": true,
+            "scope": "runtime",
+            "spdx": [
+                "AGPL-3.0-only"
+            ],
+            "source_url": "https://github.com/danog/MadelineProto.git",
+            "source_commit": "7b99dd0f2d964a492c377912ffce9f5ce61aa9ed",
+            "source_permalink": "https://github.com/danog/MadelineProto/tree/7b99dd0f2d964a492c377912ffce9f5ce61aa9ed",
+            "license_files": [
+                {
+                    "file": "vendor/danog/madelineproto/LICENSE",
+                    "sha256": "57c8ff33c9c0cfc3ef00e650a1cc910d7ee479a8bc509f6c9209a7c2a11399d6"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": [
+                "Metadata says AGPL-3.0-only; source headers grant version 3 or later. Preserve upstream grant and report mismatch; application license remains AGPL-3.0-only."
+            ]
+        },
+        {
+            "name": "danog/primemodule",
+            "version": "1.0.13",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "AGPL-3.0-only"
+            ],
+            "source_url": "https://github.com/danog/PrimeModule.git",
+            "source_commit": "e7ebfc1ea64c24186e49064cd4b76bc76c28600e",
+            "source_permalink": "https://github.com/danog/PrimeModule/tree/e7ebfc1ea64c24186e49064cd4b76bc76c28600e",
+            "license_files": [
+                {
+                    "file": "vendor/danog/primemodule/LICENSE",
+                    "sha256": "57c8ff33c9c0cfc3ef00e650a1cc910d7ee479a8bc509f6c9209a7c2a11399d6"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/telegram-entities",
+            "version": "1.0.5",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "Apache-2.0"
+            ],
+            "source_url": "https://github.com/danog/telegram-entities.git",
+            "source_commit": "19ab8a48bc4b9519c4493e2c62eb171fba8b58b4",
+            "source_permalink": "https://github.com/danog/telegram-entities/tree/19ab8a48bc4b9519c4493e2c62eb171fba8b58b4",
+            "license_files": [
+                {
+                    "file": "vendor/danog/telegram-entities/LICENSE",
+                    "sha256": "8c6db340475136df3c1201d458fa5755698eace76e510471ecc9d857d6083dac"
+                },
+                {
+                    "file": "vendor/danog/telegram-entities/NOTICE",
+                    "sha256": "6b4a79f5f9cfaff020d4ebe1c3979f089e22f0bc6c0bffc697fe13d08dba0dc6"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/tg-dialog-id",
+            "version": "2.0.0",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "Apache-2.0"
+            ],
+            "source_url": "https://github.com/danog/tg-dialog-id.git",
+            "source_commit": "d03c653b2dad43d739675c83a6e8fa14b3b43636",
+            "source_permalink": "https://github.com/danog/tg-dialog-id/tree/d03c653b2dad43d739675c83a6e8fa14b3b43636",
+            "license_files": [
+                {
+                    "file": "vendor/danog/tg-dialog-id/LICENSE",
+                    "sha256": "8c6db340475136df3c1201d458fa5755698eace76e510471ecc9d857d6083dac"
+                },
+                {
+                    "file": "vendor/danog/tg-dialog-id/NOTICE",
+                    "sha256": "c23abfc407dd639c3136e3a12451688d68d7f9957b43ecbcedefb2cf5757086e"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/tg-file-decoder",
+            "version": "1.0.2",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "AGPL-3.0-only"
+            ],
+            "source_url": "https://github.com/danog/tg-file-decoder.git",
+            "source_commit": "f4da78c28d47b658c4596249f1d6595956f3b796",
+            "source_permalink": "https://github.com/danog/tg-file-decoder/tree/f4da78c28d47b658c4596249f1d6595956f3b796",
+            "license_files": [
+                {
+                    "file": "vendor/danog/tg-file-decoder/LICENSE",
+                    "sha256": "57c8ff33c9c0cfc3ef00e650a1cc910d7ee479a8bc509f6c9209a7c2a11399d6"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "dasprid/enum",
+            "version": "1.0.7",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "BSD-2-Clause"
+            ],
+            "source_url": "https://github.com/DASPRiD/Enum.git",
+            "source_commit": "b5874fa9ed0043116c72162ec7f4fb50e02e7cce",
+            "source_permalink": "https://github.com/DASPRiD/Enum/tree/b5874fa9ed0043116c72162ec7f4fb50e02e7cce",
+            "license_files": [
+                {
+                    "file": "vendor/dasprid/enum/LICENSE",
+                    "sha256": "6748d0268a176f839bfa1031724f9ce0963acbdadc71e503c2c3e9b59c8fcd68"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "daverandom/libdns",
+            "version": "v2.1.0",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/DaveRandom/LibDNS.git",
+            "source_commit": "b84c94e8fe6b7ee4aecfe121bfe3b6177d303c8a",
+            "source_permalink": "https://github.com/DaveRandom/LibDNS/tree/b84c94e8fe6b7ee4aecfe121bfe3b6177d303c8a",
+            "license_files": [
+                {
+                    "file": "vendor/daverandom/libdns/LICENSE",
+                    "sha256": "3378b771ef8e0b6e09d1a5dd7d3daeaf5b06a41f8cf7ab43f20df3b646c18dc9"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "kelunik/certificate",
+            "version": "v1.1.3",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/kelunik/certificate.git",
+            "source_commit": "7e00d498c264d5eb4f78c69f41c8bd6719c0199e",
+            "source_permalink": "https://github.com/kelunik/certificate/tree/7e00d498c264d5eb4f78c69f41c8bd6719c0199e",
+            "license_files": [
+                {
+                    "file": "vendor/kelunik/certificate/LICENSE",
+                    "sha256": "4da4ff63fb9bf3961df2e1210e74a654c32f5c82414997977ca58e56d9eb2fba"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "league/uri",
+            "version": "7.8.1",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/thephpleague/uri.git",
+            "source_commit": "08cf38e3924d4f56238125547b5720496fac8fd4",
+            "source_permalink": "https://github.com/thephpleague/uri/tree/08cf38e3924d4f56238125547b5720496fac8fd4",
+            "license_files": [
+                {
+                    "file": "vendor/league/uri/LICENSE",
+                    "sha256": "bb7f984073bf5083be5cd56d144bf3508181409ee6a866b51538725a3dd8ce24"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "league/uri-components",
+            "version": "7.8.1",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/thephpleague/uri-components.git",
+            "source_commit": "848ff9db2f0be06229d6034b7c2e33d41b4fd675",
+            "source_permalink": "https://github.com/thephpleague/uri-components/tree/848ff9db2f0be06229d6034b7c2e33d41b4fd675",
+            "license_files": [
+                {
+                    "file": "vendor/league/uri-components/LICENSE",
+                    "sha256": "bb7f984073bf5083be5cd56d144bf3508181409ee6a866b51538725a3dd8ce24"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "league/uri-interfaces",
+            "version": "7.8.1",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/thephpleague/uri-interfaces.git",
+            "source_commit": "85d5c77c5d6d3af6c54db4a78246364908f3c928",
+            "source_permalink": "https://github.com/thephpleague/uri-interfaces/tree/85d5c77c5d6d3af6c54db4a78246364908f3c928",
+            "license_files": [
+                {
+                    "file": "vendor/league/uri-interfaces/LICENSE",
+                    "sha256": "bb7f984073bf5083be5cd56d144bf3508181409ee6a866b51538725a3dd8ce24"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "monolog/monolog",
+            "version": "3.12.1",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/Seldaek/monolog.git",
+            "source_commit": "d7059e4c691d05ea1222b5124bed0f961be46e15",
+            "source_permalink": "https://github.com/Seldaek/monolog/tree/d7059e4c691d05ea1222b5124bed0f961be46e15",
+            "license_files": [
+                {
+                    "file": "vendor/monolog/monolog/LICENSE",
+                    "sha256": "3a351f8f434ff941f4946afb534f7df1185523638b311c22901631d8882f70e1"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "nikic/php-parser",
+            "version": "v5.9.0",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/nikic/PHP-Parser.git",
+            "source_commit": "9e33da9553fe7786f0962b35f4e4ecf01be89def",
+            "source_permalink": "https://github.com/nikic/PHP-Parser/tree/9e33da9553fe7786f0962b35f4e4ecf01be89def",
+            "license_files": [
+                {
+                    "file": "vendor/nikic/php-parser/LICENSE",
+                    "sha256": "dd859e107fac9f87a4413ab8c3c96f0f1611a17f596a2db562a5a4f4904c1e97"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "paragonie/constant_time_encoding",
+            "version": "v3.1.3",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/paragonie/constant_time_encoding.git",
+            "source_commit": "d5b01a39b3415c2cd581d3bd3a3575c1ebbd8e77",
+            "source_permalink": "https://github.com/paragonie/constant_time_encoding/tree/d5b01a39b3415c2cd581d3bd3a3575c1ebbd8e77",
+            "license_files": [
+                {
+                    "file": "vendor/paragonie/constant_time_encoding/LICENSE.txt",
+                    "sha256": "d175ac2e6bc71c13117ea49cc2c3be95284690dc07cc7fc441c6538c280641fd"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "paragonie/random_compat",
+            "version": "v9.99.100",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/paragonie/random_compat.git",
+            "source_commit": "996434e5492cb4c3edcb9168db6fbb1359ef965a",
+            "source_permalink": "https://github.com/paragonie/random_compat/tree/996434e5492cb4c3edcb9168db6fbb1359ef965a",
+            "license_files": [
+                {
+                    "file": "vendor/paragonie/random_compat/LICENSE",
+                    "sha256": "e79a4c7d03c72850c60b2d5c41c2f92d33448ed2b243bd4686cfa7674e15e3ba"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "phpseclib/phpseclib",
+            "version": "3.0.57",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/phpseclib/phpseclib.git",
+            "source_commit": "d17e0ddaeaf6f22f7e007cbb437d78792fe2a0e4",
+            "source_permalink": "https://github.com/phpseclib/phpseclib/tree/d17e0ddaeaf6f22f7e007cbb437d78792fe2a0e4",
+            "license_files": [
+                {
+                    "file": "vendor/phpseclib/phpseclib/LICENSE",
+                    "sha256": "fa986c1ac53f7bd83e30fe296f8dced7003ab0a05ec11945b5aea4a4ebd626dd"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "promphp/prometheus_client_php",
+            "version": "v2.15.1",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "Apache-2.0"
+            ],
+            "source_url": "https://github.com/PromPHP/prometheus_client_php.git",
+            "source_commit": "e153786bda5ca1d07335a2b5f477742c37195c40",
+            "source_permalink": "https://github.com/PromPHP/prometheus_client_php/tree/e153786bda5ca1d07335a2b5f477742c37195c40",
+            "license_files": [
+                {
+                    "file": "vendor/promphp/prometheus_client_php/LICENSE",
+                    "sha256": "9368976483a5d7ca12c5078170d7a199c9edac809eb76402bbe063e4ff972425"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "psr/http-factory",
+            "version": "1.1.0",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/php-fig/http-factory.git",
+            "source_commit": "2b4765fddfe3b508ac62f829e852b1501d3f6e8a",
+            "source_permalink": "https://github.com/php-fig/http-factory/tree/2b4765fddfe3b508ac62f829e852b1501d3f6e8a",
+            "license_files": [
+                {
+                    "file": "vendor/psr/http-factory/LICENSE",
+                    "sha256": "d2e70341a9667b93ad542e4842b0b7022d302aa7c2d2a909b156b8f1e3c4cca8"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "psr/http-message",
+            "version": "2.0",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/php-fig/http-message.git",
+            "source_commit": "402d35bcb92c70c026d1a6a9883f06b2ead23d71",
+            "source_permalink": "https://github.com/php-fig/http-message/tree/402d35bcb92c70c026d1a6a9883f06b2ead23d71",
+            "license_files": [
+                {
+                    "file": "vendor/psr/http-message/LICENSE",
+                    "sha256": "8d36e938943b04ef01994bb148793c971685b746d0ced31da03a97594a47ee62"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "psr/log",
+            "version": "3.0.2",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/php-fig/log.git",
+            "source_commit": "f16e1d5863e37f8d8c2a01719f5b34baa2b714d3",
+            "source_permalink": "https://github.com/php-fig/log/tree/f16e1d5863e37f8d8c2a01719f5b34baa2b714d3",
+            "license_files": [
+                {
+                    "file": "vendor/psr/log/LICENSE",
+                    "sha256": "6e944907067bae93c00a9f2ad51032243820b22df34b77c77690d46cb2e98e24"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "revolt/event-loop",
+            "version": "v1.0.9",
+            "direct": true,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/revoltphp/event-loop.git",
+            "source_commit": "44061cf513e53c6200372fc935ac42271566295d",
+            "source_permalink": "https://github.com/revoltphp/event-loop/tree/44061cf513e53c6200372fc935ac42271566295d",
+            "license_files": [
+                {
+                    "file": "vendor/revolt/event-loop/LICENSE",
+                    "sha256": "54e35a998b20dce201850275dd1c66c1685489972ecee9410600b8186e630853"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "symfony/polyfill-mbstring",
+            "version": "v1.43.0",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/symfony/polyfill-mbstring.git",
+            "source_commit": "4d5d331bf731e0aedbc6b2f5e61135b7b7996a72",
+            "source_permalink": "https://github.com/symfony/polyfill-mbstring/tree/4d5d331bf731e0aedbc6b2f5e61135b7b7996a72",
+            "license_files": [
+                {
+                    "file": "vendor/symfony/polyfill-mbstring/LICENSE",
+                    "sha256": "eaa5d6e59ff1d5322ae36d3ab9124460df72d2d0c8af60a99222e8a90dcbdf31"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "symfony/polyfill-php83",
+            "version": "v1.43.0",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/symfony/polyfill-php83.git",
+            "source_commit": "80ccff923a8d61f73ebe9da0aa94e25232f004ce",
+            "source_permalink": "https://github.com/symfony/polyfill-php83/tree/80ccff923a8d61f73ebe9da0aa94e25232f004ce",
+            "license_files": [
+                {
+                    "file": "vendor/symfony/polyfill-php83/LICENSE",
+                    "sha256": "6439cc1bba78b7de0c1905b0643679a5a7768ba020a090370d7742030303c6b2"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "webmozart/assert",
+            "version": "1.12.1",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/webmozarts/assert.git",
+            "source_commit": "9be6926d8b485f55b9229203f962b51ed377ba68",
+            "source_permalink": "https://github.com/webmozarts/assert/tree/9be6926d8b485f55b9229203f962b51ed377ba68",
+            "license_files": [
+                {
+                    "file": "vendor/webmozart/assert/LICENSE",
+                    "sha256": "5f82f5e664e8683e3d97d3bec6f74620b9d0a4d8669f9e617da96bce8767d4d3"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "wizardloop/broadcastmanager",
+            "version": "3.2.2",
+            "direct": true,
+            "scope": "runtime",
+            "spdx": [
+                "AGPL-3.0-only"
+            ],
+            "source_url": "https://github.com/WizardLoop/BroadcastManager.git",
+            "source_commit": "f2792a383416b66bb68e55f09414563e540538d6",
+            "source_permalink": "https://github.com/WizardLoop/BroadcastManager/tree/f2792a383416b66bb68e55f09414563e540538d6",
+            "license_files": [
+                {
+                    "file": "vendor/wizardloop/broadcastmanager/LICENSE",
+                    "sha256": "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "myclabs/deep-copy",
+            "version": "1.14.0",
+            "direct": false,
+            "scope": "dev",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/myclabs/DeepCopy.git",
+            "source_commit": "8680aa248f8e07bc8fb43f56f0f5fc77a0c96aae",
+            "source_permalink": "https://github.com/myclabs/DeepCopy/tree/8680aa248f8e07bc8fb43f56f0f5fc77a0c96aae",
+            "license_files": [
+                {
+                    "file": "vendor/myclabs/deep-copy/LICENSE",
+                    "sha256": "90007d13610253dfbbe382190c336b50718f8344d5bff230d0580282fb16a7d6"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "phar-io/manifest",
+            "version": "2.0.4",
+            "direct": false,
+            "scope": "dev",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/phar-io/manifest.git",
+            "source_commit": "54750ef60c58e43759730615a392c31c80e23176",
+            "source_permalink": "https://github.com/phar-io/manifest/tree/54750ef60c58e43759730615a392c31c80e23176",
+            "license_files": [
+                {
+                    "file": "vendor/phar-io/manifest/LICENSE",
+                    "sha256": "c882c8ea59ec1a1fdaa12ba56e5464be82c09f6924ed8a04883cec3b5c0126a1"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "phar-io/version",
+            "version": "3.2.1",
+            "direct": false,
+            "scope": "dev",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/phar-io/version.git",
+            "source_commit": "4f7fd7836c6f332bb2933569e566a0d6c4cbed74",
+            "source_permalink": "https://github.com/phar-io/version/tree/4f7fd7836c6f332bb2933569e566a0d6c4cbed74",
+            "license_files": [
+                {
+                    "file": "vendor/phar-io/version/LICENSE",
+                    "sha256": "f24078e519642d911ca010cd683f68ba4cb6ceeef35ce40b479da1ab9ab73427"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "phpstan/phpstan",
+            "version": "2.3.1",
+            "direct": true,
+            "scope": "dev",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://api.github.com/repos/phpstan/phpstan/zipball/6155239b488e95d26d1ebd95c6b4bb294d7f09db",
+            "source_commit": "6155239b488e95d26d1ebd95c6b4bb294d7f09db",
+            "source_permalink": "https://api.github.com/repos/phpstan/phpstan/zipball/6155239b488e95d26d1ebd95c6b4bb294d7f09db/tree/6155239b488e95d26d1ebd95c6b4bb294d7f09db",
+            "license_files": [
+                {
+                    "file": "vendor/phpstan/phpstan/LICENSE",
+                    "sha256": "f9e4f43eb1c32f7c4f5bcdb0860de5ba71712c3c1547eeb0d1e4b3c43313ec81"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "phpunit/php-code-coverage",
+            "version": "12.5.8",
+            "direct": false,
+            "scope": "dev",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/sebastianbergmann/php-code-coverage.git",
+            "source_commit": "7440368d94738d54f2c1de24dbd3871793bbb0dd",
+            "source_permalink": "https://github.com/sebastianbergmann/php-code-coverage/tree/7440368d94738d54f2c1de24dbd3871793bbb0dd",
+            "license_files": [
+                {
+                    "file": "vendor/phpunit/php-code-coverage/LICENSE",
+                    "sha256": "45e50b328bedfa6a1106f257f421ede537e392c98c47d00291c7cd662ea02d9b"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "phpunit/php-file-iterator",
+            "version": "6.0.2",
+            "direct": false,
+            "scope": "dev",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/sebastianbergmann/php-file-iterator.git",
+            "source_commit": "a248d1640ab059b075f53a2ef0f9856e864e06b5",
+            "source_permalink": "https://github.com/sebastianbergmann/php-file-iterator/tree/a248d1640ab059b075f53a2ef0f9856e864e06b5",
+            "license_files": [
+                {
+                    "file": "vendor/phpunit/php-file-iterator/LICENSE",
+                    "sha256": "45e50b328bedfa6a1106f257f421ede537e392c98c47d00291c7cd662ea02d9b"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "phpunit/php-invoker",
+            "version": "6.0.0",
+            "direct": false,
+            "scope": "dev",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/sebastianbergmann/php-invoker.git",
+            "source_commit": "12b54e689b07a25a9b41e57736dfab6ec9ae5406",
+            "source_permalink": "https://github.com/sebastianbergmann/php-invoker/tree/12b54e689b07a25a9b41e57736dfab6ec9ae5406",
+            "license_files": [
+                {
+                    "file": "vendor/phpunit/php-invoker/LICENSE",
+                    "sha256": "781184dbfd950e2361eac195f0677f8de995e77dcf2c28b275f1b88305766365"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "phpunit/php-text-template",
+            "version": "5.0.1",
+            "direct": false,
+            "scope": "dev",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/sebastianbergmann/php-text-template.git",
+            "source_commit": "babab73b7ef9fae406f2eb3ee11323a61caa63d5",
+            "source_permalink": "https://github.com/sebastianbergmann/php-text-template/tree/babab73b7ef9fae406f2eb3ee11323a61caa63d5",
+            "license_files": [
+                {
+                    "file": "vendor/phpunit/php-text-template/LICENSE",
+                    "sha256": "45e50b328bedfa6a1106f257f421ede537e392c98c47d00291c7cd662ea02d9b"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "phpunit/php-timer",
+            "version": "8.0.0",
+            "direct": false,
+            "scope": "dev",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/sebastianbergmann/php-timer.git",
+            "source_commit": "f258ce36aa457f3aa3339f9ed4c81fc66dc8c2cc",
+            "source_permalink": "https://github.com/sebastianbergmann/php-timer/tree/f258ce36aa457f3aa3339f9ed4c81fc66dc8c2cc",
+            "license_files": [
+                {
+                    "file": "vendor/phpunit/php-timer/LICENSE",
+                    "sha256": "a7d02dc8a24a343c7f3226b58e0a6749cdf426b9f008a1df2e437bd89d7c6943"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "phpunit/phpunit",
+            "version": "12.5.39",
+            "direct": true,
+            "scope": "dev",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/sebastianbergmann/phpunit.git",
+            "source_commit": "4e8cbead3741cc57f16d142f4c5dc73c2747820a",
+            "source_permalink": "https://github.com/sebastianbergmann/phpunit/tree/4e8cbead3741cc57f16d142f4c5dc73c2747820a",
+            "license_files": [
+                {
+                    "file": "vendor/phpunit/phpunit/LICENSE",
+                    "sha256": "5aa383bf44a3951bb4a2214c740a96e7795e473e1a0abc8d5812e6a3c1dbfc1e"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "sebastian/cli-parser",
+            "version": "4.2.1",
+            "direct": false,
+            "scope": "dev",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/sebastianbergmann/cli-parser.git",
+            "source_commit": "7d05781b13f7dec9043a629a21d086ed74582a15",
+            "source_permalink": "https://github.com/sebastianbergmann/cli-parser/tree/7d05781b13f7dec9043a629a21d086ed74582a15",
+            "license_files": [
+                {
+                    "file": "vendor/sebastian/cli-parser/LICENSE",
+                    "sha256": "759a5f7f752db78d04d43ec73bf6c0ee4bbec2f8f64596bd95419c17af9f3ed4"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "sebastian/comparator",
+            "version": "7.1.8",
+            "direct": false,
+            "scope": "dev",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/sebastianbergmann/comparator.git",
+            "source_commit": "7c65c1e79836812819705b473a90c12399542485",
+            "source_permalink": "https://github.com/sebastianbergmann/comparator/tree/7c65c1e79836812819705b473a90c12399542485",
+            "license_files": [
+                {
+                    "file": "vendor/sebastian/comparator/LICENSE",
+                    "sha256": "c1b7b5b9bee26266f6d958a8b31b08cdddbf0aec34cc42b12f8b175f93b2dc4f"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "sebastian/complexity",
+            "version": "5.0.0",
+            "direct": false,
+            "scope": "dev",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/sebastianbergmann/complexity.git",
+            "source_commit": "bad4316aba5303d0221f43f8cee37eb58d384bbb",
+            "source_permalink": "https://github.com/sebastianbergmann/complexity/tree/bad4316aba5303d0221f43f8cee37eb58d384bbb",
+            "license_files": [
+                {
+                    "file": "vendor/sebastian/complexity/LICENSE",
+                    "sha256": "f3b7f57c47d30a716d39846c5cd5482d01437d30b2eb1a97dc7df0d926af5c5f"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "sebastian/diff",
+            "version": "7.0.1",
+            "direct": false,
+            "scope": "dev",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/sebastianbergmann/diff.git",
+            "source_commit": "cd4cabe39f8a4e8ee6818ba99f10a05561ea4ad6",
+            "source_permalink": "https://github.com/sebastianbergmann/diff/tree/cd4cabe39f8a4e8ee6818ba99f10a05561ea4ad6",
+            "license_files": [
+                {
+                    "file": "vendor/sebastian/diff/LICENSE",
+                    "sha256": "c1b7b5b9bee26266f6d958a8b31b08cdddbf0aec34cc42b12f8b175f93b2dc4f"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "sebastian/environment",
+            "version": "8.1.2",
+            "direct": false,
+            "scope": "dev",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/sebastianbergmann/environment.git",
+            "source_commit": "9d32c685773823b1983e256ae4ecd48a10d6e439",
+            "source_permalink": "https://github.com/sebastianbergmann/environment/tree/9d32c685773823b1983e256ae4ecd48a10d6e439",
+            "license_files": [
+                {
+                    "file": "vendor/sebastian/environment/LICENSE",
+                    "sha256": "772a3b8c4e5846485ad60fe7759156408ef00b6d837358716380ee438f6c11a3"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "sebastian/exporter",
+            "version": "7.0.3",
+            "direct": false,
+            "scope": "dev",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/sebastianbergmann/exporter.git",
+            "source_commit": "c5e21b5de653ce0a769fb36f5cdfcb5e7a32cf23",
+            "source_permalink": "https://github.com/sebastianbergmann/exporter/tree/c5e21b5de653ce0a769fb36f5cdfcb5e7a32cf23",
+            "license_files": [
+                {
+                    "file": "vendor/sebastian/exporter/LICENSE",
+                    "sha256": "c1b7b5b9bee26266f6d958a8b31b08cdddbf0aec34cc42b12f8b175f93b2dc4f"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "sebastian/global-state",
+            "version": "8.0.3",
+            "direct": false,
+            "scope": "dev",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/sebastianbergmann/global-state.git",
+            "source_commit": "b164d3274d6537ab462591c5755f76a8f5b1aae9",
+            "source_permalink": "https://github.com/sebastianbergmann/global-state/tree/b164d3274d6537ab462591c5755f76a8f5b1aae9",
+            "license_files": [
+                {
+                    "file": "vendor/sebastian/global-state/LICENSE",
+                    "sha256": "5aa383bf44a3951bb4a2214c740a96e7795e473e1a0abc8d5812e6a3c1dbfc1e"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "sebastian/lines-of-code",
+            "version": "4.0.1",
+            "direct": false,
+            "scope": "dev",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/sebastianbergmann/lines-of-code.git",
+            "source_commit": "d543b8ef219dcd8da262cbb958639a96bedba10e",
+            "source_permalink": "https://github.com/sebastianbergmann/lines-of-code/tree/d543b8ef219dcd8da262cbb958639a96bedba10e",
+            "license_files": [
+                {
+                    "file": "vendor/sebastian/lines-of-code/LICENSE",
+                    "sha256": "759a5f7f752db78d04d43ec73bf6c0ee4bbec2f8f64596bd95419c17af9f3ed4"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "sebastian/object-enumerator",
+            "version": "7.0.0",
+            "direct": false,
+            "scope": "dev",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/sebastianbergmann/object-enumerator.git",
+            "source_commit": "1effe8e9b8e068e9ae228e542d5d11b5d16db894",
+            "source_permalink": "https://github.com/sebastianbergmann/object-enumerator/tree/1effe8e9b8e068e9ae228e542d5d11b5d16db894",
+            "license_files": [
+                {
+                    "file": "vendor/sebastian/object-enumerator/LICENSE",
+                    "sha256": "b4b44781733a8c15776a738f8dbe599f867e98c2dd9e0b4e766fa6f7cf72fce2"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "sebastian/object-reflector",
+            "version": "5.0.0",
+            "direct": false,
+            "scope": "dev",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/sebastianbergmann/object-reflector.git",
+            "source_commit": "4bfa827c969c98be1e527abd576533293c634f6a",
+            "source_permalink": "https://github.com/sebastianbergmann/object-reflector/tree/4bfa827c969c98be1e527abd576533293c634f6a",
+            "license_files": [
+                {
+                    "file": "vendor/sebastian/object-reflector/LICENSE",
+                    "sha256": "9000f616c81278b859f8b7b7016f54480149b0b0ad819c9c2119c40514f40ba7"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "sebastian/recursion-context",
+            "version": "7.0.1",
+            "direct": false,
+            "scope": "dev",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/sebastianbergmann/recursion-context.git",
+            "source_commit": "0b01998a7d5b1f122911a66bebcb8d46f0c82d8c",
+            "source_permalink": "https://github.com/sebastianbergmann/recursion-context/tree/0b01998a7d5b1f122911a66bebcb8d46f0c82d8c",
+            "license_files": [
+                {
+                    "file": "vendor/sebastian/recursion-context/LICENSE",
+                    "sha256": "bd6164746a2e92bf9fb581f8c691901019004e8c40d558eb01de1a535ccb5508"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "sebastian/type",
+            "version": "6.0.4",
+            "direct": false,
+            "scope": "dev",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/sebastianbergmann/type.git",
+            "source_commit": "82ff822c2edc46724be9f7411d3163021f602773",
+            "source_permalink": "https://github.com/sebastianbergmann/type/tree/82ff822c2edc46724be9f7411d3163021f602773",
+            "license_files": [
+                {
+                    "file": "vendor/sebastian/type/LICENSE",
+                    "sha256": "923961ef4cae167a3569487ae6957f578b29bcd1e6c477092cb2a68c25ebdf11"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "sebastian/version",
+            "version": "6.0.1",
+            "direct": false,
+            "scope": "dev",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/sebastianbergmann/version.git",
+            "source_commit": "9e935a16187e14f39b0e79910dabd614972cdb26",
+            "source_permalink": "https://github.com/sebastianbergmann/version/tree/9e935a16187e14f39b0e79910dabd614972cdb26",
+            "license_files": [
+                {
+                    "file": "vendor/sebastian/version/LICENSE",
+                    "sha256": "b288407b327ef0e297678bbc8dac11a66230f596180a031659622e09d92b1d0e"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "squizlabs/php_codesniffer",
+            "version": "4.0.4",
+            "direct": true,
+            "scope": "dev",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/PHPCSStandards/PHP_CodeSniffer.git",
+            "source_commit": "bbdc3d0532623e21838b7041a4364383a8126f96",
+            "source_permalink": "https://github.com/PHPCSStandards/PHP_CodeSniffer/tree/bbdc3d0532623e21838b7041a4364383a8126f96",
+            "license_files": [
+                {
+                    "file": "vendor/squizlabs/php_codesniffer/licence.txt",
+                    "sha256": "ad489e425c9a48b9fe97b8c11dd5f422606aa72e7726a438cd01ebee22d8ba80"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "staabm/side-effects-detector",
+            "version": "1.0.5",
+            "direct": false,
+            "scope": "dev",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/staabm/side-effects-detector.git",
+            "source_commit": "d8334211a140ce329c13726d4a715adbddd0a163",
+            "source_permalink": "https://github.com/staabm/side-effects-detector/tree/d8334211a140ce329c13726d4a715adbddd0a163",
+            "license_files": [
+                {
+                    "file": "vendor/staabm/side-effects-detector/LICENSE",
+                    "sha256": "23d428232751fbfd032b47195b3d2a60342d0cf0cdb6e2f474a6b19733e63d75"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "theseer/tokenizer",
+            "version": "2.0.1",
+            "direct": false,
+            "scope": "dev",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/theseer/tokenizer.git",
+            "source_commit": "7989e43bf381af0eac72e4f0ca5bcbfa81658be4",
+            "source_permalink": "https://github.com/theseer/tokenizer/tree/7989e43bf381af0eac72e4f0ca5bcbfa81658be4",
+            "license_files": [
+                {
+                    "file": "vendor/theseer/tokenizer/LICENSE",
+                    "sha256": "2820584a513c2547c81656abe330f414b4b395994d552f4c5e13c3d6e9279a90"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        }
+    ],
+    "services_and_assets": [
+        {
+            "name": "Hebcal",
+            "kind": "data service",
+            "terms": "https://www.hebcal.com/home/195/jewish-calendar-rest-api",
+            "status": "Review separate data terms and attribution in THIRD_PARTY_NOTICES.md"
+        },
+        {
+            "name": "GeoNames",
+            "kind": "data service",
+            "terms": "https://www.geonames.org/about.html",
+            "status": "Account and quotas required; data attribution independent of application AGPL"
+        },
+        {
+            "name": "omer-counts.json",
+            "kind": "bundled data resource",
+            "file": "resources/templates/omer-counts.json",
+            "sha256": "11fc1d33365021edb0ebebc46a01ac3727d9e31fb1f4a5fb79bd7fa7474af95d",
+            "spdx": "CC-BY-4.0",
+            "license_files": [
+                {
+                    "file": "LICENSES/CC-BY-4.0.txt",
+                    "sha256": "9ba9550ad48438d0836ddab3da480b3b69ffa0aac7b7878b5a0039e7ab429411"
+                }
+            ],
+            "attribution": "Hebcal.com",
+            "source": "https://www.hebcal.com/hebcal?v=1&cfg=json&start=2026-04-03&end=2026-05-21&o=on&i=on&lg=he",
+            "retrieved_at": null,
+            "notes": "",
+            "status": "Bundled metadata recorded; preserve data license and attribution separately from the application AGPL."
+        },
+        {
+            "name": "omer-counts-localized.json",
+            "kind": "bundled data resource",
+            "file": "resources/templates/omer-counts-localized.json",
+            "sha256": "d43303e759b7b3522495fbc706a1ea0ea78abd31d94c06397e6e74bdd18c55f9",
+            "spdx": "CC-BY-4.0",
+            "license_files": [
+                {
+                    "file": "LICENSES/CC-BY-4.0.txt",
+                    "sha256": "9ba9550ad48438d0836ddab3da480b3b69ffa0aac7b7878b5a0039e7ab429411"
+                }
+            ],
+            "attribution": "Hebcal.com; explanatory translations by WizardLoop Shabbat",
+            "source": "https://www.hebcal.com/hebcal?v=1&cfg=json&start=2026-04-03&end=2026-05-21&o=on&i=on&lg=he",
+            "retrieved_at": null,
+            "notes": "Static explanatory translations of the verified 49-day calendar count; Hebrew ritual wording remains in omer-counts.json. No runtime translation or AI generation.",
+            "status": "Bundled metadata recorded; preserve data license and attribution separately from the application AGPL."
+        },
+        {
+            "name": "omer-liturgy.json",
+            "kind": "bundled data resource",
+            "file": "resources/templates/omer-liturgy.json",
+            "sha256": "e7547cf2b6c9d44e1bcd5fd9d1755823ef6e0519140c9dd217c413261d43f0d9",
+            "spdx": "CC-BY-SA-4.0",
+            "license_files": [
+                {
+                    "file": "LICENSES/CC-BY-SA-4.0.txt",
+                    "sha256": "28a9529c7d0bb4dc51f4bf5c116a3d16ef247a052f7591466768ddf563fd1cf5"
+                }
+            ],
+            "attribution": "Hebrew Wikisource contributors; traditional Hebrew liturgy and biblical texts",
+            "source": [
+                {
+                    "key": "ashkenaz",
+                    "url": "https://he.wikisource.org/w/index.php?title=סידור/נוסח_אשכנז/ספירת_העומר&oldid=3017054",
+                    "revision": 3017054
+                },
+                {
+                    "key": "sephard",
+                    "url": "https://he.wikisource.org/w/index.php?title=סדר_ספירת_העומר&oldid=2929975",
+                    "revision": 2929975
+                },
+                {
+                    "key": "psalm67",
+                    "url": "https://he.wikisource.org/w/index.php?title=תהלים_סז&oldid=1014815",
+                    "revision": 1014815
+                },
+                {
+                    "key": "ana_bekoach",
+                    "url": "https://he.wikisource.org/w/index.php?title=אנא_בכח&oldid=3085666",
+                    "revision": 3085666
+                }
+            ],
+            "retrieved_at": "2026-10-13",
+            "notes": "Traditional text transcribed without vowel points or cantillation; divine name displayed as ה׳. Line breaks and punctuation normalized. Ana Bekoach uses the documented רחמם variant; sources display רחמי as an alternative. Ashkenaz optional preparation and short concluding prayer; Sephard preparation and extended concluding prayer. No Edot HaMizrach or other nusach is mixed in. Counts are separately sourced from Hebcal, never the incomplete Wikisource numbered count list.",
+            "status": "Bundled metadata recorded; preserve data license and attribution separately from the application AGPL."
+        }
+    ],
+    "local_patches": [
+        {
+            "manifest": "patches/madelineproto/manifest.json",
+            "sha256": "1f46278a04f34ff574e30f034b800d3120b9e47ad2135270f9242150989b57fe",
+            "package": "danog/madelineproto",
+            "target": "src/Loop/Update/UpdateLoop.php",
+            "approved": [
+                {
+                    "version": "8.7.0",
+                    "commit": "7b99dd0f2d964a492c377912ffce9f5ce61aa9ed",
+                    "mode": "patch",
+                    "baseline": "baseline/UpdateLoop.php",
+                    "source_url": "https://github.com/danog/MadelineProto/blob/7b99dd0f2d964a492c377912ffce9f5ce61aa9ed/src/Loop/Update/UpdateLoop.php",
+                    "original_sha256": "2fbcbb73822258102837f53f4a231b87526d66809be7acd6339156ea778a8c2f",
+                    "patched_sha256": "8f6cb1a483c879024bddea289e90d4bf2d71dd15716102bc83a1f34a243782e4",
+                    "patch": "update-loop-timeout-cancellation.patch",
+                    "patch_sha256": "2f5c34d5e2749d3575ef9de1ec80bff60a9ced1240ca61ef8727583ee939f592"
+                }
+            ],
+            "notes": "Locally modified library source and its immutable baseline/diff ship in the corresponding-source archive; preserve upstream notices."
+        },
+        {
+            "manifest": "patches/madelineproto-geopoint/manifest.json",
+            "sha256": "30b517d219f0cf7156b59c4e34cd9f0be262fc57bbb5cedb5108e62953900d48",
+            "package": "danog/madelineproto",
+            "target": "src/EventHandler/Media/GeoPoint.php",
+            "approved": [
+                {
+                    "version": "8.7.0",
+                    "commit": "7b99dd0f2d964a492c377912ffce9f5ce61aa9ed",
+                    "mode": "patch",
+                    "baseline": "baseline/GeoPoint.php",
+                    "reviewed_output": "reviewed/GeoPoint.php",
+                    "original_sha256": "9ed8054caade6abc96420b0f5b120bec029ee2bc7b7b6aacca56fb7ddc61a27b",
+                    "patched_sha256": "5633cc441e541e5e919dfa8156192587a68e578e49a496acac91172be5f2549d",
+                    "patch": "geopoint-double-coordinates.patch",
+                    "patch_sha256": "b1b830953dce74978ddc64198a958d0ac13d5205d8929daa58a31e86c0541556"
+                }
+            ],
+            "notes": "Locally modified library source and its immutable baseline/diff ship in the corresponding-source archive; preserve upstream notices."
+        },
+        {
+            "manifest": "patches/madelineproto-formatted-date/manifest.json",
+            "sha256": "77376a8eef3743583f481d1bd83cb1b1e5384ccf7ce004b5922a3e792a41f807",
+            "package": "danog/madelineproto",
+            "target": "src/EventHandler/Message/Entities/MessageEntity.php",
+            "approved": [
+                {
+                    "version": "8.7.0",
+                    "commit": "7b99dd0f2d964a492c377912ffce9f5ce61aa9ed",
+                    "mode": "patch",
+                    "baseline": "baseline/MessageEntity.php",
+                    "original_sha256": "06a9d438cc198f56cfb745a2a3808932269033671146cf82f84ae88e8d6eae60",
+                    "reviewed_output": "reviewed/MessageEntity.php",
+                    "patched_sha256": "b265ed707326e1d71c7a8bdf8291f0b8c94a153b98a2c4c45c776fec3b374005",
+                    "patch": "formatted-date-entity.patch",
+                    "patch_sha256": "5c726acbc73ef6b4994d1c970f74952af007c2eee3c92773cf593e73e834b3d3",
+                    "source_url": "https://github.com/danog/MadelineProto/blob/7b99dd0f2d964a492c377912ffce9f5ce61aa9ed/src/EventHandler/Message/Entities/MessageEntity.php",
+                    "license_files": [
+                        {
+                            "file": "upstream-LICENSE",
+                            "sha256": "57c8ff33c9c0cfc3ef00e650a1cc910d7ee479a8bc509f6c9209a7c2a11399d6"
+                        }
+                    ],
+                    "added_files": [
+                        {
+                            "target": "src/EventHandler/Message/Entities/FormattedDate.php",
+                            "original_state": "absent",
+                            "reviewed_output": "reviewed/FormattedDate.php",
+                            "patched_sha256": "ffe03d0d78215bc42968cd836c25b1f8a602f161fb55eba189b4102d9b99d5e5",
+                            "license": "AGPL-3.0-or-later"
+                        }
+                    ],
+                    "prerequisites": [
+                        {
+                            "target": "src/TL_telegram_v225.tl",
+                            "baseline": "baseline/TL_telegram_v225.tl",
+                            "sha256": "539272f5ad8992ee97b61bd134fcf3a28a41ce720e806d0e7dc0e2e408c581f9",
+                            "source_url": "https://github.com/danog/MadelineProto/blob/7b99dd0f2d964a492c377912ffce9f5ce61aa9ed/src/TL_telegram_v225.tl"
+                        }
+                    ]
+                }
+            ],
+            "notes": "Locally modified library source and its immutable baseline/diff ship in the corresponding-source archive; preserve upstream notices."
+        },
+        {
+            "manifest": "patches/madelineproto-fresh-peer/manifest.json",
+            "sha256": "40d39192dfcb91c64de98daf2eac5910c76e2203a306c656fc4b5b3bc8a5fd3e",
+            "package": "danog/madelineproto",
+            "target": "src/MTProtoTools/PeerHandler.php",
+            "approved": [
+                {
+                    "version": "8.7.0",
+                    "commit": "7b99dd0f2d964a492c377912ffce9f5ce61aa9ed",
+                    "mode": "patch",
+                    "baseline": "baseline/PeerHandler.php",
+                    "reviewed_output": "reviewed/PeerHandler.php",
+                    "original_sha256": "3e1af3624f2256f53264fe4256475d0a5f353af8761cc9716133b7f0412538d2",
+                    "patched_sha256": "8188777fc376f2b3cca39963d79f85239fc84141f978128ea2bb591f03891928",
+                    "patch": "fresh-full-peer-response.patch",
+                    "patch_sha256": "db3099e7bf83550b7a4a4f54da451bc45a1078b8bd9bffc57f26bf52ab2d82e3"
+                }
+            ],
+            "notes": "Locally modified library source and its immutable baseline/diff ship in the corresponding-source archive; preserve upstream notices."
+        },
+        {
+            "manifest": "patches/broadcastmanager/manifest.json",
+            "sha256": "83b97a1c1b3be4ff32b37fa03167eeae1f94fbcd15ee72c7aa1f9463f56ba303",
+            "package": "wizardloop/broadcastmanager",
+            "target": "src/BroadcastManager.php",
+            "approved": [
+                {
+                    "version": "3.2.2",
+                    "commit": "f2792a383416b66bb68e55f09414563e540538d6",
+                    "mode": "patch",
+                    "baseline": "baseline/BroadcastManager.php",
+                    "reviewed_output": "reviewed/BroadcastManager.php",
+                    "original_sha256": "2a9a42dc6e3f6d7b51c178e7d9db962a5b5ac424046af18afcfcdb12d41dc6e8",
+                    "patched_sha256": "d665b24009aabfb5b09e00edad1271f1501bf0ef797d5a2593129da91c8cc435",
+                    "patch": "status-localization-hooks.patch",
+                    "patch_sha256": "8d115dfd42568181c365001373772e3b52b06e7c9fbc4433878e30d0390097bb",
+                    "intermediates": [
+                        {
+                            "source": "previous/dev3/BroadcastManager.php",
+                            "sha256": "3d9425f7911b12c69faae5e87954db134dc3fb7c2f7d654a72f972ebeb84e424",
+                            "patch": "dev3-to-transport-hooks.patch",
+                            "patch_sha256": "42af3d2eb99003512477607f0cf34760d5f0b6b5169467a8115fae5ef3c69374"
+                        },
+                        {
+                            "source": "previous/dev8/BroadcastManager.php",
+                            "sha256": "08db35c271f671041257ebe79d1010cdd7c33c4d5868e4553c78612f9e8bf0f3",
+                            "patch": "dev8-to-runtime-lifecycle.patch",
+                            "patch_sha256": "2630fa3f02b9bb361e1a4ade2b3edccc40d4c0fc6468272b6bc6ced89cbf0a84"
+                        }
+                    ]
+                }
+            ],
+            "notes": "Locally modified library source and its immutable baseline/diff ship in the corresponding-source archive; preserve upstream notices."
+        }
+    ],
+    "external_runtime": [
+        {
+            "name": "SQLite",
+            "php_loaded_version": "3.45.2",
+            "license": "public-domain",
+            "terms": "https://sqlite.org/copyright.html",
+            "wal_fix_verified": false,
+            "docker_source_version": "3.51.3",
+            "docker_source_url": "https://www.sqlite.org/2026/sqlite-autoconf-3510300.tar.gz",
+            "docker_source_sha256": "81f5be397049b0cae1b167f2225af7646fc0f82e4a9b3c48c9ea3a533e21d77a",
+            "docker_build_status": "NOT VERIFIED locally: Docker unavailable on test host"
+        }
+    ]
+}

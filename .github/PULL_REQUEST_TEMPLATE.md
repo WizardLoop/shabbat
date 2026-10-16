@@ -1,21 +1,16 @@
-# Pull Request
+## Problem and resulting behavior
 
-## What does this PR do?
+<!-- Describe the trigger and the behavior a reviewer will observe. -->
 
-- [ ] Bug fix
-- [ ] Feature
-- [ ] Code style/Refactoring
-- [ ] Documentation
+## Validation
 
-## Description
+<!-- Record actual checks, fixture coverage and live staging limits. Do not include secrets or private data. -->
 
-<!-- Please describe your change in detail -->
+- [ ] Composer lock, patch hashes and dependencies verified
+- [ ] Lint, mandatory style, tests and static analysis pass
+- [ ] Six locale catalogs and local documentation links pass
+- [ ] Migration/backup/recovery implications documented when applicable
+- [ ] Third-party notices and corresponding-source inputs preserved
+- [ ] No production data, session or credentials included
 
-## Checklist
-
-- [ ] Code builds and passes tests
-- [ ] PR follows project guidelines
-
----
-
-Related Issues: #
+Related issue:

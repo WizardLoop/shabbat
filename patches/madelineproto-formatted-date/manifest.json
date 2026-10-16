@@ -1,0 +1,59 @@
+{
+    "schema_version": 1,
+    "package": "danog/madelineproto",
+    "target": "src/EventHandler/Message/Entities/MessageEntity.php",
+    "approved": [
+        {
+            "version": "8.7.0",
+            "commit": "7b99dd0f2d964a492c377912ffce9f5ce61aa9ed",
+            "mode": "patch",
+            "baseline": "baseline/MessageEntity.php",
+            "original_sha256": "06a9d438cc198f56cfb745a2a3808932269033671146cf82f84ae88e8d6eae60",
+            "reviewed_output": "reviewed/MessageEntity.php",
+            "patched_sha256": "b265ed707326e1d71c7a8bdf8291f0b8c94a153b98a2c4c45c776fec3b374005",
+            "patch": "formatted-date-entity.patch",
+            "patch_sha256": "5c726acbc73ef6b4994d1c970f74952af007c2eee3c92773cf593e73e834b3d3",
+            "source_url": "https://github.com/danog/MadelineProto/blob/7b99dd0f2d964a492c377912ffce9f5ce61aa9ed/src/EventHandler/Message/Entities/MessageEntity.php",
+            "license_files": [
+                {
+                    "file": "upstream-LICENSE",
+                    "sha256": "57c8ff33c9c0cfc3ef00e650a1cc910d7ee479a8bc509f6c9209a7c2a11399d6"
+                }
+            ],
+            "added_files": [
+                {
+                    "target": "src/EventHandler/Message/Entities/FormattedDate.php",
+                    "original_state": "absent",
+                    "reviewed_output": "reviewed/FormattedDate.php",
+                    "patched_sha256": "ffe03d0d78215bc42968cd836c25b1f8a602f161fb55eba189b4102d9b99d5e5",
+                    "license": "AGPL-3.0-or-later"
+                }
+            ],
+            "prerequisites": [
+                {
+                    "target": "src/TL_telegram_v225.tl",
+                    "baseline": "baseline/TL_telegram_v225.tl",
+                    "sha256": "539272f5ad8992ee97b61bd134fcf3a28a41ce720e806d0e7dc0e2e408c581f9",
+                    "source_url": "https://github.com/danog/MadelineProto/blob/7b99dd0f2d964a492c377912ffce9f5ce61aa9ed/src/TL_telegram_v225.tl"
+                }
+            ]
+        }
+    ],
+    "provenance": {
+        "prepared_at": "2026-10-14",
+        "implementation": "Independently implemented from the locked SDK entity contract and official Telegram layer225/BotAPI specifications.",
+        "reference_exports": [
+            {
+                "path": "local-reference/newsearch-v2/docker/patch-madeline-formatted-date.php",
+                "sha256": "c3091f61a401d8022b8ef1d228cf8c5f31a1094982de69a0be108e21885cb967"
+            },
+            {
+                "path": "local-reference/newsearch-v2/docker/madeline-formatted-date/FormattedDate.php",
+                "sha256": "a9e3146e49a88bec469e67e53f5e27cffb1b5127cde547590f2e385ef02dd264"
+            }
+        ],
+        "reference_limitations": "Byte-identical psy new/release-r21-work export; no recoverable Git history. Conflicting MIT/proprietary metadata without standalone grant. Historical code is not redistributed. Paths are logical local-reference identifiers, not public download URLs.",
+        "upstream_license_file": "upstream-LICENSE",
+        "upstream_license_sha256": "57c8ff33c9c0cfc3ef00e650a1cc910d7ee479a8bc509f6c9209a7c2a11399d6"
+    }
+}

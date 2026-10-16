@@ -1,0 +1,86 @@
+{
+  "retrieved_date": "2026-10-15",
+  "attribution": "Hebcal.com",
+  "license": "CC-BY-4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "service_docs": "https://www.hebcal.com/home/1663/zmanim-halachic-times-api",
+  "calendar_docs": "https://www.hebcal.com/home/195/jewish-calendar-rest-api",
+  "notes": "Complete unchanged public UTF-8 response bodies, without projection or JSON normalization. Exact default Jerusalem coordinates, all supported display languages, active Omer season and Israel/diaspora holiday policy. No Telegram, credentials or production data. Recorded API response time fields are provider data, not asserted freshness dates. Offline fixtures do not establish server network availability.",
+  "fixtures": [
+    {
+      "file": "hebcal-jerusalem-full-solar-2026-04.json",
+      "url": "https://www.hebcal.com/zmanim?cfg=json&latitude=31.76904&longitude=35.21633&tzid=Asia%2FJerusalem&start=2026-03-24&end=2026-06-09",
+      "sha256": "063f2f3e366b219ffcd7f439cb3d005d234b48e1a7d4fd00619f84fcf6384569"
+    },
+    {
+      "file": "hebcal-jerusalem-full-calendar-2026-04.json",
+      "url": "https://www.hebcal.com/hebcal?v=1&cfg=json&start=2026-03-24&end=2026-06-09&i=on&maj=on&min=on&mf=on&s=on&mvch=on&o=on&F=on&d=on&hdp=1&lg=he",
+      "sha256": "ff714cf5bce2ae122e0e2c2c3f017cc861ff0d53e75ff145f5d70f3753ae1d88"
+    },
+    {
+      "file": "hebcal-jerusalem-full-solar-2026-05.json",
+      "url": "https://www.hebcal.com/zmanim?cfg=json&latitude=31.76904&longitude=35.21633&tzid=Asia%2FJerusalem&start=2026-04-23&end=2026-07-10",
+      "sha256": "746a8d36bea856e42b4242c78e2b0a2ed52bfbc9d866cd403681cced2f5c64e5"
+    },
+    {
+      "file": "hebcal-jerusalem-full-calendar-2026-05.json",
+      "url": "https://www.hebcal.com/hebcal?v=1&cfg=json&start=2026-04-23&end=2026-07-10&i=on&maj=on&min=on&mf=on&s=on&mvch=on&o=on&F=on&d=on&hdp=1&lg=he",
+      "sha256": "a79101ceece782dc2c5736f04f3a47036cf66c5f60e3b9afbcf19b09da306a6a"
+    },
+    {
+      "file": "hebcal-jerusalem-full-calendar-2026-04-en.json",
+      "url": "https://www.hebcal.com/hebcal?v=1&cfg=json&start=2026-03-24&end=2026-06-09&i=on&maj=on&min=on&mf=on&s=on&mvch=on&o=on&F=on&d=on&hdp=1&lg=s",
+      "sha256": "fd968354c11e2110049ed9c61bedc1c4c8257a61e0b97d2f5d26ca31f2e65fc6"
+    },
+    {
+      "file": "hebcal-jerusalem-full-calendar-2026-10-en.json",
+      "url": "https://www.hebcal.com/hebcal?v=1&cfg=json&start=2026-09-23&end=2026-12-10&i=on&maj=on&min=on&mf=on&s=on&mvch=on&o=on&F=on&d=on&hdp=1&lg=s",
+      "sha256": "adf5319e9176144347dfb3183c537974cc8f6c76a0ea2928cee20fa106c9c08f"
+    },
+    {
+      "file": "hebcal-jerusalem-full-calendar-2026-04-ru.json",
+      "url": "https://www.hebcal.com/hebcal?v=1&cfg=json&start=2026-03-24&end=2026-06-09&i=on&maj=on&min=on&mf=on&s=on&mvch=on&o=on&F=on&d=on&hdp=1&lg=ru",
+      "sha256": "7c3e2c4827f91a84a201d51264462d7ff2629d2d31a44b56f0707f667302fdee"
+    },
+    {
+      "file": "hebcal-jerusalem-full-calendar-2026-10-ru.json",
+      "url": "https://www.hebcal.com/hebcal?v=1&cfg=json&start=2026-09-23&end=2026-12-10&i=on&maj=on&min=on&mf=on&s=on&mvch=on&o=on&F=on&d=on&hdp=1&lg=ru",
+      "sha256": "393cc6bca9d17e22d4cc51408fca0b03db2df25af0def7b98c29afa4f8ad9794"
+    },
+    {
+      "file": "hebcal-jerusalem-full-calendar-2026-04-fr.json",
+      "url": "https://www.hebcal.com/hebcal?v=1&cfg=json&start=2026-03-24&end=2026-06-09&i=on&maj=on&min=on&mf=on&s=on&mvch=on&o=on&F=on&d=on&hdp=1&lg=fr",
+      "sha256": "204184bf47b9e293b8ad4614d4313d7cb49de7cf039f10fe05b290f8e624abee"
+    },
+    {
+      "file": "hebcal-jerusalem-full-calendar-2026-10-fr.json",
+      "url": "https://www.hebcal.com/hebcal?v=1&cfg=json&start=2026-09-23&end=2026-12-10&i=on&maj=on&min=on&mf=on&s=on&mvch=on&o=on&F=on&d=on&hdp=1&lg=fr",
+      "sha256": "f7b87f3341c8fa1915923c11da1f188f5335d4fad2207fe8cbed691617b97763"
+    },
+    {
+      "file": "hebcal-jerusalem-full-calendar-2026-04-es.json",
+      "url": "https://www.hebcal.com/hebcal?v=1&cfg=json&start=2026-03-24&end=2026-06-09&i=on&maj=on&min=on&mf=on&s=on&mvch=on&o=on&F=on&d=on&hdp=1&lg=es",
+      "sha256": "381b2299c1214aa95d0b999cad4d0c73bd31a8bbd26c264372b2d349400e8642"
+    },
+    {
+      "file": "hebcal-jerusalem-full-calendar-2026-10-es.json",
+      "url": "https://www.hebcal.com/hebcal?v=1&cfg=json&start=2026-09-23&end=2026-12-10&i=on&maj=on&min=on&mf=on&s=on&mvch=on&o=on&F=on&d=on&hdp=1&lg=es",
+      "sha256": "192b20cc3a9a79486c9f888b418eb0fc3e4c3944674d1abe6022e951b5b68894"
+    },
+    {
+      "file": "hebcal-jerusalem-full-calendar-2026-04-pt-br.json",
+      "url": "https://www.hebcal.com/hebcal?v=1&cfg=json&start=2026-03-24&end=2026-06-09&i=on&maj=on&min=on&mf=on&s=on&mvch=on&o=on&F=on&d=on&hdp=1&lg=pt",
+      "sha256": "47242c6cd22cd1d64cb0c8c3b58432d7c832c962a92c697c75af5a231a4c7f6b"
+    },
+    {
+      "file": "hebcal-jerusalem-full-calendar-2026-10-pt-br.json",
+      "url": "https://www.hebcal.com/hebcal?v=1&cfg=json&start=2026-09-23&end=2026-12-10&i=on&maj=on&min=on&mf=on&s=on&mvch=on&o=on&F=on&d=on&hdp=1&lg=pt",
+      "sha256": "bdc1e5bce32ba6cb1443d5e77c5c530795e91749c4942a6e63b4020336984e50"
+    },
+    {
+      "file": "hebcal-jerusalem-full-calendar-2026-05-diaspora.json",
+      "url": "https://www.hebcal.com/hebcal?v=1&cfg=json&start=2026-04-23&end=2026-07-10&i=off&maj=on&min=on&mf=on&s=on&mvch=on&o=on&F=on&d=on&hdp=1&lg=he",
+      "sha256": "4d8ebf54009cae94a582db12f56021e23d932319fb505efeba8c3b78d87854c4"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+name: CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  php:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ["8.3", "8.4", "8.5"]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: pdo_sqlite, mbstring, xml, dom, fileinfo, zlib, zip
+          tools: composer:2.8.8
+          coverage: none
+      - run: composer validate --strict --no-check-all
+      - run: composer install --no-interaction --prefer-dist
+      - run: composer check-platform-reqs
+      - run: composer show --locked --format=json
+      - run: composer licenses --format=json
+      - run: composer audit --locked --format=json
+      - run: composer lint
+      - run: composer style
+      - run: composer test
+      - run: composer analyse
+      - run: composer check-locales
+      - run: composer check-docs
+      - run: composer dependencies
+      - run: composer self-check
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: docker build --build-arg BUILD_COMMIT="${{ github.sha }}" -t shabbat-ci .
+      - run: docker run --rm shabbat-ci php bin/runtime-permissions.php --require-non-root
+      - run: docker run --rm shabbat-ci php bin/self-check.php --release

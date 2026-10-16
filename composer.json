@@ -1,20 +1,66 @@
 {
   "name": "wizardloop/shabbat",
-  "description": "A robot for changing the Telegram group's permissions at the entrance and exit of Shabbat.",
+  "description": "WizardLoop Shabbat Bot: group permissions, Jewish calendar and opt-in reminders.",
   "type": "project",
-  "require": {
-    "danog/madelineproto": "^8.6",
-    "wizardloop/broadcastmanager": "*"
-  },
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "authors": [
     {
       "name": "WizardLoop"
     }
   ],
- "autoload": {
+  "require": {
+    "php": "~8.3.0 || ~8.4.0 || ~8.5.0",
+    "ext-pdo": "*",
+    "ext-pdo_sqlite": "*",
+    "ext-mbstring": "*",
+    "danog/madelineproto": "8.7.0",
+    "wizardloop/broadcastmanager": "~3.2.2",
+    "amphp/amp": "^3.1.1",
+    "amphp/file": "^3.2",
+    "amphp/http-client": "^5.3.4",
+    "revolt/event-loop": "^1.0.7"
+  },
+  "require-dev": {
+    "phpstan/phpstan": "^2.1",
+    "phpunit/phpunit": "^12.5",
+    "squizlabs/php_codesniffer": "^4.0"
+  },
+  "autoload": {
     "psr-4": {
-      "Shabbat\\": ""
+      "Shabbat\\": "src/"
+    }
+  },
+  "config": {
+    "allow-plugins": {},
+    "sort-packages": true
+  },
+  "scripts": {
+    "post-install-cmd": [
+      "@php scripts/apply-patches.php",
+      "@php scripts/verify-patches.php"
+    ],
+    "post-update-cmd": [
+      "@php scripts/apply-patches.php",
+      "@php scripts/verify-patches.php"
+    ],
+    "patches": [
+      "@php scripts/apply-patches.php",
+      "@php scripts/verify-patches.php"
+    ],
+    "test": "phpunit",
+    "lint": "@php scripts/quality.php",
+    "analyse": "phpstan analyse --no-progress --memory-limit=1G --debug",
+    "check-docs": "@php scripts/check-docs.php",
+    "check-locales": "@php scripts/check-locales.php",
+    "dependencies": "@php scripts/dependencies.php",
+    "self-check": "@php bin/self-check.php",
+    "style": "phpcs --standard=phpcs.xml.dist -n",
+    "style-fix": "phpcbf --standard=phpcs.xml.dist",
+    "style-review": "phpcs --standard=phpcs.xml.dist"
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Shabbat\\Tests\\": "tests/"
     }
   }
 }

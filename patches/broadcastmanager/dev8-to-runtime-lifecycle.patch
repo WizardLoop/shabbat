@@ -1,0 +1,549 @@
+--- a/src/BroadcastManager.php
++++ b/src/BroadcastManager.php
+@@ -61,6 +61,10 @@ class BroadcastManager
+         'MESSAGE_ID_INVALID',
+     ];
+-
++
++    private ?\Amp\CancelledException $runtimeGuardFailure = null;
++    private ?\Closure $runtimeAdmission = null;
++    private ?\Closure $runtimeGuard = null;
++    private ?\Amp\Cancellation $runtimeCancellation = null;
+     private ?\Closure $messageTransport = null;
+     private ?\Closure $statusFormatter = null;
+     private ?\Closure $statusControlsFormatter = null;
+@@ -74,6 +78,110 @@ class BroadcastManager
+         $this->api = $api;
+     }
+-
++
++    /** Optional local lifecycle policy. Disabled hooks preserve upstream API behavior. */
++    public function setRuntimeGuard(?callable $guard, ?\Amp\Cancellation $cancellation = null): void
++    {
++        $this->runtimeGuard = $guard === null ? null : \Closure::fromCallable($guard);
++        $this->runtimeCancellation = $cancellation;
++        $this->runtimeGuardFailure = null;
++    }
++
++    /** Optional application-wide admission. Upstream callers run immediately. */
++    public function setRuntimeAdmission(?callable $admission): void
++    {
++        $this->runtimeAdmission = $admission === null ? null : \Closure::fromCallable($admission);
++    }
++
++    private function withAdmission(callable $work): mixed
++    {
++        return $this->runtimeAdmission === null ? $work() : ($this->runtimeAdmission)($work);
++    }
++
++    /** Keep recent completed controls without retaining unbounded runtime state. */
++    private function pruneCompletedRuntimeStates(): void
++    {
++        if ($this->runtimeGuard === null && $this->runtimeAdmission === null) {
++            return;
++        }
++        $kept = 0;
++        foreach (array_reverse(array_keys(self::$sharedBroadcastState)) as $id) {
++            $state = self::$sharedBroadcastState[$id];
++            if (empty($state['done']) || !empty($state['inFlight']) || isset($state['runtimeWorkers'])) {
++                continue;
++            }
++            if (++$kept > 128) {
++                unset(self::$sharedBroadcastState[$id], $this->currentBroadcastState[$id]);
++            }
++        }
++        $kept = 0;
++        foreach (array_reverse(array_keys($this->currentBroadcastState)) as $id) {
++            $state = $this->currentBroadcastState[$id];
++            if (!empty($state['done']) && empty($state['inFlight']) && !isset($state['runtimeWorkers']) && ++$kept > 128) {
++                unset($this->currentBroadcastState[$id]);
++            }
++        }
++    }
++    private function checkRuntime(): void
++    {
++        $this->runtimeCancellation?->throwIfRequested();
++        if ($this->runtimeGuard !== null && ($this->runtimeGuard)() !== true) {
++            $this->runtimeGuardFailure ??= new \Amp\CancelledException(new RuntimeException('Broadcast runtime authorization or shutdown guard rejected work.'));
++            throw $this->runtimeGuardFailure;
++        }
++    }
++
++    private function runtimeSleep(float $seconds): void
++    {
++        if ($this->runtimeGuard === null && $this->runtimeCancellation === null) {
++            $this->api->sleep($seconds);
++            return;
++        }
++        $this->checkRuntime();
++        \Amp\delay($seconds, cancellation: $this->runtimeCancellation);
++        $this->checkRuntime();
++    }
++
++    private function workerSleep(float $seconds, array &$state): void
++    {
++        if ($this->runtimeGuard === null && $this->runtimeCancellation === null) {
++            $this->api->sleep($seconds);
++            return;
++        }
++        $this->checkRuntime();
++        $signals = [$state['runtimeWake']->getCancellation()];
++        if ($this->runtimeCancellation !== null) {
++            $signals[] = $this->runtimeCancellation;
++        }
++        \Amp\delay($seconds, cancellation: new \Amp\CompositeCancellation(...$signals));
++        $this->checkRuntime();
++    }
++    private function callNativeMessage(string $method, array $parameters): mixed
++    {
++        $this->checkRuntime();
++        if ($this->runtimeGuard !== null || $this->runtimeCancellation !== null) {
++            $parameters['floodWaitLimit'] = 0;
++            $parameters['cancellation'] = $this->runtimeCancellation;
++        }
++        return $this->api->messages->{$method}($parameters);
++    }
++
++    /** Every launched child is retained and drained by waitForCompletion. */
++    private function launchWorker(array &$state, callable $work): void
++    {
++        $state['runtimeWake'] ??= new \Amp\DeferredCancellation();
++        $state['runtimeWakeReason'] ??= new RuntimeException('Completed broadcast worker scope.');
++        $state['runtimeWorkers'][] = \Amp\async(static function () use (&$state, $work): void {
++            try {
++                $work();
++            } catch (Throwable $error) {
++                if ($error instanceof \Amp\CancelledException && $error->getPrevious() === $state['runtimeWakeReason']) {
++                    return;
++                }
++                $state['cancel'] = true;
++                throw $error;
++            }
++        });
++    }
+     /** Optional per-instance presentation hook; default upstream output is unchanged. */
+     public function setStatusFormatter(?callable $formatter): void
+     {
+@@ -106,11 +214,15 @@ class BroadcastManager
+-
++
+     private function callMessage(string $method, array $parameters): mixed
+     {
++        $this->checkRuntime();
++        if ($this->runtimeCancellation !== null) {
++            $parameters['cancellation'] = $this->runtimeCancellation;
++        }
+         if (!in_array($method, ['sendMessage', 'sendMedia', 'sendMultiMedia', 'editMessage'], true)) {
+             throw new InvalidArgumentException('Unsupported broadcast message transport method.');
+         }
+         return $this->messageTransport === null
+-            ? $this->api->messages->{$method}($parameters)
++            ? $this->callNativeMessage($method, $parameters)
+             : ($this->messageTransport)($method, $parameters);
+     }
+     /**
+@@ -145,6 +257,17 @@ class BroadcastManager
+         bool $pin = false,
+         int $concurrency = self::DEFAULT_CONCURRENCY,
+         ?int $selfDestructHours = null
++    ): string {
++        return $this->withAdmission(fn(): string => $this->doBroadcastWithProgress($allUsers, $messages, $chatId, $pin, $concurrency, $selfDestructHours));
++    }
++
++    private function doBroadcastWithProgress(
++        array $allUsers,
++        array $messages,
++        $chatId = null,
++        bool $pin = false,
++        int $concurrency = self::DEFAULT_CONCURRENCY,
++        ?int $selfDestructHours = null
+     ): string {
+         $this->validateSelfDestructHours($selfDestructHours);
+-
++
+@@ -176,7 +299,7 @@ class BroadcastManager
+                 $lastMessageId = $messageIds ? end($messageIds) : null;
+-
++
+                 if ($pin && $lastMessageId) {
+-                    $this->api->messages->updatePinnedMessage([
++                    $this->callNativeMessage('updatePinnedMessage', [
+                         'peer' => $peer,
+                         'id' => $lastMessageId,
+                         'unpin' => false,
+@@ -243,6 +366,19 @@ class BroadcastManager
+         int $concurrency = self::DEFAULT_CONCURRENCY,
+         string $parseMode = 'HTML',
+         ?string $broadcastId = null
++    ): string {
++        return $this->withAdmission(fn(): string => $this->doEditLastBroadcastForAll($allUsers, $newText, $chatId, $buttons, $media, $concurrency, $parseMode, $broadcastId));
++    }
++
++    private function doEditLastBroadcastForAll(
++        array $allUsers,
++        string $newText,
++        $chatId = null,
++        ?array $buttons = null,
++        $media = null,
++        int $concurrency = self::DEFAULT_CONCURRENCY,
++        string $parseMode = 'HTML',
++        ?string $broadcastId = null
+     ): string {
+         $concurrency = $this->clampConcurrency($concurrency);
+         $targetBroadcastId = $this->normalizeOptionalId($broadcastId);
+@@ -368,6 +504,14 @@ class BroadcastManager
+         $now = time();
+-
++
+         foreach ($jobs as $scheduleId => $job) {
++            try {
++                $this->checkRuntime();
++            } catch (\Amp\CancelledException $error) {
++                if ($error !== $this->runtimeGuardFailure) {
++                    throw $error;
++                }
++                break;
++            }
+             if (($job['status'] ?? null) !== 'scheduled') {
+                 continue;
+             }
+@@ -430,6 +574,15 @@ class BroadcastManager
+         $chatId = null,
+         int $concurrency = self::DEFAULT_CONCURRENCY,
+         ?string $broadcastId = null
++    ): string {
++        return $this->withAdmission(fn(): string => $this->doDeleteLastBroadcastForAll($allUsers, $chatId, $concurrency, $broadcastId));
++    }
++
++    private function doDeleteLastBroadcastForAll(
++        array $allUsers,
++        $chatId = null,
++        int $concurrency = self::DEFAULT_CONCURRENCY,
++        ?string $broadcastId = null
+     ): string {
+         $concurrency = $this->clampConcurrency($concurrency);
+         $targetBroadcastId = $this->normalizeOptionalId($broadcastId);
+@@ -461,7 +614,7 @@ class BroadcastManager
+                     return;
+                 }
+-
++
+-                $this->api->messages->deleteMessages([
++                $this->callNativeMessage('deleteMessages', [
+                     'peer' => $peer,
+                     'id' => [$lastMessageId],
+                     'revoke' => true,
+@@ -495,6 +648,14 @@ class BroadcastManager
+         array $allUsers,
+         $chatId = null,
+         int $concurrency = self::DEFAULT_CONCURRENCY
++    ): string {
++        return $this->withAdmission(fn(): string => $this->doDeleteAllBroadcastsForAll($allUsers, $chatId, $concurrency));
++    }
++
++    private function doDeleteAllBroadcastsForAll(
++        array $allUsers,
++        $chatId = null,
++        int $concurrency = self::DEFAULT_CONCURRENCY
+     ): string {
+         $concurrency = $this->clampConcurrency($concurrency);
+         $broadcastId = $this->createId();
+@@ -532,7 +693,7 @@ class BroadcastManager
+-
++
+                 foreach ($msgIds as $messageId) {
+                     try {
+-                        $this->api->messages->deleteMessages([
++                        $this->callNativeMessage('deleteMessages', [
+                             'peer' => $peer,
+                             'id' => [$messageId],
+                             'revoke' => true,
+@@ -584,6 +745,14 @@ class BroadcastManager
+         array $allUsers,
+         $chatId = null,
+         int $concurrency = self::DEFAULT_CONCURRENCY
++    ): string {
++        return $this->withAdmission(fn(): string => $this->doUnpinAllMessagesForAll($allUsers, $chatId, $concurrency));
++    }
++
++    private function doUnpinAllMessagesForAll(
++        array $allUsers,
++        $chatId = null,
++        int $concurrency = self::DEFAULT_CONCURRENCY
+     ): string {
+         $concurrency = $this->clampConcurrency($concurrency);
+         $broadcastId = $this->createId();
+@@ -599,7 +768,7 @@ class BroadcastManager
+             $state,
+             $concurrency,
+             function (array $job, array &$state): void {
+-                $this->api->messages->unpinAllMessages([
++                $this->callNativeMessage('unpinAllMessages', [
+                     'peer' => (string) $job['peer'],
+                 ]);
+-
++
+@@ -623,6 +792,14 @@ class BroadcastManager
+         $now = time();
+-
++
+         foreach ($jobs as $jobId => $job) {
++            try {
++                $this->checkRuntime();
++            } catch (\Amp\CancelledException $error) {
++                if ($error !== $this->runtimeGuardFailure) {
++                    throw $error;
++                }
++                break;
++            }
+             if (($job['status'] ?? null) !== 'scheduled') {
+                 continue;
+             }
+@@ -937,6 +1114,7 @@ class BroadcastManager
+     private function registerCurrentState(string $id, array &$state): void
+     {
+         $this->currentBroadcastState[$id] =& $state;
++        $this->pruneCompletedRuntimeStates();
+         self::$sharedBroadcastState[$id] =& $state;
+     }
+-
++
+@@ -968,15 +1146,16 @@ class BroadcastManager
+         $concurrency = $this->clampConcurrency($concurrency);
+-
++
+         for ($i = 0; $i < $concurrency; $i++) {
+-            \Amp\async(function () use (&$state, $handler, $hardFailRpcs, $rpcHandler, $retryThrowable): void {
++            $this->launchWorker($state, function () use (&$state, $handler, $hardFailRpcs, $rpcHandler, $retryThrowable): void {
+                 while (!$state['cancel'] && !$state['done']) {
++                    $this->checkRuntime();
+                     if ($state['queue']->isEmpty()) {
+-                        $this->api->sleep(self::WORKER_IDLE_SLEEP);
++                        $this->workerSleep(self::WORKER_IDLE_SLEEP, $state);
+                         continue;
+                     }
+-
++
+                     if ($state['paused']) {
+-                        $this->api->sleep(self::WORKER_PAUSED_SLEEP);
++                        $this->workerSleep(self::WORKER_PAUSED_SLEEP, $state);
+                         continue;
+                     }
+-
++
+@@ -984,12 +1163,12 @@ class BroadcastManager
+-
++
+                     if (($job['availableAt'] ?? 0) > microtime(true)) {
+                         $state['queue']->enqueue($job);
+-                        $this->api->sleep(self::WORKER_RETRY_SLEEP);
++                        $this->workerSleep(self::WORKER_RETRY_SLEEP, $state);
+                         continue;
+                     }
+-
++
+                     while ($state['paused'] && !$state['cancel'] && !$state['done']) {
+-                        $this->api->sleep(self::WORKER_PAUSED_SLEEP);
++                        $this->workerSleep(self::WORKER_PAUSED_SLEEP, $state);
+                     }
+-
++
+                     if ($state['cancel'] || $state['done']) {
+@@ -1019,6 +1198,9 @@ class BroadcastManager
+                             'peer' => $peer,
+                         ]);
+                         $this->retryOrFail($job, $state);
++                    } catch (\Amp\CancelledException $e) {
++                        unset($state['inFlight'][$peer]);
++                        throw $e;
+                     } catch (Throwable $e) {
+                         unset($state['inFlight'][$peer]);
+                         $this->logError('Unexpected error during broadcast job.', $e, [
+@@ -1033,7 +1215,7 @@ class BroadcastManager
+                         }
+                     }
+-
++
+-                    $this->api->sleep(self::WORKER_AFTER_JOB_SLEEP);
++                    $this->workerSleep(self::WORKER_AFTER_JOB_SLEEP, $state);
+                 }
+             });
+         }
+@@ -1041,21 +1223,44 @@ class BroadcastManager
+-
++
+     private function waitForCompletion(array &$state): void
+     {
+-        while (true) {
+-            if ($state['queue']->isEmpty() && empty($state['inFlight'])) {
+-                break;
++        $failure = null;
++        try {
++            while (true) {
++                $this->checkRuntime();
++                if (($state['queue']->isEmpty() || $state['cancel']) && empty($state['inFlight'])) {
++                    break;
++                }
++                $this->runtimeSleep(1);
+             }
+-
+-            if ($state['cancel'] && empty($state['inFlight'])) {
+-                break;
++        } catch (Throwable $error) {
++            $state['cancel'] = true;
++            $failure = $error;
++        } finally {
++            $state['done'] = true;
++            if (isset($state['runtimeWake'])) {
++                $state['runtimeWake']->cancel($state['runtimeWakeReason']);
++            }
++            // Do not cancel the join itself: in-flight operations must finish unwinding.
++            foreach ($state['runtimeWorkers'] ?? [] as $worker) {
++                try {
++                    $worker->await();
++                } catch (Throwable $error) {
++                    $state['cancel'] = true;
++                    if ($failure === null || $failure === $this->runtimeGuardFailure) {
++                        $failure = $error;
++                    }
++                }
++            }
++            unset($state['runtimeWorkers'], $state['runtimeWake'], $state['runtimeWakeReason']);
++            $this->pruneCompletedRuntimeStates();
++            if ($state['cancel']) {
++                $state['queue'] = new SplQueue();
+             }
+-
+-            $this->api->sleep(1);
+         }
+-
+-        $state['done'] = true;
++        if ($failure !== null && $failure !== $this->runtimeGuardFailure) {
++            throw $failure;
++        }
+     }
+-
+     private function handleRpcRetry(RPCErrorException $e, array &$job, array &$state, array $hardFailRpcs): bool
+     {
+         if ($this->isHardFailRpc((string) ($e->rpc ?? ''), $hardFailRpcs)) {
+@@ -1146,7 +1351,7 @@ class BroadcastManager
+                     }
+                 }
+-
++
+-                $this->api->sleep(self::SEND_CHUNK_SLEEP);
++                $this->runtimeSleep(self::SEND_CHUNK_SLEEP);
+             }
+-
++
+             return $messageIds;
+@@ -1170,7 +1375,7 @@ class BroadcastManager
+                 $messageIds[] = $messageId;
+             }
+-
++
+-            $this->api->sleep(self::SEND_MESSAGE_SLEEP);
++            $this->runtimeSleep(self::SEND_MESSAGE_SLEEP);
+         }
+-
++
+         return $messageIds;
+@@ -1399,6 +1604,13 @@ class BroadcastManager
+                 'status' => $jobs[$scheduleId]['status'],
+                 'broadcastId' => $broadcastId,
+             ];
++        } catch (\Amp\CancelledException $e) {
++            $jobs = $this->loadScheduledBroadcasts();
++            $jobs[$scheduleId]['status'] = 'cancelled';
++            $jobs[$scheduleId]['finishedAt'] = time();
++            $jobs[$scheduleId]['error'] = 'Runtime cancelled; delivery outcome may be partial.';
++            $this->saveScheduledBroadcasts($jobs);
++            throw $e;
+         } catch (Throwable $e) {
+             $jobs = $this->loadScheduledBroadcasts();
+             $jobs[$scheduleId]['status'] = 'failed';
+@@ -1456,8 +1668,11 @@ class BroadcastManager
+         return $jobId;
+     }
+-
++
+-    private function runSelfDestructJob(string $jobId): array
+-    {
++    private function runSelfDestructJob(string $jobId): array {
++        return $this->withAdmission(fn(): array => $this->doRunSelfDestructJob($jobId));
++    }
++
++    private function doRunSelfDestructJob(string $jobId): array {
+         $jobs = $this->loadSelfDestructJobs();
+-
++
+         if (!isset($jobs[$jobId])) {
+@@ -1529,7 +1744,7 @@ class BroadcastManager
+                         return;
+                     }
+-
++
+-                    $this->api->messages->deleteMessages([
++                    $this->callNativeMessage('deleteMessages', [
+                         'peer' => (string) $peerJob['peer'],
+                         'id' => $messageIds,
+                         'revoke' => true,
+@@ -1561,6 +1776,13 @@ class BroadcastManager
+                 'status' => $jobs[$jobId]['status'],
+                 'stats' => $stats,
+             ];
++        } catch (\Amp\CancelledException $e) {
++            $jobs = $this->loadSelfDestructJobs();
++            $jobs[$jobId]['status'] = 'cancelled';
++            $jobs[$jobId]['finishedAt'] = time();
++            $jobs[$jobId]['error'] = 'Runtime cancelled; delivery outcome may be partial.';
++            $this->saveSelfDestructJobs($jobs);
++            throw $e;
+         } catch (Throwable $e) {
+             $jobs = $this->loadSelfDestructJobs();
+             $jobs[$jobId]['status'] = 'failed';
+@@ -1755,11 +1977,12 @@ class BroadcastManager
+             return;
+         }
+-
++
+-        \Amp\async(function () use ($chatId, $statusId, &$state, $title): void {
++        $this->launchWorker($state, function () use ($chatId, $statusId, &$state, $title): void {
+             $last = '';
+             $loggedFailures = 0;
+-
++
+             while (!$state['done']) {
++                $this->checkRuntime();
+                 $text = $this->buildProgressText($state, $title);
+                 $replyMarkup = $this->buildStatusControls($state);
+                 $fingerprint = $text . "\n" . json_encode($replyMarkup);
+@@ -1785,7 +2008,7 @@ class BroadcastManager
+                             || str_contains($e->getMessage(), 'MESSAGE_NOT_MODIFIED')
+                         ) {
+                             $last = $fingerprint;
+-                            $this->api->sleep(self::PROGRESS_UPDATE_INTERVAL);
++                            $this->workerSleep(self::PROGRESS_UPDATE_INTERVAL, $state);
+                             continue;
+                         }
+-
++
+@@ -1793,6 +2016,8 @@ class BroadcastManager
+                             $loggedFailures++;
+                             $this->logError('Failed to update status message.', $e);
+                         }
++                    } catch (\Amp\CancelledException $e) {
++                        throw $e;
+                     } catch (Throwable $e) {
+                         if ($loggedFailures < 3) {
+                             $loggedFailures++;
+@@ -1801,7 +2026,7 @@ class BroadcastManager
+                     }
+                 }
+-
++
+-                $this->api->sleep(self::PROGRESS_UPDATE_INTERVAL);
++                $this->workerSleep(self::PROGRESS_UPDATE_INTERVAL, $state);
+             }
+         });
+     }

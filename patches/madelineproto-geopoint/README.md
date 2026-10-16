@@ -1,0 +1,15 @@
+# MadelineProto GeoPoint double-coordinate correction
+
+This is a **new local patch**, reviewed on 2026-10-13. It is separate from the historical UpdateLoop cancellation patch and is not presented as that original artifact.
+
+The locked package is `danog/madelineproto` 8.7.0 at commit `7b99dd0f2d964a492c377912ffce9f5ce61aa9ed`. The pristine `src/EventHandler/Media/GeoPoint.php` bytes were downloaded from that immutable [upstream commit](https://github.com/danog/MadelineProto/blob/7b99dd0f2d964a492c377912ffce9f5ce61aa9ed/src/EventHandler/Media/GeoPoint.php) and matched the installed source exactly (SHA256 `9ed8054caade6abc96420b0f5b120bec029ee2bc7b7b6aacca56fb7ddc61a27b`).
+
+Telegram's native `geoPoint` constructor declares `long` and `lat` as doubles. The locked SDK GeoPoint wrapper instead declared both readonly properties as integers. Assigning a fractional coordinate such as latitude 31.778 and longitude 35.235 throws a TypeError; InlineQuery constructs this wrapper before either typed or raw event dispatch.
+
+The unified diff changes only those two property types and their matching PHPDoc annotations from `int` to `float`. The constructor, access hash, accuracy radius, JSON serialization and all other source bytes remain unchanged. Integer zero coordinates remain valid because PHP permits integer-to-float assignment. No coordinates are rounded or guessed. The application separately validates finite geographical bounds.
+
+The target upstream file contains no standalone copyright header; its remaining source is retained byte for byte. MadelineProto's package copyright notices and AGPL-3.0-or-later license remain in the corresponding source/dependency notices. `baseline/GeoPoint.php`, `reviewed/GeoPoint.php`, the immutable source reference, unified diff and manifest are included in the source offer for the bot. No entire vendor directory is tracked.
+
+Installation uses the shared exact-source patch manager through `php scripts/apply-patches.php` and `php scripts/verify-patches.php`, including Composer and Docker before bot startup. For `composer install --no-scripts`, run those two commands explicitly while writers are stopped. The installer verifies version/commit and baseline/diff/output hashes, applies only pristine approved bytes, succeeds without mutation when already corrected, and stops on unknown, partial or incompatible source. It never fetches a patch during build. The shared writer lock prevents mutation of an active installation.
+
+Tests reproduce the pristine fractional-coordinate TypeError using the bundled baseline alone, exercise the actual installed corrected constructor with positive, negative, fractional and zero coordinates, and verify precision through JSON serialization/roundtrip. Installer tests cover clean/repeated/verify-only operation, mismatched version/commit, unknown/partial source, artifact tampering and an active writer. These are isolated local tests; no Telegram connection, live inline request or running container was used. No later official version is admitted without a separate source and behavior review.

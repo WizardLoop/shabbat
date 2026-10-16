@@ -1,0 +1,449 @@
+{
+  "source": "https://www.hebcal.com/hebcal?v=1&cfg=json&start=2026-04-03&end=2026-05-21&o=on&i=on&lg=he",
+  "attribution": "Hebcal.com; explanatory translations by WizardLoop Shabbat",
+  "license": "CC-BY-4.0",
+  "note": "Static explanatory translations of the verified 49-day calendar count; Hebrew ritual wording remains in omer-counts.json. No runtime translation or AI generation.",
+  "counts": {
+    "1": {
+      "day": 1,
+      "weeks": 0,
+      "days": 1,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 1 jour.",
+      "es": "Hoy es 1 día del Ómer.",
+      "pt-br": "Hoje é 1 dia do Ômer.",
+      "ru": "Сегодня 1 день Омера."
+    },
+    "2": {
+      "day": 2,
+      "weeks": 0,
+      "days": 2,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 2 jours.",
+      "es": "Hoy son 2 días del Ómer.",
+      "pt-br": "Hoje são 2 dias do Ômer.",
+      "ru": "Сегодня 2 дня Омера."
+    },
+    "3": {
+      "day": 3,
+      "weeks": 0,
+      "days": 3,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 3 jours.",
+      "es": "Hoy son 3 días del Ómer.",
+      "pt-br": "Hoje são 3 dias do Ômer.",
+      "ru": "Сегодня 3 дня Омера."
+    },
+    "4": {
+      "day": 4,
+      "weeks": 0,
+      "days": 4,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 4 jours.",
+      "es": "Hoy son 4 días del Ómer.",
+      "pt-br": "Hoje são 4 dias do Ômer.",
+      "ru": "Сегодня 4 дня Омера."
+    },
+    "5": {
+      "day": 5,
+      "weeks": 0,
+      "days": 5,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 5 jours.",
+      "es": "Hoy son 5 días del Ómer.",
+      "pt-br": "Hoje são 5 dias do Ômer.",
+      "ru": "Сегодня 5 дней Омера."
+    },
+    "6": {
+      "day": 6,
+      "weeks": 0,
+      "days": 6,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 6 jours.",
+      "es": "Hoy son 6 días del Ómer.",
+      "pt-br": "Hoje são 6 dias do Ômer.",
+      "ru": "Сегодня 6 дней Омера."
+    },
+    "7": {
+      "day": 7,
+      "weeks": 1,
+      "days": 0,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 7 jours, soit 1 semaine.",
+      "es": "Hoy son 7 días del Ómer, equivalentes a 1 semana.",
+      "pt-br": "Hoje são 7 dias do Ômer, correspondentes a 1 semana.",
+      "ru": "Сегодня 7 дней Омера: 1 неделя."
+    },
+    "8": {
+      "day": 8,
+      "weeks": 1,
+      "days": 1,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 8 jours, soit 1 semaine et 1 jour.",
+      "es": "Hoy son 8 días del Ómer, equivalentes a 1 semana y 1 día.",
+      "pt-br": "Hoje são 8 dias do Ômer, correspondentes a 1 semana e 1 dia.",
+      "ru": "Сегодня 8 дней Омера: 1 неделя и 1 день."
+    },
+    "9": {
+      "day": 9,
+      "weeks": 1,
+      "days": 2,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 9 jours, soit 1 semaine et 2 jours.",
+      "es": "Hoy son 9 días del Ómer, equivalentes a 1 semana y 2 días.",
+      "pt-br": "Hoje são 9 dias do Ômer, correspondentes a 1 semana e 2 dias.",
+      "ru": "Сегодня 9 дней Омера: 1 неделя и 2 дня."
+    },
+    "10": {
+      "day": 10,
+      "weeks": 1,
+      "days": 3,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 10 jours, soit 1 semaine et 3 jours.",
+      "es": "Hoy son 10 días del Ómer, equivalentes a 1 semana y 3 días.",
+      "pt-br": "Hoje são 10 dias do Ômer, correspondentes a 1 semana e 3 dias.",
+      "ru": "Сегодня 10 дней Омера: 1 неделя и 3 дня."
+    },
+    "11": {
+      "day": 11,
+      "weeks": 1,
+      "days": 4,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 11 jours, soit 1 semaine et 4 jours.",
+      "es": "Hoy son 11 días del Ómer, equivalentes a 1 semana y 4 días.",
+      "pt-br": "Hoje são 11 dias do Ômer, correspondentes a 1 semana e 4 dias.",
+      "ru": "Сегодня 11 дней Омера: 1 неделя и 4 дня."
+    },
+    "12": {
+      "day": 12,
+      "weeks": 1,
+      "days": 5,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 12 jours, soit 1 semaine et 5 jours.",
+      "es": "Hoy son 12 días del Ómer, equivalentes a 1 semana y 5 días.",
+      "pt-br": "Hoje são 12 dias do Ômer, correspondentes a 1 semana e 5 dias.",
+      "ru": "Сегодня 12 дней Омера: 1 неделя и 5 дней."
+    },
+    "13": {
+      "day": 13,
+      "weeks": 1,
+      "days": 6,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 13 jours, soit 1 semaine et 6 jours.",
+      "es": "Hoy son 13 días del Ómer, equivalentes a 1 semana y 6 días.",
+      "pt-br": "Hoje são 13 dias do Ômer, correspondentes a 1 semana e 6 dias.",
+      "ru": "Сегодня 13 дней Омера: 1 неделя и 6 дней."
+    },
+    "14": {
+      "day": 14,
+      "weeks": 2,
+      "days": 0,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 14 jours, soit 2 semaines.",
+      "es": "Hoy son 14 días del Ómer, equivalentes a 2 semanas.",
+      "pt-br": "Hoje são 14 dias do Ômer, correspondentes a 2 semanas.",
+      "ru": "Сегодня 14 дней Омера: 2 недели."
+    },
+    "15": {
+      "day": 15,
+      "weeks": 2,
+      "days": 1,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 15 jours, soit 2 semaines et 1 jour.",
+      "es": "Hoy son 15 días del Ómer, equivalentes a 2 semanas y 1 día.",
+      "pt-br": "Hoje são 15 dias do Ômer, correspondentes a 2 semanas e 1 dia.",
+      "ru": "Сегодня 15 дней Омера: 2 недели и 1 день."
+    },
+    "16": {
+      "day": 16,
+      "weeks": 2,
+      "days": 2,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 16 jours, soit 2 semaines et 2 jours.",
+      "es": "Hoy son 16 días del Ómer, equivalentes a 2 semanas y 2 días.",
+      "pt-br": "Hoje são 16 dias do Ômer, correspondentes a 2 semanas e 2 dias.",
+      "ru": "Сегодня 16 дней Омера: 2 недели и 2 дня."
+    },
+    "17": {
+      "day": 17,
+      "weeks": 2,
+      "days": 3,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 17 jours, soit 2 semaines et 3 jours.",
+      "es": "Hoy son 17 días del Ómer, equivalentes a 2 semanas y 3 días.",
+      "pt-br": "Hoje são 17 dias do Ômer, correspondentes a 2 semanas e 3 dias.",
+      "ru": "Сегодня 17 дней Омера: 2 недели и 3 дня."
+    },
+    "18": {
+      "day": 18,
+      "weeks": 2,
+      "days": 4,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 18 jours, soit 2 semaines et 4 jours.",
+      "es": "Hoy son 18 días del Ómer, equivalentes a 2 semanas y 4 días.",
+      "pt-br": "Hoje são 18 dias do Ômer, correspondentes a 2 semanas e 4 dias.",
+      "ru": "Сегодня 18 дней Омера: 2 недели и 4 дня."
+    },
+    "19": {
+      "day": 19,
+      "weeks": 2,
+      "days": 5,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 19 jours, soit 2 semaines et 5 jours.",
+      "es": "Hoy son 19 días del Ómer, equivalentes a 2 semanas y 5 días.",
+      "pt-br": "Hoje são 19 dias do Ômer, correspondentes a 2 semanas e 5 dias.",
+      "ru": "Сегодня 19 дней Омера: 2 недели и 5 дней."
+    },
+    "20": {
+      "day": 20,
+      "weeks": 2,
+      "days": 6,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 20 jours, soit 2 semaines et 6 jours.",
+      "es": "Hoy son 20 días del Ómer, equivalentes a 2 semanas y 6 días.",
+      "pt-br": "Hoje são 20 dias do Ômer, correspondentes a 2 semanas e 6 dias.",
+      "ru": "Сегодня 20 дней Омера: 2 недели и 6 дней."
+    },
+    "21": {
+      "day": 21,
+      "weeks": 3,
+      "days": 0,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 21 jours, soit 3 semaines.",
+      "es": "Hoy son 21 días del Ómer, equivalentes a 3 semanas.",
+      "pt-br": "Hoje são 21 dias do Ômer, correspondentes a 3 semanas.",
+      "ru": "Сегодня 21 день Омера: 3 недели."
+    },
+    "22": {
+      "day": 22,
+      "weeks": 3,
+      "days": 1,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 22 jours, soit 3 semaines et 1 jour.",
+      "es": "Hoy son 22 días del Ómer, equivalentes a 3 semanas y 1 día.",
+      "pt-br": "Hoje são 22 dias do Ômer, correspondentes a 3 semanas e 1 dia.",
+      "ru": "Сегодня 22 дня Омера: 3 недели и 1 день."
+    },
+    "23": {
+      "day": 23,
+      "weeks": 3,
+      "days": 2,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 23 jours, soit 3 semaines et 2 jours.",
+      "es": "Hoy son 23 días del Ómer, equivalentes a 3 semanas y 2 días.",
+      "pt-br": "Hoje são 23 dias do Ômer, correspondentes a 3 semanas e 2 dias.",
+      "ru": "Сегодня 23 дня Омера: 3 недели и 2 дня."
+    },
+    "24": {
+      "day": 24,
+      "weeks": 3,
+      "days": 3,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 24 jours, soit 3 semaines et 3 jours.",
+      "es": "Hoy son 24 días del Ómer, equivalentes a 3 semanas y 3 días.",
+      "pt-br": "Hoje são 24 dias do Ômer, correspondentes a 3 semanas e 3 dias.",
+      "ru": "Сегодня 24 дня Омера: 3 недели и 3 дня."
+    },
+    "25": {
+      "day": 25,
+      "weeks": 3,
+      "days": 4,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 25 jours, soit 3 semaines et 4 jours.",
+      "es": "Hoy son 25 días del Ómer, equivalentes a 3 semanas y 4 días.",
+      "pt-br": "Hoje são 25 dias do Ômer, correspondentes a 3 semanas e 4 dias.",
+      "ru": "Сегодня 25 дней Омера: 3 недели и 4 дня."
+    },
+    "26": {
+      "day": 26,
+      "weeks": 3,
+      "days": 5,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 26 jours, soit 3 semaines et 5 jours.",
+      "es": "Hoy son 26 días del Ómer, equivalentes a 3 semanas y 5 días.",
+      "pt-br": "Hoje são 26 dias do Ômer, correspondentes a 3 semanas e 5 dias.",
+      "ru": "Сегодня 26 дней Омера: 3 недели и 5 дней."
+    },
+    "27": {
+      "day": 27,
+      "weeks": 3,
+      "days": 6,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 27 jours, soit 3 semaines et 6 jours.",
+      "es": "Hoy son 27 días del Ómer, equivalentes a 3 semanas y 6 días.",
+      "pt-br": "Hoje são 27 dias do Ômer, correspondentes a 3 semanas e 6 dias.",
+      "ru": "Сегодня 27 дней Омера: 3 недели и 6 дней."
+    },
+    "28": {
+      "day": 28,
+      "weeks": 4,
+      "days": 0,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 28 jours, soit 4 semaines.",
+      "es": "Hoy son 28 días del Ómer, equivalentes a 4 semanas.",
+      "pt-br": "Hoje são 28 dias do Ômer, correspondentes a 4 semanas.",
+      "ru": "Сегодня 28 дней Омера: 4 недели."
+    },
+    "29": {
+      "day": 29,
+      "weeks": 4,
+      "days": 1,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 29 jours, soit 4 semaines et 1 jour.",
+      "es": "Hoy son 29 días del Ómer, equivalentes a 4 semanas y 1 día.",
+      "pt-br": "Hoje são 29 dias do Ômer, correspondentes a 4 semanas e 1 dia.",
+      "ru": "Сегодня 29 дней Омера: 4 недели и 1 день."
+    },
+    "30": {
+      "day": 30,
+      "weeks": 4,
+      "days": 2,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 30 jours, soit 4 semaines et 2 jours.",
+      "es": "Hoy son 30 días del Ómer, equivalentes a 4 semanas y 2 días.",
+      "pt-br": "Hoje são 30 dias do Ômer, correspondentes a 4 semanas e 2 dias.",
+      "ru": "Сегодня 30 дней Омера: 4 недели и 2 дня."
+    },
+    "31": {
+      "day": 31,
+      "weeks": 4,
+      "days": 3,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 31 jours, soit 4 semaines et 3 jours.",
+      "es": "Hoy son 31 días del Ómer, equivalentes a 4 semanas y 3 días.",
+      "pt-br": "Hoje são 31 dias do Ômer, correspondentes a 4 semanas e 3 dias.",
+      "ru": "Сегодня 31 день Омера: 4 недели и 3 дня."
+    },
+    "32": {
+      "day": 32,
+      "weeks": 4,
+      "days": 4,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 32 jours, soit 4 semaines et 4 jours.",
+      "es": "Hoy son 32 días del Ómer, equivalentes a 4 semanas y 4 días.",
+      "pt-br": "Hoje são 32 dias do Ômer, correspondentes a 4 semanas e 4 dias.",
+      "ru": "Сегодня 32 дня Омера: 4 недели и 4 дня."
+    },
+    "33": {
+      "day": 33,
+      "weeks": 4,
+      "days": 5,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 33 jours, soit 4 semaines et 5 jours.",
+      "es": "Hoy son 33 días del Ómer, equivalentes a 4 semanas y 5 días.",
+      "pt-br": "Hoje são 33 dias do Ômer, correspondentes a 4 semanas e 5 dias.",
+      "ru": "Сегодня 33 дня Омера: 4 недели и 5 дней."
+    },
+    "34": {
+      "day": 34,
+      "weeks": 4,
+      "days": 6,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 34 jours, soit 4 semaines et 6 jours.",
+      "es": "Hoy son 34 días del Ómer, equivalentes a 4 semanas y 6 días.",
+      "pt-br": "Hoje são 34 dias do Ômer, correspondentes a 4 semanas e 6 dias.",
+      "ru": "Сегодня 34 дня Омера: 4 недели и 6 дней."
+    },
+    "35": {
+      "day": 35,
+      "weeks": 5,
+      "days": 0,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 35 jours, soit 5 semaines.",
+      "es": "Hoy son 35 días del Ómer, equivalentes a 5 semanas.",
+      "pt-br": "Hoje são 35 dias do Ômer, correspondentes a 5 semanas.",
+      "ru": "Сегодня 35 дней Омера: 5 недель."
+    },
+    "36": {
+      "day": 36,
+      "weeks": 5,
+      "days": 1,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 36 jours, soit 5 semaines et 1 jour.",
+      "es": "Hoy son 36 días del Ómer, equivalentes a 5 semanas y 1 día.",
+      "pt-br": "Hoje são 36 dias do Ômer, correspondentes a 5 semanas e 1 dia.",
+      "ru": "Сегодня 36 дней Омера: 5 недель и 1 день."
+    },
+    "37": {
+      "day": 37,
+      "weeks": 5,
+      "days": 2,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 37 jours, soit 5 semaines et 2 jours.",
+      "es": "Hoy son 37 días del Ómer, equivalentes a 5 semanas y 2 días.",
+      "pt-br": "Hoje são 37 dias do Ômer, correspondentes a 5 semanas e 2 dias.",
+      "ru": "Сегодня 37 дней Омера: 5 недель и 2 дня."
+    },
+    "38": {
+      "day": 38,
+      "weeks": 5,
+      "days": 3,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 38 jours, soit 5 semaines et 3 jours.",
+      "es": "Hoy son 38 días del Ómer, equivalentes a 5 semanas y 3 días.",
+      "pt-br": "Hoje são 38 dias do Ômer, correspondentes a 5 semanas e 3 dias.",
+      "ru": "Сегодня 38 дней Омера: 5 недель и 3 дня."
+    },
+    "39": {
+      "day": 39,
+      "weeks": 5,
+      "days": 4,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 39 jours, soit 5 semaines et 4 jours.",
+      "es": "Hoy son 39 días del Ómer, equivalentes a 5 semanas y 4 días.",
+      "pt-br": "Hoje são 39 dias do Ômer, correspondentes a 5 semanas e 4 dias.",
+      "ru": "Сегодня 39 дней Омера: 5 недель и 4 дня."
+    },
+    "40": {
+      "day": 40,
+      "weeks": 5,
+      "days": 5,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 40 jours, soit 5 semaines et 5 jours.",
+      "es": "Hoy son 40 días del Ómer, equivalentes a 5 semanas y 5 días.",
+      "pt-br": "Hoje são 40 dias do Ômer, correspondentes a 5 semanas e 5 dias.",
+      "ru": "Сегодня 40 дней Омера: 5 недель и 5 дней."
+    },
+    "41": {
+      "day": 41,
+      "weeks": 5,
+      "days": 6,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 41 jours, soit 5 semaines et 6 jours.",
+      "es": "Hoy son 41 días del Ómer, equivalentes a 5 semanas y 6 días.",
+      "pt-br": "Hoje são 41 dias do Ômer, correspondentes a 5 semanas e 6 dias.",
+      "ru": "Сегодня 41 день Омера: 5 недель и 6 дней."
+    },
+    "42": {
+      "day": 42,
+      "weeks": 6,
+      "days": 0,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 42 jours, soit 6 semaines.",
+      "es": "Hoy son 42 días del Ómer, equivalentes a 6 semanas.",
+      "pt-br": "Hoje são 42 dias do Ômer, correspondentes a 6 semanas.",
+      "ru": "Сегодня 42 дня Омера: 6 недель."
+    },
+    "43": {
+      "day": 43,
+      "weeks": 6,
+      "days": 1,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 43 jours, soit 6 semaines et 1 jour.",
+      "es": "Hoy son 43 días del Ómer, equivalentes a 6 semanas y 1 día.",
+      "pt-br": "Hoje são 43 dias do Ômer, correspondentes a 6 semanas e 1 dia.",
+      "ru": "Сегодня 43 дня Омера: 6 недель и 1 день."
+    },
+    "44": {
+      "day": 44,
+      "weeks": 6,
+      "days": 2,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 44 jours, soit 6 semaines et 2 jours.",
+      "es": "Hoy son 44 días del Ómer, equivalentes a 6 semanas y 2 días.",
+      "pt-br": "Hoje são 44 dias do Ômer, correspondentes a 6 semanas e 2 dias.",
+      "ru": "Сегодня 44 дня Омера: 6 недель и 2 дня."
+    },
+    "45": {
+      "day": 45,
+      "weeks": 6,
+      "days": 3,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 45 jours, soit 6 semaines et 3 jours.",
+      "es": "Hoy son 45 días del Ómer, equivalentes a 6 semanas y 3 días.",
+      "pt-br": "Hoje são 45 dias do Ômer, correspondentes a 6 semanas e 3 dias.",
+      "ru": "Сегодня 45 дней Омера: 6 недель и 3 дня."
+    },
+    "46": {
+      "day": 46,
+      "weeks": 6,
+      "days": 4,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 46 jours, soit 6 semaines et 4 jours.",
+      "es": "Hoy son 46 días del Ómer, equivalentes a 6 semanas y 4 días.",
+      "pt-br": "Hoje são 46 dias do Ômer, correspondentes a 6 semanas e 4 dias.",
+      "ru": "Сегодня 46 дней Омера: 6 недель и 4 дня."
+    },
+    "47": {
+      "day": 47,
+      "weeks": 6,
+      "days": 5,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 47 jours, soit 6 semaines et 5 jours.",
+      "es": "Hoy son 47 días del Ómer, equivalentes a 6 semanas y 5 días.",
+      "pt-br": "Hoje são 47 dias do Ômer, correspondentes a 6 semanas e 5 dias.",
+      "ru": "Сегодня 47 дней Омера: 6 недель и 5 дней."
+    },
+    "48": {
+      "day": 48,
+      "weeks": 6,
+      "days": 6,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 48 jours, soit 6 semaines et 6 jours.",
+      "es": "Hoy son 48 días del Ómer, equivalentes a 6 semanas y 6 días.",
+      "pt-br": "Hoje são 48 dias do Ômer, correspondentes a 6 semanas e 6 dias.",
+      "ru": "Сегодня 48 дней Омера: 6 недель и 6 дней."
+    },
+    "49": {
+      "day": 49,
+      "weeks": 7,
+      "days": 0,
+      "fr": "Aujourd’hui, le compte de l’Omer est de 49 jours, soit 7 semaines.",
+      "es": "Hoy son 49 días del Ómer, equivalentes a 7 semanas.",
+      "pt-br": "Hoje são 49 dias do Ômer, correspondentes a 7 semanas.",
+      "ru": "Сегодня 49 дней Омера: 7 недель."
+    }
+  }
+}
