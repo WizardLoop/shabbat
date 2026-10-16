@@ -34,7 +34,12 @@ final class Database
     {
         return $this->connection;
     }
-    /** Database work only: this callback must never yield or call a remote API. */
+    /** PDO_SQLite before PHP 8.4 does not report transactions opened with BEGIN IMMEDIATE. */
+    public function ownsTransaction(PDO $connection): bool
+    {
+        return $this->inTransaction && $connection === $this->connection;
+    }
+    /** Database work only: never yield, call a remote API or change transaction control in this callback. */
     public function transaction(callable $callback): mixed
     {
         if ($this->inTransaction) {

@@ -67,7 +67,7 @@ final class AdminNavigationFixture
         $class = new \ReflectionClass(ChatButtonQuery::class);
         $query = $class->newInstanceWithoutConstructor();
         foreach (['data' => $data,'userId' => $user,'chatId' => $chat,'messageId' => $panel,'queryId' => 99,'chatInstance' => 777] as $key => $value) {
-            $class->getProperty($key)->setValue($query, $value);
+            $class->getProperty($key)->getDeclaringClass()->getProperty($key)->setValue($query, $value);
         }
         $event = ['user_id' => (string)$user,'chat_id' => (string)$chat,'private' => $chat === $user,'message_id' => $panel,'data' => $data,'query_id' => '99'];
         $handled = $this->v4HandleCallback($query, $event);
@@ -79,7 +79,7 @@ final class AdminNavigationFixture
         $class = new \ReflectionClass(PrivateMessage::class);
         $message = $class->newInstanceWithoutConstructor();
         foreach (['message' => $text,'senderId' => $user,'chatId' => $user,'id' => 600] as $key => $value) {
-            $class->getProperty($key)->setValue($message, $value);
+            $class->getProperty($key)->getDeclaringClass()->getProperty($key)->setValue($message, $value);
         }
         return $this->v4HandleMessage($message, ['user_id' => (string)$user,'private' => true,'text' => $text,'message_id' => 600,'entities' => []]);
     }

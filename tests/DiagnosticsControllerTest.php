@@ -235,7 +235,7 @@ final class DiagnosticsControllerTest extends TestCase
         $reflection = new \ReflectionClass(ChatButtonQuery::class);
         $query = $reflection->newInstanceWithoutConstructor();
         foreach (['data' => $event['data'], 'userId' => 2, 'chatId' => 2, 'messageId' => 800, 'queryId' => 99, 'chatInstance' => 1] as $field => $value) {
-            $reflection->getProperty($field)->setValue($query, $value);
+            $reflection->getProperty($field)->getDeclaringClass()->getProperty($field)->setValue($query, $value);
         }
         $bridge->upgradedCallbacks($query);
         self::assertStringContainsString('period-4', $this->last()['text']);
@@ -243,7 +243,7 @@ final class DiagnosticsControllerTest extends TestCase
         $reflection = new \ReflectionClass(PrivateMessage::class);
         $message = $reflection->newInstanceWithoutConstructor();
         foreach (['senderId' => 2, 'chatId' => 2, 'id' => 901, 'message' => 'period-10'] as $field => $value) {
-            $reflection->getProperty($field)->setValue($message, $value);
+            $reflection->getProperty($field)->getDeclaringClass()->getProperty($field)->setValue($message, $value);
         }
         $method = new \ReflectionMethod($bridge, 'v4HandleMessage');
         self::assertTrue($method->invoke($bridge, $message, ['user_id' => '2', 'private' => true, 'text' => 'period-10']));
@@ -347,7 +347,7 @@ final class DiagnosticsControllerTest extends TestCase
             $reflection = new \ReflectionClass($className);
             $message = $reflection->newInstanceWithoutConstructor();
             foreach (['senderId' => 2, 'chatId' => $className === PrivateMessage::class ? 2 : -1001, 'id' => 910, 'message' => '/testzmanim', 'out' => false, 'editDate' => null] as $field => $value) {
-                $reflection->getProperty($field)->setValue($message, $value);
+                $reflection->getProperty($field)->getDeclaringClass()->getProperty($field)->setValue($message, $value);
             }
             self::assertSame($className === PrivateMessage::class, $filter->apply($message));
             $handler->invoke($bridge, $message);
@@ -381,7 +381,7 @@ final class DiagnosticsControllerTest extends TestCase
                 $fields += ['chatId' => $chat, 'messageId' => $panel];
             }
             foreach ($fields as $field => $value) {
-                $reflection->getProperty($field)->setValue($query, $value);
+                $reflection->getProperty($field)->getDeclaringClass()->getProperty($field)->setValue($query, $value);
             }
             $bridge->upgradedCallbacks($query);
         }
@@ -391,7 +391,7 @@ final class DiagnosticsControllerTest extends TestCase
         $reflection = new \ReflectionClass(ChatButtonQuery::class);
         $query = $reflection->newInstanceWithoutConstructor();
         foreach (['data' => $this->event('next')['data'], 'userId' => 2, 'chatId' => 2, 'messageId' => 800, 'queryId' => 100, 'chatInstance' => 1] as $field => $value) {
-            $reflection->getProperty($field)->setValue($query, $value);
+            $reflection->getProperty($field)->getDeclaringClass()->getProperty($field)->setValue($query, $value);
         }
         $this->editError = new \RuntimeException('MESSAGE_ID_INVALID');
         $bridge->upgradedCallbacks($query);

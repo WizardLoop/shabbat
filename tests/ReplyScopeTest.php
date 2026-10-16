@@ -48,8 +48,8 @@ final class ReplyScopeTest extends TestCase
         $type = $private ? PrivateMessage::class : GroupMessage::class;
         $class = new \ReflectionClass($type);
         $message = $class->newInstanceWithoutConstructor();
-        $class->getProperty('chatId')->setValue($message, $chat);
-        $class->getProperty('senderId')->setValue($message, $sender);
+        $class->getProperty('chatId')->getDeclaringClass()->getProperty('chatId')->setValue($message, $chat);
+        $class->getProperty('senderId')->getDeclaringClass()->getProperty('senderId')->setValue($message, $sender);
         return $message;
     }
     private function expectedSource(string $code, string $kind): string

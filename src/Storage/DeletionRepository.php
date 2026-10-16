@@ -200,7 +200,7 @@ final class DeletionRepository
     }
     public function recordModuleDeliveryInTransaction(PDO $pdo, string $group, string $module, array $messageIds, string $deliveryKey, bool $deletePrevious = false, ?int $originalTimestamp = null, ?int $sourceJobId = null, ?int $completedAt = null): array
     {
-        if ($pdo !== $this->db->pdo() || !$pdo->inTransaction()) {
+        if (!$this->db->ownsTransaction($pdo)) {
             throw new \LogicException('Module delivery bookkeeping requires this database transaction.');
         }
         SettingsRepository::identifier($group);

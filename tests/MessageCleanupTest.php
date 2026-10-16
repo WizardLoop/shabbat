@@ -267,7 +267,7 @@ final class MessageCleanupTest extends TestCase
         foreach ([-1001,-12] as $group) {
             $message = (new \ReflectionClass(\danog\MadelineProto\EventHandler\Message\GroupMessage::class))->newInstanceWithoutConstructor();
             foreach (['chatId' => $group,'senderId' => 42,'id' => 7,'date' => $this->clock->now()->getTimestamp(),'out' => false] as $field => $value) {
-                (new \ReflectionProperty($message, $field))->setValue($message, $value);
+                (new \ReflectionProperty($message, $field))->getDeclaringClass()->getProperty($field)->setValue($message, $value);
             }
             $bridge->groupMessageCleanup($message);
         }

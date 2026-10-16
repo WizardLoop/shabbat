@@ -233,7 +233,7 @@ final class CallbackRoutingContractTest extends TestCase
             $fields += ['chatId' => $chat ?? $user, 'messageId' => $panel];
         }
         foreach ($fields as $key => $value) {
-            $class->getProperty($key)->setValue($query, $value);
+            $class->getProperty($key)->getDeclaringClass()->getProperty($key)->setValue($query, $value);
         }
         return $query;
     }
