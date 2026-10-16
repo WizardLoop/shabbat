@@ -16,11 +16,11 @@ When conveying a modified covered program, retain notices and the license, ident
 
 ## Publication archive scope
 
-The local publication preparation produces two separate artifacts:
+The `v3.0.0-dev.9` release provides two separate artifacts:
 
 | Artifact | Scope |
 |---|---|
-| `shabbat-3.0.0-dev.9-publication.zip` | Clean repository source: application, resources, migrations, tests, scripts, Composer manifest/lock, public configuration, Docker files, documentation, licenses and required GitHub files. No installed `vendor` tree. |
+| `shabbat-3.0.0-dev.9.zip` | Clean repository source: application, resources, migrations, tests, scripts, Composer manifest/lock, public configuration, Docker files, documentation, licenses and required GitHub files. No installed `vendor` tree. |
 | `shabbat-3.0.0-dev.9-corresponding-source.zip` | Application material plus the 57 locked Composer runtime packages, their source/license notices and the applied reviewed patches. Exact contents, exclusions and hashes are recorded in its manifest. |
 
 The corresponding-source artifact is scoped to the application and its Composer runtime dependencies. Development tools are reproducible from `composer.lock` and are inventoried, but are not bundled in that runtime source artifact; PHPStan's distributed PHAR must not be called its preferred source. The archive is not a complete Docker-image or operating-system source distribution. PHP, SQLite, Composer and base-image/system components are external to that scope; Docker pins and source references describe the build inputs. Any unresolved or omitted preferred-source component must be listed in the publication report before the artifact can be described as complete within its stated scope.

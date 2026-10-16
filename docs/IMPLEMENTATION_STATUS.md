@@ -1,6 +1,6 @@
 # Implementation and acceptance status
 
-Version: **3.0.0-dev.9**. This document describes the current local source, not the older public default branch or a production acceptance certificate. The application remains MadelineProto 8.7.0, PHP and SQLite. This publication pass reorganizes documentation and public metadata; it does not add features or change bot behavior.
+Version: **3.0.0-dev.9**. This document describes the current prerelease source, not a production acceptance certificate. The application remains MadelineProto 8.7.0, PHP and SQLite. The publication follow-up updates Composer build tooling, protects immutable file bytes and documents deployment; it does not change bot behavior.
 
 ## Implemented paths and limits
 
@@ -34,7 +34,7 @@ Local Windows limitations include unavailable Docker and POSIX-only/symlink-depe
 
 Before production cutover, use a separate bot and disposable groups to verify image startup, exact original-permission restoration, conflicts/recovery, automatic transitions, restarts and shutdown, inline/GPS/client behavior, source offer and payment flow where enabled. Exercise both forum and non-forum groups if used. Verify that the correct existing production data is imported; do not substitute the test bot's database.
 
-No publication preparation step creates a commit, tag, PR or release, changes production, restarts the active bot or sends Telegram messages.
+GitHub publication is separately authorized and gated on the reviewed source and CI. It does not change production, restart the active bot or send Telegram messages.
 
 ## Documentation map
 

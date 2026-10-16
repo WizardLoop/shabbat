@@ -1,3 +1,5 @@
+For the running legacy installation at `/root/shabat`, follow the complete [production upgrade procedure](PRODUCTION_UPGRADE.md), including stopped backups, exact group verification and permission recovery.
+
 # Dev.8 to dev.9
 
 Stop all writers and use the verified backup/migrate sequence in [test deployment](SERVER_TEST_DEPLOYMENT.md). Migration 016 adds dispatch timestamps and indexes without changing prior migration files, permission snapshots or job payload/random IDs. Existing attempts that might have reached Telegram are conservatively marked uncertain. This can suppress additional Tefillin messages on the upgrade day rather than duplicate an unknown old delivery. Existing older unverified permission snapshots retain the dev.8 administrator-review requirement.

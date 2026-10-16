@@ -1,5 +1,14 @@
 # Changelog
 
+PHP 8.3 compatibility: module-delivery bookkeeping now uses the database-owned `BEGIN IMMEDIATE` transaction state and exact connection identity; native callback/message fixtures initialize inherited readonly properties from their declaring class. Regression tests cover rejected foreign/outside transactions, rollback and state reset.
+
+## 3.0.0-dev.9 - GitHub prerelease
+
+- Pin Composer 2.10.3 in CI and Docker to address GitHub Actions token compatibility and the upstream token-disclosure advisory; retain authentication, all quality gates, the application lock and MadelineProto 8.7.0.
+- Preserve migration, bundled text and captured fixture bytes across Git line-ending settings, with a regression covering both autocrlf modes. Existing SQL/resource/patch bytes remain unchanged.
+- Document the reviewed legacy Docker cutover into `/root/shabat`, stopped-writer backup/import, permission recovery and rollback.
+- Publish matching deployment and scoped runtime corresponding-source archives with the actual merge commit, source inventory and SHA-256 sums. This remains a prerelease; no server deployment is performed by publication.
+
 ## Local publication preparation — 3.0.0-dev.9
 
 - Prepare an isolated clean repository copy and separate application/runtime corresponding-source artifacts for manual review. The application version and runtime behavior remain unchanged.

@@ -9,7 +9,7 @@ A Telegram bot built with PHP, MadelineProto and SQLite for Shabbat and festival
 [![MadelineProto 8.7.0](https://img.shields.io/badge/MadelineProto-8.7.0-2CA5E0)](composer.lock)
 [![Development 3.0.0-dev.9](https://img.shields.io/badge/status-3.0.0--dev.9-orange)](VERSION)
 
-**Current source: 3.0.0-dev.9, a development snapshot prepared for review.** Its source package may precede the public repository. Use the matching archive or reviewed checkout and retain its build metadata. Offline tests, Docker acceptance and live Telegram acceptance are separate. See [publication status](docs/PUBLICATION_STATUS.md), [changes](CHANGELOG.md) and [delivery safety](docs/DEV9_DELIVERY_SAFETY.md). Badges describe source configuration; they do not assert a passed build or a published release.
+**Current version: 3.0.0-dev.9, a prerelease.** Use the matching [release assets](https://github.com/WizardLoop/shabbat/releases/tag/v3.0.0-dev.9) or tagged checkout and retain its build metadata. Automated tests, Docker checks and live Telegram acceptance remain separate. For an existing bot, follow the [production upgrade and rollback guide](docs/PRODUCTION_UPGRADE.md) before replacing files or starting a second instance. See [publication status](docs/PUBLICATION_STATUS.md), [changes](CHANGELOG.md) and [delivery safety](docs/DEV9_DELIVERY_SAFETY.md). Badges describe source configuration, not production acceptance.
 
 ## Contents
 
@@ -52,10 +52,10 @@ Offline tests use fake Telegram gateways and provider fixtures without bot crede
 
 Shell examples use a Linux/POSIX terminal. Run Docker commands **on the host, from the extracted project root**, with Docker-daemon access. The image runs as `shabbat`, UID/GID `10001`. There is no separate Composer service.
 
-1. Obtain the reviewed source. For the prepared publication archive:
+1. Obtain the reviewed source. For the release deployment archive:
 
 ~~~sh
-unzip shabbat-3.0.0-dev.9-publication.zip -d shabbat
+unzip shabbat-3.0.0-dev.9.zip -d shabbat
 cd shabbat
 ~~~
 
@@ -452,7 +452,7 @@ For local packaging with required development dependencies and verified identity
 php scripts/package.php
 ~~~
 
-This writes application, corresponding-source and server-test ZIPs/checksums/manifests to `dist/`, without publishing. The separate delivery here uses `*-publication.zip` without installed dependencies and a separately inventoried corresponding-source bundle. Consult each manifest for inclusion/omissions; application source plus a lockfile is not a complete dependency source bundle.
+This writes application, corresponding-source and server-test ZIPs/checksums/manifests to `dist/`, without publishing. This prerelease uses `shabbat-3.0.0-dev.9.zip` without installed dependencies and a separately inventoried runtime corresponding-source bundle; do not substitute the developer packager's installed tool distributions for that source collection. Consult each manifest for inclusion/omissions; application source plus a lockfile is not a complete dependency source bundle.
 
 [Architecture](docs/ARCHITECTURE.md) · [Dependencies](docs/DEPENDENCIES.md) · [Patches](docs/PATCHES.md) · [Release preparation](docs/RELEASE.md) · [Contributing](.github/CONTRIBUTING.md) · [Code of conduct](.github/CODE_OF_CONDUCT.md)
 

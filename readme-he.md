@@ -11,7 +11,7 @@
 [![MadelineProto 8.7.0](https://img.shields.io/badge/MadelineProto-8.7.0-2CA5E0)](composer.lock)
 [![גרסת פיתוח 3.0.0-dev.9](https://img.shields.io/badge/status-3.0.0--dev.9-orange)](VERSION)
 
-**המקור הנוכחי: <span dir="ltr">3.0.0-dev.9</span>, גרסת פיתוח שהוכנה לבדיקה.** החבילה עשויה להקדים את המאגר הציבורי. השתמשו בארכיון המתאים או בעותק שנבדק ושמרו את נתוני הזיהוי שלו. בדיקות אוטומטיות, בדיקת Docker ובדיקות Telegram חיות הן בדיקות נפרדות. ראו [מצב ההכנה לפרסום](docs/PUBLICATION_STATUS.md), [שינויים](CHANGELOG.md) ו[בטיחות מסירה](docs/DEV9_DELIVERY_SAFETY.md). התגים מתארים את תצורת המקור, ואינם אישור לבנייה מוצלחת או לשחרור שפורסם.
+**הגרסה הנוכחית: <span dir="ltr">3.0.0-dev.9</span>, גרסה מקדימה.** השתמשו ב[קובצי השחרור המתאימים](https://github.com/WizardLoop/shabbat/releases/tag/v3.0.0-dev.9) או בעותק מהתג ושמרו את נתוני הזיהוי שלו. בדיקות אוטומטיות, בדיקות Docker ובדיקות Telegram חיות הן בדיקות נפרדות. במעבר מבוט קיים פעלו לפי [מדריך השדרוג והחזרה לגרסה קודמת](docs/PRODUCTION_UPGRADE.md) לפני החלפת קבצים או הפעלת מופע נוסף. ראו [מצב הפרסום](docs/PUBLICATION_STATUS.md), [שינויים](CHANGELOG.md) ו[בטיחות מסירה](docs/DEV9_DELIVERY_SAFETY.md). התגים מתארים את תצורת המקור ואינם אישור לתקינות בסביבת production.
 
 ## תוכן עניינים
 
@@ -59,7 +59,7 @@
 <div dir="ltr">
 
 ~~~sh
-unzip shabbat-3.0.0-dev.9-publication.zip -d shabbat
+unzip shabbat-3.0.0-dev.9.zip -d shabbat
 cd shabbat
 ~~~
 
@@ -522,7 +522,7 @@ php scripts/package.php
 
 </div>
 
-הכלי כותב ZIP ליישום, למקור תואם ולשרת בדיקה, עם חתימות ומניפסטים ב־`dist/`, ללא פרסום. המסירה הנפרדת כאן משתמשת ב־`*-publication.zip` ללא תלויות מותקנות ובחבילת מקור תואם עם מלאי נפרד. בדקו בכל מניפסט מה כלול ומה הוחרג; מקור היישום ו־lock אינם לבדם חבילת מקור תלויות מלאה.
+הכלי כותב ZIP ליישום, למקור תואם ולשרת בדיקה, עם חתימות ומניפסטים ב־`dist/`, ללא פרסום. השחרור המקדים משתמש ב־`shabbat-3.0.0-dev.9.zip` ללא תלויות מותקנות ובחבילת מקור תואם לתלויות הריצה עם מלאי נפרד; אין להחליפה בהפצות כלי הפיתוח המותקנים שמפיק כלי האריזה למפתחים. בדקו בכל מניפסט מה כלול ומה הוחרג; מקור היישום ו־lock אינם לבדם חבילת מקור תלויות מלאה.
 
 [ארכיטקטורה](docs/ARCHITECTURE.md) · [תלויות](docs/DEPENDENCIES.md) · [תיקונים](docs/PATCHES.md) · [הכנת שחרור](docs/RELEASE.md) · [תרומה](.github/CONTRIBUTING.md) · [קוד התנהגות](.github/CODE_OF_CONDUCT.md)
 

@@ -1,6 +1,14 @@
-# Local publication package
+# Publication and release status
 
-This is a documentation/public-source preparation of **3.0.0-dev.9**. It preserves the existing runtime behavior and locked dependencies. It is not a stable release, a new Git commit, a published GitHub release or a production deployment.
+## Current GitHub prerelease
+
+The owner-authorized `v3.0.0-dev.9` publication uses the reviewed merge commit and remains a prerelease. The deployment asset is `shabbat-3.0.0-dev.9.zip`; the separate `shabbat-3.0.0-dev.9-corresponding-source.zip` contains the 57 locked runtime package trees and the preferred-source supplements described below. `SHA256SUMS` and `RELEASE_MANIFEST.json` identify the final archives, source fingerprint and CI evidence. Release `build-info.json` records the actual merge commit and `local_changes=false` only after exact source equality. See [release notes](RELEASE_NOTES.md) and [legacy production cutover](PRODUCTION_UPGRADE.md).
+
+Composer 2.10.3 replaces the old build-tool pin; application dependency versions, approved patch bytes and existing SQL migration bytes are unchanged. The generic developer packager output is not substituted for the scoped runtime source asset. Publishing the GitHub release does not deploy or restart the bot.
+
+## Historical local preparation
+
+The earlier local documentation/public-source preparation of **3.0.0-dev.9** preserved runtime behavior and locked dependencies. That preparation itself created no commit, tag, GitHub release or production deployment. Its historical artifact names and metadata are recorded below; use the current release assets above for deployment.
 
 ## Delivery layout
 
@@ -46,4 +54,4 @@ See [licensing](LICENSING.md), [third-party notices](../THIRD_PARTY_NOTICES.md),
 - Current acceptance and feature gaps are documented in [implementation status](IMPLEMENTATION_STATUS.md); they are not silently fixed or marketed as complete.
 - Exact test results belong to the final separate checks report. Previously recorded dev.9 results do not replace a clean-install check of this copy.
 
-When publishing manually, use the exact reviewed source and preserve its corresponding-source offer. Do not upload private environment/session/data files. The local preparation performs no push, PR, merge, tag creation, release publication, bot restart or production action.
+When publishing manually, use the exact reviewed source and preserve its corresponding-source offer. Do not upload private environment/session/data files. The historical local preparation performed no remote publication or production action; the later authorized GitHub prerelease is described at the top of this document.

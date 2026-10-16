@@ -1,6 +1,12 @@
 # WizardLoop Shabbat 3.0.0-dev.9
 
-**Local development snapshot, prepared for source review.** This version retains MadelineProto, SQLite and the existing bot features. Publication preparation organizes the source, documentation and license evidence; it does not change bot behavior or establish a stable/RC release. See [publication status](PUBLICATION_STATUS.md) for this preparation and [CHANGELOG](../CHANGELOG.md) for previous development versions.
+PHP 8.3 compatibility: module-delivery bookkeeping now uses the database-owned `BEGIN IMMEDIATE` transaction state and exact connection identity; native callback/message fixtures initialize inherited readonly properties from their declaring class. Regression tests cover rejected foreign/outside transactions, rollback and state reset.
+
+**GitHub prerelease `v3.0.0-dev.9`.** This version retains MadelineProto, SQLite and the existing bot features. The publication follow-up fixes Composer tooling, protects immutable source bytes and documents legacy deployment; it does not turn offline acceptance into production certification. See [publication status](PUBLICATION_STATUS.md), [production upgrade](PRODUCTION_UPGRADE.md) and [CHANGELOG](../CHANGELOG.md).
+
+## Release corrections
+
+Composer 2.10.3 is pinned in both workflows and the Docker build, including the official digest. It addresses the upstream [Actions token compatibility/disclosure issue](https://github.com/composer/composer/security/advisories/GHSA-f9f8-rm49-7jv2) while retaining authentication and every validation gate. Git attributes and regression coverage preserve migration, bundled-text and captured-fixture bytes; no existing migration or patch was rewritten. The release assets identify the actual merged commit and separately inventory the application/runtime corresponding source.
 
 ## Current implementation
 
@@ -34,8 +40,8 @@ The publication README files are complete English and Hebrew counterparts. Techn
 
 ## Verification limits
 
-Exact current results and artifact identities belong to the external `checks/PUBLICATION_REPORT.md`, manifests and SHA-256 file, with a public summary in [PUBLICATION_STATUS](PUBLICATION_STATUS.md). Historical test counts are not reused as results for this publication copy. The local Windows PHP runtime's SQLite 3.45.2 is below the release gate; the Dockerfile pins checksum-verified SQLite 3.51.3, but a successful target image build must be demonstrated separately.
+Exact current results and artifact identities belong to the external `checks/PUBLICATION_REPORT.md`, manifests and SHA-256 file, with a public summary in [PUBLICATION_STATUS](PUBLICATION_STATUS.md). Historical test counts are not reused as results for this publication copy. The local Windows PHP runtime's SQLite 3.45.2 is below the release gate. The Dockerfile pins checksum-verified SQLite 3.51.3; exact hosted matrix/image results belong to the release report and linked Actions runs.
 
-Offline tests use controlled clocks, isolated data and fake transports. They do not establish live Telegram delivery capacity, real flood quotas, accepted-request cancellation, rendered client behavior, actual Stars payments or a long wall-clock soak. A request already accepted by Telegram cannot be recalled by a local timing check. Missing Docker/live acceptance remains visible in the report; no production migration or bot restart is part of publication preparation.
+Offline tests use controlled clocks, isolated data and fake transports. They do not establish live Telegram delivery capacity, real flood quotas, accepted-request cancellation, rendered client behavior, actual Stars payments or a long wall-clock soak. A request already accepted by Telegram cannot be recalled by a local timing check. Unperformed live acceptance remains visible in the report; no production migration or bot restart is part of GitHub publication.
 
-MadelineProto's metadata/header license difference and historical local-reference provenance findings remain documented in [THIRD_PARTY_NOTICES](../THIRD_PARTY_NOTICES.md). Source packaging does not silently resolve them. No commit, tag, push, PR, merge, GitHub Release, image publication or deployment was created by this preparation.
+MadelineProto's metadata/header license difference and historical local-reference provenance findings remain documented in [THIRD_PARTY_NOTICES](../THIRD_PARTY_NOTICES.md). Source packaging does not silently resolve them. The owner-authorized GitHub publication creates the reviewed merge, tag and prerelease assets. Server deployment remains a separate operator action.
