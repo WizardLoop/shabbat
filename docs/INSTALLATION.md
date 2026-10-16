@@ -2,7 +2,7 @@
 
 [English overview](../README.md) | [עברית](../readme-he.md) | [Configuration](CONFIGURATION.md) | [Migration](MIGRATION.md)
 
-This is the `3.0.0-dev.9` development snapshot. Install the reviewed source package or matching checkout, rather than assuming the public default branch already contains it. Installation does not imply that Docker or Telegram acceptance has passed for your host. See [publication status](PUBLICATION_STATUS.md).
+This documents stable `3.0.0`. Install the matching release deployment ZIP or exact tagged checkout. The owner confirmed dev.9 live locking, unlocking, original-permission restoration and restart; acceptance on your host and remaining feature-specific tests are separate. See [publication status](PUBLICATION_STATUS.md).
 
 ## Requirements and command context
 
@@ -97,6 +97,6 @@ php bot.php
 
 ## Source identity and production acceptance
 
-Docker build identity requires either an explicit 40-hex `BUILD_COMMIT` from the actual reviewed checkout or the retained archive `build-info.json`. The release deployment ZIP includes the actual release commit, `local_changes=false` and its exact application-source fingerprint. Earlier local preparation archives instead record their historical baseline and `local_changes=true`; those are distinct artifacts. Retain archive metadata unchanged when building from a ZIP; for a reviewed Git checkout export `BUILD_COMMIT="$(git rev-parse HEAD)"` before building. A baseline commit alone does not identify unpublished changes. For an existing legacy bot, use [the stopped-writer production cutover guide](PRODUCTION_UPGRADE.md).
+Docker build identity requires either an explicit 40-hex `BUILD_COMMIT` from the actual reviewed checkout or the retained archive `build-info.json`. The release deployment ZIP includes the actual release commit, `local_changes=false` and its exact application-source fingerprint. Earlier local preparation archives instead record their historical baseline and `local_changes=true`; those are distinct artifacts. Retain archive metadata unchanged when building from a ZIP, leave `BUILD_COMMIT` out of `.env` and run `unset BUILD_COMMIT` in that shell; for a reviewed Git checkout export `BUILD_COMMIT="$(git rev-parse HEAD)"` before building. A baseline commit alone does not identify unpublished changes. For an existing legacy bot, use [the stopped-writer production cutover guide](PRODUCTION_UPGRADE.md).
 
 Before replacing a live bot, test the image build, exact permission restoration, restart recovery, inline/GPS flows, supported clients, command scopes and donation flows with a separate bot/group. Preserve and rehearse rollback. No installation command should modify real groups as an implicit test.

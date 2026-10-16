@@ -16,21 +16,23 @@ When conveying a modified covered program, retain notices and the license, ident
 
 ## Publication archive scope
 
-The `v3.0.0-dev.9` release provides two separate artifacts:
+The `v3.0.0` release provides two separate artifacts:
 
 | Artifact | Scope |
 |---|---|
-| `shabbat-3.0.0-dev.9.zip` | Clean repository source: application, resources, migrations, tests, scripts, Composer manifest/lock, public configuration, Docker files, documentation, licenses and required GitHub files. No installed `vendor` tree. |
-| `shabbat-3.0.0-dev.9-corresponding-source.zip` | Application material plus the 57 locked Composer runtime packages, their source/license notices and the applied reviewed patches. Exact contents, exclusions and hashes are recorded in its manifest. |
+| `shabbat-3.0.0.zip` | Clean repository source: application, resources, migrations, tests, scripts, Composer manifest/lock, public configuration, Docker files, documentation, licenses and required GitHub files. No installed `vendor` tree. |
+| `shabbat-3.0.0-corresponding-source.zip` | Application material plus the 57 locked Composer runtime packages, their source/license notices and the applied reviewed patches. Exact contents, exclusions and hashes are recorded in its manifest. |
 
 The corresponding-source artifact is scoped to the application and its Composer runtime dependencies. Development tools are reproducible from `composer.lock` and are inventoried, but are not bundled in that runtime source artifact; PHPStan's distributed PHAR must not be called its preferred source. The archive is not a complete Docker-image or operating-system source distribution. PHP, SQLite, Composer and base-image/system components are external to that scope; Docker pins and source references describe the build inputs. Any unresolved or omitted preferred-source component must be listed in the publication report before the artifact can be described as complete within its stated scope.
 
 Keep the application source, all five patch sets, immutable bases/intermediates, added files, exact diffs, manifests and notices available together. The two reviewed public Amp HTTP Server TLS example private keys may be omitted from a distribution only with the exact omission records preserved; they are not used by this bot. Other private keys and real runtime credentials do not belong in source archives.
 
-The repository's existing `php scripts/package.php` is a separate packaging tool: with a development installation it builds application, corresponding-source and server-test variants under `dist/`. It copies the installed dependency distributions, including development tools, so its output alone is not evidence that every development tool's preferred source is present. The dedicated publication artifacts above have their own content manifests and checks.
+Release packaging uses the checked-in [source-input manifest](../resources/release/source-manifest.json) and [preferred-source supplements](../resources/release/README.md). The manifest pins all 2,960 included runtime dependency files and 92 supplementary source files. Packaging verifies a locked, patched runtime installation against those hashes and adds the exact reviewed application tree; it excludes installed development tools and generated Composer autoload metadata. Original component notices and the two approved example-key omission records remain attached to that scope.
 
 ## Evidence and remaining review
 
 The [dependency inventory](dependencies.json) distinguishes 57 runtime packages and 26 development packages, exact versions, metadata, distributed license files and findings. `LICENSE_TEXT_PRESENT` means a recognized license text was found; it is not an authorship or compatibility certificate. Regenerate it with `php scripts/dependencies.php` from the isolated locked installation. Composer security advisories are a separate check.
 
-The original UpdateLoop reference script retains its exact provenance hash but has no standalone license header. The historical formatted-date exports have unresolved standalone grants and are not redistributed. Preserve those findings and review any uncertain contributor or deployment-only source provenance before a stable distribution. The [publication status](PUBLICATION_STATUS.md) and external `checks/PUBLICATION_REPORT.md` identify what was actually checked for this preparation.
+On **2026-10-16**, the WizardLoop project maintainer stated that they authored the historical UpdateLoop helper retained at [original-reference.php](../patches/madelineproto/original-reference.php) and explicitly authorized its distribution under **AGPL-3.0-only**. The [manifest](../patches/madelineproto/manifest.json) binds this attestation to SHA-256 `1ec2691498e878d28ca8e9cde94b00c803d9ccba789096ffc8471156dfb429e9`. The exact headerless helper bytes are preserved; the dated statement supplies the maintainer's authorization without rewriting historical source or dependency licenses. It is not an independent authorship or legal certification.
+
+The historical formatted-date exports still have unresolved standalone grants and are not redistributed. Their finding is separate from the UpdateLoop attestation. Preserve any remaining contributor or deployment-only provenance findings. [Publication status](PUBLICATION_STATUS.md), release manifests and the recorded checks identify the evidence available for the actual release.

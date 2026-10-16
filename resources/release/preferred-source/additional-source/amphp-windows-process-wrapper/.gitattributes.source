@@ -1,0 +1,2 @@
+# Force CRLF or Visual Studio may throw up when processing some ancilliary files
+* eol=crlf

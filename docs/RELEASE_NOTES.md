@@ -1,47 +1,51 @@
-# WizardLoop Shabbat 3.0.0-dev.9
+# WizardLoop Shabbat 3.0.0
 
-PHP 8.3 compatibility: module-delivery bookkeeping now uses the database-owned `BEGIN IMMEDIATE` transaction state and exact connection identity; native callback/message fixtures initialize inherited readonly properties from their declaring class. Regression tests cover rejected foreign/outside transactions, rollback and state reset.
+**Stable release `v3.0.0`.** This release retains the dev.9 bot implementation, MadelineProto 8.7.0, SQLite, the locked application dependencies, all five approved patch sets and all 16 migrations. It promotes the reviewed implementation and updates release packaging, identity and deployment documentation. See [CHANGELOG](../CHANGELOG.md), [implementation status](IMPLEMENTATION_STATUS.md) and [production upgrade](PRODUCTION_UPGRADE.md).
 
-**GitHub prerelease `v3.0.0-dev.9`.** This version retains MadelineProto, SQLite and the existing bot features. The publication follow-up fixes Composer tooling, protects immutable source bytes and documents legacy deployment; it does not turn offline acceptance into production certification. See [publication status](PUBLICATION_STATUS.md), [production upgrade](PRODUCTION_UPGRADE.md) and [CHANGELOG](../CHANGELOG.md).
+## Acceptance and changes
 
-## Release corrections
+On 2026-10-16 the owner confirmed successful live dev.9 group locking, unlocking, original-permission restoration and restart. These results support those paths; they do not establish real Shabbat/Yom Tov timing, a full holiday sequence, Telegram capacity under load, a long-running soak, every client or actual Stars payments. The production import and cutover remain operator actions with their own checks.
 
-Composer 2.10.3 is pinned in both workflows and the Docker build, including the official digest. It addresses the upstream [Actions token compatibility/disclosure issue](https://github.com/composer/composer/security/advisories/GHSA-f9f8-rm49-7jv2) while retaining authentication and every validation gate. Git attributes and regression coverage preserve migration, bundled-text and captured-fixture bytes; no existing migration or patch was rewritten. The release assets identify the actual merged commit and separately inventory the application/runtime corresponding source.
+The stable packaging path is now part of the repository: `composer package` or `php scripts/package.php` builds the deployment and scoped corresponding-source archives from an exact clean Git commit. The dependency and preferred-source inventory is pinned, with patch and per-file verification. The former installed-tool packaging path remains explicit `--development` tooling and is not the release source offer. The image retains the PHP 8.4 branch with its security-patched 8.4.26 base; Composer remains pinned to 2.10.3.
 
-## Current implementation
+The dev.9 publication corrections remain included: PHP 8.3-compatible transaction bookkeeping and native fixtures, immutable migration/resource/fixture bytes across Git line-ending settings, Composer tooling fixes, and reviewed deployment documentation. No existing migration or patch is rewritten.
 
-Dev.9 adds transport-time calendar and quiet-hour checks after provider, media, topic and emoji preflight; actual Tefillin spacing/daily caps; conservative handling of uncertain delivery evidence; and coalescing of never-dispatched reminder backlogs. Omer checks its restoration gap again at delivery. Configured closing notices remain an explicit exception to ordinary protected-period notification suppression.
+## Included functionality
 
-Permission reconciliation, notifications and scheduled broadcasts use independent non-overlapping callbacks. Permission work has bounded concurrency; notification planning uses fair bounded batches. Shared provider requests and short failure cooldowns reduce repeated failed work. Queue/heartbeat metrics distinguish notification activity from completed permission work, and bounded maintenance preserves unresolved recovery and uncertain delivery evidence.
+Location-aware Shabbat/Yom Tov closures preserve verified original group permissions. Private/group settings, six interface catalogs, inline/GPS location flows, rich templates, delegated administration, broadcasts, statistics, optional Stars donations and group opt-in zmanim/Daf/Tefillin/Omer modules remain available with the boundaries in [implementation status](IMPLEMENTATION_STATUS.md).
 
-The reviewed BroadcastManager patch adds optional authorization, cancellation and admission hooks, cancellation-aware waits, joined worker/progress futures and cancelled queue persistence. Manual and scheduled bulk operations share one admission queue. The dependency keeps its native retry/error handling, with native flood waits exposed to manager-controlled retry. [Delivery and scheduler details](DEV9_DELIVERY_SAFETY.md) explain limits and exceptions.
+Dev.9 delivery safety remains in place: eligibility is rechecked near dispatch; Tefillin spacing/daily caps and Omer restoration gaps use actual delivery evidence; never-dispatched backlogs are bounded; uncertain outcomes remain conservative. Permission, notification and scheduled-broadcast callbacks are independent, with bounded work and separate heartbeats. Configured closing notices remain an intentional quiet-period exception, and a request already accepted by Telegram cannot be recalled by a local check. See [delivery safety](DEV9_DELIVERY_SAFETY.md).
 
-## Dependencies and migrations
+## Dependencies and schema
 
-- Application version: `3.0.0-dev.9` from `VERSION`.
 - MadelineProto: exactly `8.7.0`, commit `7b99dd0f2d964a492c377912ffce9f5ce61aa9ed`.
 - BroadcastManager: locked `3.2.2`, commit `f2792a383416b66bb68e55f09414563e540538d6`, with the reviewed local derivative.
-- Five active patch sets: four MadelineProto compatibility patches and one BroadcastManager set. Exact baselines, prior approved sources, diffs, added source and manifests remain included.
-- Migration `016_delivery_safety.sql` is required. Migrations 001–015 and `composer.lock` remain preserved. Startup validates schema; migration is an explicit maintenance action.
+- Five active patch sets: four MadelineProto compatibility patches and one BroadcastManager set, with original baselines, reviewed outputs, diffs and manifests.
+- Migrations 001–016 remain required and checksum-protected. **No new migration is added after dev.9.** Startup validates schema; maintenance applies migrations explicitly.
 
-See [dependency evidence](DEPENDENCIES.md), [patch workflow](PATCHES.md) and [technical attribution](THIRD_PARTY_DETAILS.md).
+[Dependency evidence](DEPENDENCIES.md) · [Patch workflow](PATCHES.md) · [Licensing and source scope](LICENSING.md)
 
-## Upgrade and rollback
+## Production upgrade and rollback
 
-Stop all writers, preserve verified application/database, MadelineProto session and BroadcastManager-state backups, then apply the migrations before startup. Follow [MIGRATION](MIGRATION.md) for the full legacy import; additive `DBgroups.txt` registration alone does not import the old templates, states or active permission obligations. Existing unresolved snapshots are retained and remain subject to the [verified permission recovery procedure](PERMISSION_RECOVERY.md).
+The complete [production guide](PRODUCTION_UPGRADE.md) targets the existing file-based bot at `/root/shabat` (one `b`). Build the reviewed source beside production, stop the single old writer, retain the whole private directory and image, copy stopped state into distinct new volumes, preview/apply the explicit legacy import, compare exact group IDs/settings, rehearse restore, then move the reviewed source into `/root/shabat` and start one instance under `shabbat-production`.
 
-Rollback restores matching pre-upgrade code and state while stopped. Older code cannot be assumed to understand the new schema. Review unresolved permission obligations before reverting. The [backup/restore guide](BACKUP_RESTORE.md) describes the separate state stores.
+Legacy permission snapshots remain unverified until an authorized administrator reviews the intended normal Telegram rights. The guide explains recovery, monitoring and a rollback that restores the original bind path before restarting the retained old container. A file restore does not undo Telegram actions already accepted. Test-bot databases and sessions never replace production state.
 
-## Publication contents
+Existing SQLite dev.9 deployments need the usual stopped-writer backup and migration/schema check, but no legacy import or new SQL migration. Preserve matching source, database, MadelineProto session and BroadcastManager state. See [backup and restore](BACKUP_RESTORE.md).
 
-The clean repository ZIP contains application source, resources, tests, migrations, scripts, locked Composer metadata, public configuration, Docker files, documentation, notices and required GitHub files. The separate corresponding-source ZIP adds the 57 Composer runtime packages and licenses, including the reviewed patched sources. Development tool distributions and external Docker/system runtime sources are outside that archive's stated scope. [LICENSING](LICENSING.md) explains source offers, retained grants and evidence limitations.
+## Release artifacts and identity
 
-The publication README files are complete English and Hebrew counterparts. Technical hashes/history are kept in manifests and the provenance companion, leaving the third-party notices concise. Historical license grants and upstream source headers are preserved. No production configuration, session, database, WAL/SHM, private backup or log belongs in these artifacts.
+| Asset | Purpose |
+|---|---|
+| `shabbat-3.0.0.zip` | Clean deployment source and `composer.lock`, plus exact release `build-info.json`; no installed vendor or private runtime state. Docker installs locked runtime dependencies. |
+| `shabbat-3.0.0-corresponding-source.zip` | Application plus 57 locked runtime package trees, licenses, reviewed patches and pinned preferred-source supplements, with exact scope/index. |
+| `RELEASE_MANIFEST.json` | Release commit, version, source fingerprint, package scope and artifact hashes. |
+| `SHA256SUMS` | SHA-256 records for both ZIPs and the release manifest. |
 
-## Verification limits
+Keep archive build metadata unchanged. It identifies the actual release commit with `local_changes=false`, not the historical legacy baseline. Set `SOURCE_URL=https://github.com/WizardLoop/shabbat/releases/tag/v3.0.0` for this unchanged release after its corresponding-source asset is available. Modified deployments need their own exact source offer.
 
-Exact current results and artifact identities belong to the external `checks/PUBLICATION_REPORT.md`, manifests and SHA-256 file, with a public summary in [PUBLICATION_STATUS](PUBLICATION_STATUS.md). Historical test counts are not reused as results for this publication copy. The local Windows PHP runtime's SQLite 3.45.2 is below the release gate. The Dockerfile pins checksum-verified SQLite 3.51.3; exact hosted matrix/image results belong to the release report and linked Actions runs.
+The source collection does not claim to include all operating-system/container or development-tool sources, or a reproducible rebuild of upstream binaries. Existing provenance/license findings remain visible in [third-party notices](../THIRD_PARTY_NOTICES.md) and [publication status](PUBLICATION_STATUS.md). No production `.env`, database/WAL/SHM, session, backup, private log or cache is a release asset.
 
-Offline tests use controlled clocks, isolated data and fake transports. They do not establish live Telegram delivery capacity, real flood quotas, accepted-request cancellation, rendered client behavior, actual Stars payments or a long wall-clock soak. A request already accepted by Telegram cannot be recalled by a local timing check. Unperformed live acceptance remains visible in the report; no production migration or bot restart is part of GitHub publication.
+## Verification boundaries
 
-MadelineProto's metadata/header license difference and historical local-reference provenance findings remain documented in [THIRD_PARTY_NOTICES](../THIRD_PARTY_NOTICES.md). Source packaging does not silently resolve them. The owner-authorized GitHub publication creates the reviewed merge, tag and prerelease assets. Server deployment remains a separate operator action.
+The stable release is gated on its own reviewed commit, hosted checks, image validation and final artifact/source comparisons. Exact results belong to the matching Actions run and release evidence; prior test counts are not reused as a result for a different tree. Local Windows PHP's SQLite 3.45.2 remains below the release gate; the Docker target pins SQLite 3.51.3. Publication creates the authorized source/tag/release only. It does not migrate the server, change group permissions or restart the active bot.

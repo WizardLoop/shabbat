@@ -1,6 +1,6 @@
 # Implementation and acceptance status
 
-Version: **3.0.0-dev.9**. This document describes the current prerelease source, not a production acceptance certificate. The application remains MadelineProto 8.7.0, PHP and SQLite. The publication follow-up updates Composer build tooling, protects immutable file bytes and documents deployment; it does not change bot behavior.
+Version: **3.0.0**, stable. This document distinguishes implemented behavior from the evidence actually available. The application remains MadelineProto 8.7.0, PHP and SQLite. The stable release retains the dev.9 runtime behavior, approved patches, dependency lock and 16 migrations. It updates release identity, source packaging and deployment documentation.
 
 ## Implemented paths and limits
 
@@ -22,19 +22,23 @@ Version: **3.0.0-dev.9**. This document describes the current prerelease source,
 | Persistence | 16 checksum-tracked migrations, explicit backup/import/restore, durable jobs and permission evidence | Startup validates schema rather than migrating; rollback needs compatible code, DB, session and library state |
 | Maintenance | Bounded routine-history cleanup, separate heartbeats, queue metrics and explicit deep integrity check | Retained uncertain/recovery/interactive state may grow; operators still need monitoring, backups and archival policy |
 
-## Verification policy
+## Recorded live acceptance
 
-The existing test suites exercise fake transports, provider fixtures, controlled clocks, isolated databases, migration/restore, patch lifecycle and simulated load. The publication checks must be run against the final isolated source and its own locked Composer installation. Original dev.9 test results are historical evidence and are not automatically attributed to a modified publication tree.
+On 2026-10-16 the project owner reported successful live dev.9 tests of group locking, unlocking, restoration of the original permissions and restart. This is operator-reported evidence for those paths. It does not establish a real Shabbat/Yom Tov transition, a full holiday sequence, sustained load capacity, a long wall-clock soak, every client/language, payment flow or the legacy production migration.
 
-A delivered `checks/PUBLICATION_REPORT.md` and machine-readable report identify the exact publication archives, source fingerprints, commands, actual results, skips and blockers. Those reports are separate delivery artifacts, not runtime source. The [publication status](PUBLICATION_STATUS.md) explains archive scope.
+The stable version does not add a runtime feature or schema migration to dev.9. Keep the above acceptance tied to its actual tested behavior; the stable release's exact source, package checks and CI results are recorded separately.
 
-Local Windows limitations include unavailable Docker and POSIX-only/symlink-dependent test coverage. The local PHP-loaded SQLite 3.45.2 is deliberately rejected by the release gate; the Docker target pins SQLite 3.51.3 and must pass that gate. Do not describe an unexecuted CI run, image build or Telegram operation as successful.
+## Automated verification and host limits
 
-## Required live acceptance
+The suites exercise fake transports, provider fixtures, controlled clocks, isolated databases, migration/restore, patch lifecycle and simulated load. Run them against the final reviewed stable commit and its locked installation. The dev.9 merged baseline passed its hosted checks, but that result is not a replacement for the stable commit's own checks. Release manifests, SHA-256 sums and the matching Actions run identify the tested source/artifacts. Local checks directories are external evidence, not runtime source.
 
-Before production cutover, use a separate bot and disposable groups to verify image startup, exact original-permission restoration, conflicts/recovery, automatic transitions, restarts and shutdown, inline/GPS/client behavior, source offer and payment flow where enabled. Exercise both forum and non-forum groups if used. Verify that the correct existing production data is imported; do not substitute the test bot's database.
+Local Windows limitations include unavailable Docker and POSIX-only/symlink-dependent coverage. The local PHP-loaded SQLite 3.45.2 is deliberately rejected by the release gate; the Docker target pins SQLite 3.51.3 and must pass that gate. Do not describe an unexecuted image build, CI run or Telegram operation as successful. See [publication status](PUBLICATION_STATUS.md) for source scope and [release preparation](RELEASE.md) for gates.
 
-GitHub publication is separately authorized and gated on the reviewed source and CI. It does not change production, restart the active bot or send Telegram messages.
+## Remaining deployment acceptance
+
+On a separate bot and disposable groups, verify the feature paths your installation uses: conflicts/recovery, automatic protected-period transitions, interrupted work/shutdown, inline/GPS/client rendering, source offer, command menus, rich messages and payment flow where enabled. Exercise forum and non-forum groups if used. Observe a real scheduled close/open cycle and monitor queue/heartbeat behavior under your traffic; synthetic load is not a Telegram capacity guarantee.
+
+The `/root/shabat` legacy import still needs a stopped full backup, exact group-ID/settings comparison, permission review, restore rehearsal and monitored cutover. Test-bot data is never substituted for production data. Follow [the production upgrade guide](PRODUCTION_UPGRADE.md). Publishing the source/tag/release does not perform these server actions or restart the active bot.
 
 ## Documentation map
 

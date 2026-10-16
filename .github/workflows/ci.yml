@@ -33,6 +33,18 @@ jobs:
       - run: composer check-docs
       - run: composer dependencies
       - run: composer self-check
+      - name: Verify release packaging regressions
+        if: matrix.php == '8.4'
+        run: python3 tests/release_packaging_test.py
+      - name: Build exact-commit release archives
+        if: matrix.php == '8.4'
+        run: composer package
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: matrix.php == '8.4'
+        with:
+          name: release-archives-${{ github.sha }}
+          path: dist/
+          if-no-files-found: error
   docker:
     runs-on: ubuntu-latest
     steps:

@@ -54,5 +54,16 @@ $manifest = ['schema_version' => 1, 'reviewed_at' => '2026-10-13', 'package' => 
         'source_url' => 'https://github.com/danog/MadelineProto/blob/7b99dd0f2d964a492c377912ffce9f5ce61aa9ed/src/Loop/Update/UpdateLoop.php',
         'original_sha256' => hash('sha256', $source), 'patched_sha256' => hash('sha256', $patched), 'patch' => 'update-loop-timeout-cancellation.patch', 'patch_sha256' => hash('sha256', $patch)]],
     'official_versions' => [], 'notes' => 'No released official solution was verified. New versions require source, call-chain and behavioral review before admission.'];
+$manifest['original_reference']['maintainer_attestation'] = array (
+  'date' => '2026-10-16',
+  'by' => 'WizardLoop project maintainer',
+  'scope' => 'patches/madelineproto/original-reference.php',
+  'sha256' => '1ec2691498e878d28ca8e9cde94b00c803d9ccba789096ffc8471156dfb429e9',
+  'authorship' => 'The maintainer states that they authored this historical UpdateLoop helper.',
+  'distribution_authorization' => 'The maintainer explicitly authorizes distribution of this helper under the project license AGPL-3.0-only.',
+  'license' => 'AGPL-3.0-only',
+  'evidence' => 'Explicit maintainer instruction during preparation of the 3.0.0 release.',
+  'limits' => 'Records the maintainer attestation; not an independent authorship or legal certification. Original helper bytes and upstream dependency notices remain unchanged.',
+);
 file_put_contents(__DIR__ . '/manifest.json', json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n");
 echo "Reviewed patch artifacts regenerated.\n";

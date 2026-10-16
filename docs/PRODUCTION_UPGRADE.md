@@ -2,11 +2,11 @@
 
 [English overview](../README.md) | [עברית](../readme-he.md) | [Import mapping](MIGRATION.md) | [Backup and restore](BACKUP_RESTORE.md) | [Permission recovery](PERMISSION_RECOVERY.md)
 
-This procedure is for the existing Docker Compose installation at **`/root/shabat`** (one `b`), upgrading the file-based implementation at historical baseline `2976ab8339f489d933c7246e0cb27f3b0e4aa697` to **`3.0.0-dev.9`**. The final source directory remains `/root/shabat`. `/root/shabbat-test` is a separate test installation and is not a migration source or destination.
+This procedure is for the existing Docker Compose installation at **`/root/shabat`** (one `b`), upgrading the file-based implementation at historical baseline `2976ab8339f489d933c7246e0cb27f3b0e4aa697` to **`3.0.0`**. The final source directory remains `/root/shabat`. `/root/shabbat-test` is a separate test installation and is not a migration source or destination.
 
 **לשרת הקיים `/root/shabat`: בונים את הגרסה החדשה בנפרד, עוצרים את הבוט הישן, מגבים את כל התיקייה, מייבאים ובודקים, ורק אז מחליפים את תיקיית המקור ומפעילים מופע יחיד. הרשאות ישנות עשויות לדרוש אישור ידני של מנהל קבוצה; ייבוא תקין אינו מבטיח שחזור אוטומטי שלהן.**
 
-The release is a development prerelease. Complete acceptance with a separate test bot before this production maintenance window. These are operator instructions; writing this document does not execute a deployment. The commands below are for **Bash on the Linux server as root**, with Docker daemon access, Compose v2, `curl`, `unzip`, `tar`, `sha256sum` and sufficient free storage. Every `run ... php ...` maintenance command explicitly replaces the image's normal bot command; it does not log in to Telegram. Only the final `up` starts the new bot.
+This targets the stable 3.0.0 release. On dev.9, the owner confirmed live locking, unlocking, original-permission restoration and restart. That confirmation does not cover automatic holy-day transitions, load capacity, a long-running soak or this production import. Complete the remaining checks relevant to your deployment with a separate test bot, and schedule the monitored production window deliberately. These are operator instructions; writing this document does not execute a deployment. The commands below are for **Bash on the Linux server as root**, with Docker daemon access, Compose v2, `curl`, `unzip`, `tar`, `sha256sum` and sufficient free storage. Every `run ... php ...` maintenance command explicitly replaces the image's normal bot command; it does not log in to Telegram. Only the final `up` starts the new bot.
 
 ## 1. Understand what moves and what requires review
 
@@ -41,8 +41,11 @@ set -euo pipefail
 umask 077
 ORIGINAL_DIR=/root/shabat
 TEST_DIR=/root/shabbat-test
-VERSION=3.0.0-dev.9
-NEW_PROJECT=shabbat-production-dev9
+VERSION=3.0.0
+NEW_PROJECT=shabbat-production
+ARCHIVE="shabbat-${VERSION}.zip"
+test "$VERSION" = 3.0.0
+test "$NEW_PROJECT" = shabbat-production
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 UPLOAD_DIR=/root/shabbat-release-upload
 RELEASE_DIR="/root/shabbat-releases/$VERSION-$STAMP"
@@ -71,6 +74,7 @@ OLD_CONTAINER_ID='REPLACE_WITH_VERIFIED_PRODUCTION_CONTAINER_ID'
 docker inspect --format '{{range .Mounts}}{{println .Type .Source "->" .Destination}}{{end}}' "$OLD_CONTAINER_ID"
 docker inspect --format '{{index .Config.Labels "com.docker.compose.project"}} / {{index .Config.Labels "com.docker.compose.service"}}' "$OLD_CONTAINER_ID"
 test "$(docker inspect --format '{{index .Config.Labels "com.docker.compose.service"}}' "$OLD_CONTAINER_ID")" = shabbat
+test "$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/app"}}{{.Type}}:{{.Source}}{{end}}{{end}}' "$OLD_CONTAINER_ID")" = "bind:$ORIGINAL_DIR"
 OLD_PROJECT="$(docker inspect --format '{{index .Config.Labels "com.docker.compose.project"}}' "$OLD_CONTAINER_ID")"
 OLD_IMAGE_ID="$(docker inspect --format '{{.Image}}' "$OLD_CONTAINER_ID")"
 OLD_RESTART_POLICY="$(docker inspect --format '{{.HostConfig.RestartPolicy.Name}}' "$OLD_CONTAINER_ID")"
@@ -102,22 +106,28 @@ Ensure storage can hold the complete old folder twice, its saved image, the new 
 
 ## 3. Download, verify and build the reviewed release beside production
 
-The deployment asset is `shabbat-3.0.0-dev.9.zip`, with files directly at its root and no installed vendor. The separate corresponding-source ZIP is for source inspection; it is not the deployment archive. These URLs become usable after the release is published.
+The deployment asset is `shabbat-3.0.0.zip`, with files directly at its root and no installed vendor. The separate corresponding-source ZIP is for source inspection; it is not the deployment archive. Use the assets attached to the stable `v3.0.0` release. The checksum block requires exactly one valid SHA-256 record for the expected deployment filename; missing or duplicate records stop the procedure.
 
 ```sh
-RELEASE_URL=https://github.com/WizardLoop/shabbat/releases/download/v3.0.0-dev.9
+RELEASE_URL="https://github.com/WizardLoop/shabbat/releases/download/v${VERSION}"
 curl --fail --location --proto '=https' --tlsv1.2 \
-  "$RELEASE_URL/shabbat-3.0.0-dev.9.zip" -o "$UPLOAD_DIR/shabbat-3.0.0-dev.9.zip"
+  "$RELEASE_URL/$ARCHIVE" -o "$UPLOAD_DIR/$ARCHIVE"
 curl --fail --location --proto '=https' --tlsv1.2 \
   "$RELEASE_URL/SHA256SUMS" -o "$UPLOAD_DIR/SHA256SUMS"
 (
   cd "$UPLOAD_DIR"
-  awk '$2 == "shabbat-3.0.0-dev.9.zip" { print }' SHA256SUMS > deployment.sha256
-  test -s deployment.sha256
+  awk -v asset="$ARCHIVE" '
+    $2 == asset {
+      if (NF != 2 || length($1) != 64 || $1 ~ /[^0-9a-f]/) exit 1
+      print $1 "  " asset
+      count++
+    }
+    END { if (count != 1) exit 1 }
+  ' SHA256SUMS > deployment.sha256
   sha256sum --check deployment.sha256
 )
 install -d -m 700 "$RELEASE_DIR"
-unzip -q "$UPLOAD_DIR/shabbat-3.0.0-dev.9.zip" -d "$RELEASE_DIR"
+unzip -q "$UPLOAD_DIR/$ARCHIVE" -d "$RELEASE_DIR"
 test "$(cat "$RELEASE_DIR/VERSION")" = "$VERSION"
 test -f "$RELEASE_DIR/composer.lock"
 test -f "$RELEASE_DIR/build-info.json"
@@ -135,7 +145,7 @@ DATA_DIR=/app/data
 SESSION_PATH=/app/runtime/bot.shabbat
 HEARTBEAT_PATH=/app/data/scheduler-heartbeat.json
 LEGACY_DATA_PATH=.
-SOURCE_URL=https://github.com/WizardLoop/shabbat/releases/tag/v3.0.0-dev.9
+SOURCE_URL=https://github.com/WizardLoop/shabbat/releases/tag/v3.0.0
 ```
 
 Compose explicitly fixes `DATA_DIR` and `SESSION_PATH`; the other paths above avoid a stale host/test path in `.env`. The release page must expose the matching corresponding-source asset before production service. Do not use test bot credentials. Never share `docker compose config` output without `--quiet`.
@@ -366,18 +376,18 @@ As the configured bot owner, use `/version` or `/source` privately to verify rel
 
 For **each** unresolved legacy permission record, a current group administrator must follow [permission recovery](PERMISSION_RECOVERY.md): outside protected periods, configure the actual intended normal group permissions in Telegram; refresh the bot's **Resolve permission problem** panel; review the named group; and explicitly choose **Use current permissions as normal**. A legacy/unverified snapshot cannot be used by the restore button. Adoption does not itself send a restriction update. Re-check diagnostics; leave unexplained mismatches unresolved rather than treating generally open permissions as the intended baseline.
 
-Review copied broadcast history and any cancelled/blocked schedule. Do not recreate an interrupted broadcast without checking which messages Telegram already accepted. Retain the old source/session/private backup until a real scheduled close/open cycle and recovery behavior have been accepted.
+Review copied broadcast history and any cancelled/blocked schedule. Do not recreate an interrupted broadcast without checking which messages Telegram already accepted. Monitor both heartbeats, pending permission recovery, queue age, delivery delay and private logs through startup and the first real scheduled close/open cycle. Investigate missing work, repeated retries, provider failures or growing queues before considering the cutover accepted. Retain the old source/session/private backup until that cycle and recovery behavior have been accepted; the earlier dev.9 manual/live confirmation does not substitute for this observation.
 
 The permanent production commands are now run **from `/root/shabat`, with the recorded project name**:
 
 ```sh
 cd /root/shabat
-docker compose --project-name shabbat-production-dev9 ps
-docker compose --project-name shabbat-production-dev9 logs --tail=120 shabbat
-docker compose --project-name shabbat-production-dev9 exec -T shabbat php bin/health.php --deep
+docker compose --project-name shabbat-production ps
+docker compose --project-name shabbat-production logs --tail=120 shabbat
+docker compose --project-name shabbat-production exec -T shabbat php bin/health.php --deep
 ```
 
-For an intentional later stop, use `docker compose --project-name shabbat-production-dev9 stop shabbat`; for an approved restart, use `docker compose --project-name shabbat-production-dev9 restart shabbat`. The new persistent volumes are `shabbat-production-dev9_bot-data` and `shabbat-production-dev9_madeline-session`. Keep both, the private `.env`, matching source/lock/patches and corresponding-source identity in the normal backup policy. A later SQLite-version upgrade follows the stopped-writer backup/migration instructions, not this legacy import again.
+For an intentional later stop, use `docker compose --project-name shabbat-production stop shabbat`; for an approved restart, use `docker compose --project-name shabbat-production restart shabbat`. The new persistent volumes are `shabbat-production_bot-data` and `shabbat-production_madeline-session`. Keep both, the private `.env`, matching source/lock/patches and corresponding-source identity in the normal backup policy. A later SQLite-version upgrade follows the stopped-writer backup/migration instructions, not this legacy import again.
 
 ## 9. Roll back without mixing old and new state
 
@@ -423,7 +433,7 @@ sha256sum "$BACKUP_DIR/failed-new-state/"*.tar \
   > "$BACKUP_DIR/failed-new-state/SHA256SUMS"
 ```
 
-After reviewing any remote effects, return the preserved old folder to its original path. Do not execute the first rename if the swap never happened; in that case `/root/shabat` already contains the old source and no directory replacement is needed.
+After reviewing any remote effects, return the preserved old folder to its original path. This block applies only after the completed step-7 swap; use the separate pre-swap branch above if no rename occurred.
 
 ```sh
 FAILED_SOURCE_DIR="/root/shabat-failed-$STAMP"

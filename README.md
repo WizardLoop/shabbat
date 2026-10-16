@@ -7,9 +7,9 @@ A Telegram bot built with PHP, MadelineProto and SQLite for Shabbat and festival
 [![License: AGPL-3.0-only](https://img.shields.io/badge/license-AGPL--3.0--only-blue)](LICENSE)
 [![PHP 8.3–8.5](https://img.shields.io/badge/PHP-8.3%E2%80%938.5-777BB4)](composer.json)
 [![MadelineProto 8.7.0](https://img.shields.io/badge/MadelineProto-8.7.0-2CA5E0)](composer.lock)
-[![Development 3.0.0-dev.9](https://img.shields.io/badge/status-3.0.0--dev.9-orange)](VERSION)
+[![Stable 3.0.0](https://img.shields.io/badge/status-3.0.0%20stable-green)](VERSION)
 
-**Current version: 3.0.0-dev.9, a prerelease.** Use the matching [release assets](https://github.com/WizardLoop/shabbat/releases/tag/v3.0.0-dev.9) or tagged checkout and retain its build metadata. Automated tests, Docker checks and live Telegram acceptance remain separate. For an existing bot, follow the [production upgrade and rollback guide](docs/PRODUCTION_UPGRADE.md) before replacing files or starting a second instance. See [publication status](docs/PUBLICATION_STATUS.md), [changes](CHANGELOG.md) and [delivery safety](docs/DEV9_DELIVERY_SAFETY.md). Badges describe source configuration, not production acceptance.
+**Current version: 3.0.0, stable.** Use the matching [release assets](https://github.com/WizardLoop/shabbat/releases/tag/v3.0.0) or tagged checkout and retain its build metadata. The owner confirmed dev.9 live group locking, unlocking, original-permission restoration and restart. This does not establish holy-day timing, load capacity or a long-running soak; automated and host-specific acceptance remain separate. For an existing bot, follow the [production upgrade and rollback guide](docs/PRODUCTION_UPGRADE.md) before replacing files or starting a second instance. See [publication status](docs/PUBLICATION_STATUS.md), [changes](CHANGELOG.md) and [delivery safety](docs/DEV9_DELIVERY_SAFETY.md). Badges describe source configuration, not production acceptance.
 
 ## Contents
 
@@ -30,7 +30,7 @@ A Telegram bot built with PHP, MadelineProto and SQLite for Shabbat and festival
 | Storage/operation | SQLite migrations/backups, durable delivery jobs, independent scheduler heartbeats, one application writer and explicit maintenance tools. |
 | Donations/source | Optional Telegram Stars, including whole custom amounts 1–10000; version, license and an operator-supplied exact source URL. |
 
-dev.9 adds delivery-time eligibility checks, bounded reminder backlogs, actual spacing/quiet-window checks and independent permission, notification and broadcast work. MadelineProto remains 8.7.0 and the dependency lock is retained. Missing solar values are reported; no polar fallback is invented. Times and ritual texts are informational, with method choices made by the administrator.
+3.0.0 retains dev.9 delivery-time eligibility checks, bounded reminder backlogs, actual spacing/quiet-window checks and independent permission, notification and broadcast work. MadelineProto remains 8.7.0 and the dependency lock is retained. Missing solar values are reported; no polar fallback is invented. Times and ritual texts are informational, with method choices made by the administrator.
 
 <a id="requirements"></a>
 ## Requirements
@@ -38,14 +38,14 @@ dev.9 adds delivery-time eligibility checks, bounded reminder backlogs, actual s
 | Component | Requirement |
 |---|---|
 | Recommended deployment | Linux, Docker Engine and Compose v2, outbound HTTPS/Telegram access, persistent storage. |
-| Manual runtime | 64-bit PHP 8.3/8.4/8.5 and Composer 2. Docker pins PHP 8.4.19 and Composer 2.10.3. |
-| Extensions | PDO/PDO SQLite, mbstring, XML, DOM, fileinfo, zlib; ZIP for packaging. Verify all locked requirements with `composer check-platform-reqs`. Docker also builds pcntl and sockets. |
+| Manual runtime | 64-bit PHP 8.3/8.4/8.5 and Composer 2. Docker pins PHP 8.4.26 and Composer 2.10.3. |
+| Extensions | PDO/PDO SQLite, mbstring, XML, DOM, fileinfo, zlib; ZIP for the optional development packager. Verify all locked requirements with `composer check-platform-reqs`. Docker also builds pcntl and sockets. |
 | SQLite | Application minimum 3.35. Release gate accepts 3.51.3+, or reviewed 3.44.6 / 3.50.7. Check PHP's loaded library. Docker builds checksum-verified 3.51.3. |
 | Telegram | Your application API ID/hash, BotFather token and configured operator user IDs or resolvable usernames. |
 | GeoNames | Your webservice-enabled account for city search/automatic timezone lookup. Known cities and explicit coordinates remain available without it. |
 | Filesystem | Persistent application data and separate MadelineProto session. The runtime also needs a writable working directory for its library worker log and PrimeModule copies. |
 
-Offline tests use fake Telegram gateways and provider fixtures without bot credentials. Live staging acceptance must cover permission restoration, interruption/restart, topics, client rendering, inline/GPS, Stars and command menus.
+Offline tests use fake Telegram gateways and provider fixtures without bot credentials. Recheck permission restoration and restart on the deployment target; test topics, client rendering, inline/GPS, Stars and command menus where used. See the precise [acceptance record](docs/IMPLEMENTATION_STATUS.md).
 
 <a id="docker-installation"></a>
 ## Docker installation
@@ -55,17 +55,18 @@ Shell examples use a Linux/POSIX terminal. Run Docker commands **on the host, fr
 1. Obtain the reviewed source. For the release deployment archive:
 
 ~~~sh
-unzip shabbat-3.0.0-dev.9.zip -d shabbat
+unzip shabbat-3.0.0.zip -d shabbat
 cd shabbat
+unset BUILD_COMMIT
 ~~~
 
-It contains source and `composer.lock`, without installed `vendor/`. Docker installs locked production dependencies. **Retain archive `build-info.json`.** In this publication archive it records the verified historical baseline commit, `local_changes=true` and the exact publication-source fingerprint; the baseline is not a new commit of these changes. For a reviewed Git checkout instead, supply its actual commit before building:
+It contains source and `composer.lock`, without installed `vendor/`. Docker installs locked production dependencies. **Retain archive `build-info.json`.** The release archive records its exact reviewed commit, `local_changes=false` and the application-source fingerprint. Leave `BUILD_COMMIT` absent from `.env`; the archive example clears an inherited value so it cannot override this identity. For a reviewed Git checkout instead, supply its actual commit before building:
 
 ~~~sh
 export BUILD_COMMIT="$(git rev-parse HEAD)"
 ~~~
 
-A baseline commit alone does not identify uncommitted changes; the source fingerprint also identifies this snapshot. Do not substitute an unrelated commit.
+Use an unchanged release archive or a clean matching Git checkout. Do not substitute an unrelated commit or retain archive metadata after editing its source.
 
 2. Create private configuration once in this new installation:
 
@@ -74,7 +75,7 @@ cp .env.example .env
 chmod 600 .env
 ~~~
 
-Edit `.env`: replace Telegram examples, set `ADMIN`, your GeoNames account when needed, and `SOURCE_URL` to the exact corresponding source you make available. Keep simple `KEY=value` syntax compatible with PHP raw INI and Compose. Exclude the configured file from uploads.
+Edit `.env`: replace Telegram examples, set `ADMIN`, your GeoNames account when needed, and `SOURCE_URL=https://github.com/WizardLoop/shabbat/releases/tag/v3.0.0` for this unchanged release, whose corresponding-source asset must be available. For modified deployments, provide their exact matching source instead. Keep simple `KEY=value` syntax compatible with PHP raw INI and Compose. Exclude the configured file from uploads.
 
 3. Build and check the image. These steps install/patch dependencies and write image metadata without starting the bot:
 
@@ -330,7 +331,7 @@ docker compose run --rm --no-deps shabbat php bin/self-check.php --release
 
 `docker compose up -d shabbat` then activates the reviewed image; inspect logs/health. Manual installations follow stop/backup/install-from-lock/migrate/check/start.
 
-dev.8 → dev.9 adds `016_delivery_safety.sql`. dev.6 also needs 013–015; earlier versions apply all missing migrations automatically. Do not edit applied SQL. Uncertain past delivery attempts are handled conservatively; older unverified permission snapshots still require administrator review.
+3.0.0 adds no migration beyond dev.9. dev.8 → dev.9 added `016_delivery_safety.sql`. dev.6 also needs 013–015; earlier versions apply all missing migrations automatically. Do not edit applied SQL. Uncertain past delivery attempts are handled conservatively; older unverified permission snapshots still require administrator review.
 
 For the old file-based bot: preserve a protected legacy copy; stop old writers for final import/cutover; initialize a new DB; run dry-run, compare counts/templates/rights/warnings, then apply with stopped writers and backup directory. The exact commands appear above. For Docker mount only the protected copy read-only:
 
@@ -446,13 +447,13 @@ php patches/broadcastmanager/generate-artifacts.php
 
 These commands rewrite patch artifacts/manifests from bundled reviewed sources. They are for an intentional patch review, not routine installation. Review the changed hashes/diffs and run the full patch checks afterward. The apply/verify PHP scripts also accept an optional first positional vendor directory; leave it unset for the normal `vendor/` path.
 
-For local packaging with required development dependencies and verified identity:
+For release packaging from a clean committed checkout, with Git, Python 3.9+ and the locked development installation available:
 
 ~~~sh
 php scripts/package.php
 ~~~
 
-This writes application, corresponding-source and server-test ZIPs/checksums/manifests to `dist/`, without publishing. This prerelease uses `shabbat-3.0.0-dev.9.zip` without installed dependencies and a separately inventoried runtime corresponding-source bundle; do not substitute the developer packager's installed tool distributions for that source collection. Consult each manifest for inclusion/omissions; application source plus a lockfile is not a complete dependency source bundle.
+This writes `shabbat-3.0.0.zip`, `shabbat-3.0.0-corresponding-source.zip`, `RELEASE_MANIFEST.json` and `SHA256SUMS` to `dist/`, without publishing. The source bundle includes locked runtime sources, reviewed patches and pinned preferred-source supplements. The legacy three-archive tool is available only through `php scripts/package.php --development` for local development, with default output `dist/development/`; its installed tool distributions do not constitute a release corresponding-source offer. See [release preparation](docs/RELEASE.md) for prerequisites, source scope and artifact checks.
 
 [Architecture](docs/ARCHITECTURE.md) · [Dependencies](docs/DEPENDENCIES.md) · [Patches](docs/PATCHES.md) · [Release preparation](docs/RELEASE.md) · [Contributing](.github/CONTRIBUTING.md) · [Code of conduct](.github/CODE_OF_CONDUCT.md)
 

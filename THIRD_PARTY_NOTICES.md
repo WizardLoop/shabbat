@@ -1,6 +1,6 @@
 # Third-party notices
 
-WizardLoop Shabbat **3.0.0-dev.9** is distributed as an **AGPL-3.0-only** application. Dependency, historical-source and data licenses retain their own scope. The full application license is in [LICENSE](LICENSE); the [licensing guide](docs/LICENSING.md) explains the source offer. Exact locked versions, sources, license paths and findings are recorded in the [dependency inventory](docs/dependencies.json).
+WizardLoop Shabbat **3.0.0** is distributed as an **AGPL-3.0-only** application. Dependency, historical-source and data licenses retain their own scope. The full application license is in [LICENSE](LICENSE); the [licensing guide](docs/LICENSING.md) explains the source offer. Exact locked versions, sources, license paths and findings are recorded in the [dependency inventory](docs/dependencies.json).
 
 ## Code and tools
 
@@ -35,4 +35,4 @@ The complete [CC-BY-4.0](LICENSES/CC-BY-4.0.txt) and [CC-BY-SA-4.0](LICENSES/CC-
 
 No third-party graphic asset was added. Telegram standard emoji and button metadata are interface features. Provenance of an older remote thumbnail is unestablished; current inline results do not depend on it.
 
-Historical formatted-date reference exports had conflicting project declarations and no recovered standalone grant or Git history. Their hashes and findings are retained in [the provenance review](docs/MADELINE_FORMATTED_DATE.md); those original exports are not redistributed. The retained historical UpdateLoop script has a provenance hash but no standalone license header; its authorship/grant provenance remains a release-review item. Do not treat a successful checksum or a package license inventory as a resolution of that item.
+Historical formatted-date reference exports had conflicting project declarations and no recovered standalone grant or Git history. Their hashes and findings are retained in [the provenance review](docs/MADELINE_FORMATTED_DATE.md); those original exports are not redistributed. On 2026-10-16, the project maintainer stated that they authored the retained historical UpdateLoop helper and explicitly authorized distribution under AGPL-3.0-only. The dated, hash-scoped attestation is recorded in [its manifest](patches/madelineproto/manifest.json); the original helper bytes remain unchanged. This records the maintainer's statement, not an independent legal certification.

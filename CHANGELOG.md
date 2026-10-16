@@ -2,6 +2,14 @@
 
 PHP 8.3 compatibility: module-delivery bookkeeping now uses the database-owned `BEGIN IMMEDIATE` transaction state and exact connection identity; native callback/message fixtures initialize inherited readonly properties from their declaring class. Regression tests cover rejected foreign/outside transactions, rollback and state reset.
 
+## 3.0.0 - stable
+
+- Promote the reviewed dev.9 implementation to stable 3.0.0 while retaining MadelineProto 8.7.0, SQLite, the Composer lock, all five approved patch sets and migrations 001–016. No new runtime feature or migration is introduced by this promotion.
+- Record the owner's successful dev.9 live tests of locking, unlocking, original-permission restoration and restart. Real holy-day transitions, load capacity, long-running soak and feature-specific acceptance remain separate; no broader result is inferred.
+- Align English/Hebrew documentation and release identity; provide the complete stopped-writer production cutover into `/root/shabat`, full private backup, explicit import checks, permission recovery, monitoring and rollback.
+- Make `composer package` / `php scripts/package.php` produce the two release archives, pinned runtime preferred-source collection, release manifest and SHA-256 sums from an exact clean Git commit. Retain the former installed-tool packager only as explicit `--development` tooling.
+- Publish source/metadata with the actual release commit and `local_changes=false`. GitHub publication does not deploy or restart production.
+
 ## 3.0.0-dev.9 - GitHub prerelease
 
 - Pin Composer 2.10.3 in CI and Docker to address GitHub Actions token compatibility and the upstream token-disclosure advisory; retain authentication, all quality gates, the application lock and MadelineProto 8.7.0.
