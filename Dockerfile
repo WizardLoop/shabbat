@@ -1,5 +1,5 @@
 FROM composer:2.10.3@sha256:af98f42dfff7c68ba8d53c2164fd9fde1087b7d449514baa38c418b1f6bc4bac AS composer
-FROM php:8.4.26-cli-bookworm@sha256:836ac6c672d1372a47c8fd61b625015bd07760f493fb2eaab2087636498a2b4b
+FROM php:8.5.11-cli-bookworm@sha256:819080ed413631f6ec564184dd9acd08d9425bd863b9f8b5876b5ea2147d55e7
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates tzdata libsqlite3-dev libonig-dev libxml2-dev libzip-dev unzip curl build-essential pkg-config \
     && curl --fail --location --proto '=https' --tlsv1.2 https://www.sqlite.org/2026/sqlite-autoconf-3510300.tar.gz -o /tmp/sqlite.tar.gz \
