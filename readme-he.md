@@ -40,7 +40,7 @@
 | רכיב | דרישה |
 |---|---|
 | פריסה מומלצת | Linux, ‏Docker Engine ו־Compose v2, גישה יוצאת ל־HTTPS ול־Telegram ואחסון מתמשך. |
-| הרצה ידנית | PHP ‏8.3/8.4/8.5 ב־64 ביט ו־Composer 2. ב־Docker נעולים PHP 8.4.19 ו־Composer 2.8.8. |
+| הרצה ידנית | PHP ‏8.3/8.4/8.5 ב־64 ביט ו־Composer 2. ב־Docker נעולים PHP 8.4.19 ו־Composer 2.10.3. |
 | הרחבות | PDO/PDO SQLite, ‏mbstring, ‏XML, ‏DOM, ‏fileinfo ו־zlib; ‏ZIP לאריזה. בדקו את כל דרישות ה־lock באמצעות `composer check-platform-reqs`. ב־Docker נבנות גם pcntl ו־sockets. |
 | SQLite | מינימום יישום 3.35. בדיקת שחרור מקבלת 3.51.3 ומעלה או 3.44.6 / 3.50.7 שנבדקו. חשוב לבדוק את הספרייה ש־PHP טוען. Docker בונה 3.51.3 עם אימות SHA-256. |
 | Telegram | פרטי יישום API ID/hash, טוקן BotFather ומזהי משתמש או שמות משתמש ניתנים לפענוח עבור המפעילים. |

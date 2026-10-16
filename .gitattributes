@@ -15,3 +15,8 @@ patches/**/baseline/** whitespace=-blank-at-eol,-blank-at-eof,-space-before-tab,
 
 # Distributed publisher license text hashes must remain stable too.
 LICENSES/** -text
+
+# Database checksums and bundled licensed/provider text use the original bytes.
+migrations/** -text
+resources/templates/** -text
+tests/Fixtures/** -text

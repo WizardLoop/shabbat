@@ -114,4 +114,33 @@ final class PatchGitBytesTest extends TestCase
         self::assertFileDoesNotExist($this->fixture . '/git/index');
         self::assertSame([], glob($this->fixture . '/git/objects/[0-9a-f][0-9a-f]'));
     }
+
+    public function testAutocrlfCannotAlterMigrationOrBundledResourceBytes(): void
+    {
+        $root = dirname(__DIR__);
+        $files = [
+            'resources/templates/omer-counts.json',
+            'resources/templates/omer-counts-localized.json',
+            'resources/templates/omer-liturgy.json',
+            'tests/Fixtures/CalendarFixtureClient.php',
+            'tests/Fixtures/hebcal-full-runtime-provenance.json',
+            'tests/Fixtures/legacy/data/-100101/chatb1.json',
+        ];
+        foreach (glob($root . '/migrations/*.sql') ?: [] as $migration) {
+            $files[] = 'migrations/' . basename($migration);
+        }
+        self::assertGreaterThan(6, count($files));
+        foreach ($files as $relative) {
+            $bytes = (string) file_get_contents($root . '/' . $relative);
+            $expected = hash('sha1', 'blob ' . strlen($bytes) . "\0" . $bytes);
+            foreach (['true', 'false'] as $autocrlf) {
+                $filtered = $this->command([
+                    '--git-dir=' . $this->fixture . '/git', '--work-tree=' . $root,
+                    '-c', 'core.bare=false', '-c', 'core.autocrlf=' . $autocrlf,
+                    'hash-object', '--path=' . $relative, '--stdin',
+                ], $bytes);
+                self::assertSame($expected, $filtered, 'Git normalization changed immutable bytes: ' . $relative);
+            }
+        }
+    }
 }

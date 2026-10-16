@@ -38,7 +38,7 @@ dev.9 adds delivery-time eligibility checks, bounded reminder backlogs, actual s
 | Component | Requirement |
 |---|---|
 | Recommended deployment | Linux, Docker Engine and Compose v2, outbound HTTPS/Telegram access, persistent storage. |
-| Manual runtime | 64-bit PHP 8.3/8.4/8.5 and Composer 2. Docker pins PHP 8.4.19 and Composer 2.8.8. |
+| Manual runtime | 64-bit PHP 8.3/8.4/8.5 and Composer 2. Docker pins PHP 8.4.19 and Composer 2.10.3. |
 | Extensions | PDO/PDO SQLite, mbstring, XML, DOM, fileinfo, zlib; ZIP for packaging. Verify all locked requirements with `composer check-platform-reqs`. Docker also builds pcntl and sockets. |
 | SQLite | Application minimum 3.35. Release gate accepts 3.51.3+, or reviewed 3.44.6 / 3.50.7. Check PHP's loaded library. Docker builds checksum-verified 3.51.3. |
 | Telegram | Your application API ID/hash, BotFather token and configured operator user IDs or resolvable usernames. |

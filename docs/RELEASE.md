@@ -38,7 +38,7 @@ composer audit --locked --format=json
 php scripts/dependencies.php
 ```
 
-The first three commands display package/license/advisory reports; the advisory command needs network access. `scripts/dependencies.php` writes `docs/dependencies.json` in the copy and validates bundled data/license artifacts. Composer 2.8.8 does not support `licenses --locked`; the installed license report must come from a verified locked installation. Advisory results and license evidence are separate checks.
+The first three commands display package/license/advisory reports; the advisory command needs network access. `scripts/dependencies.php` writes `docs/dependencies.json` in the copy and validates bundled data/license artifacts. The release workflows use Composer 2.10.3; the installed license report must come from a verified locked installation. Advisory results and license evidence are separate checks.
 
 For a target with Docker, run this from the disposable repository root as a user authorized to use its Docker engine. Compose requires the declared `.env` file even for a build. Create it from the public example in this fresh copy; no live Telegram credentials are needed to build the image. Do not overwrite an existing configured installation's `.env`.
 

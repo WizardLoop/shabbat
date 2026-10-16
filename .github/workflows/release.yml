@@ -13,7 +13,7 @@ jobs:
         with:
           php-version: "8.4"
           extensions: pdo_sqlite, mbstring, xml, dom, fileinfo, zlib, zip
-          tools: composer:2.8.8
+          tools: composer:2.10.3
           coverage: none
       - run: composer validate --strict --no-check-all
       - run: composer install --no-interaction --prefer-dist
