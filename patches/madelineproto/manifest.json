@@ -7,7 +7,18 @@
         "path": "local-reference/newsearch-v2/docker/patch-madeline-update-loop.php",
         "also_found": "local-reference/psy new/release-r21-work/docker/patch-madeline-update-loop.php",
         "sha256": "1ec2691498e878d28ca8e9cde94b00c803d9ccba789096ffc8471156dfb429e9",
-        "note": "Historical artifact was a guarded PHP patch script; reference unified diff is reproduced from that script. Paths are logical local-reference identifiers, not public download URLs."
+        "note": "Historical artifact was a guarded PHP patch script; reference unified diff is reproduced from that script. Paths are logical local-reference identifiers, not public download URLs.",
+        "maintainer_attestation": {
+            "date": "2026-10-16",
+            "by": "WizardLoop project maintainer",
+            "scope": "patches/madelineproto/original-reference.php",
+            "sha256": "1ec2691498e878d28ca8e9cde94b00c803d9ccba789096ffc8471156dfb429e9",
+            "authorship": "The maintainer states that they authored this historical UpdateLoop helper.",
+            "distribution_authorization": "The maintainer explicitly authorizes distribution of this helper under the project license AGPL-3.0-only.",
+            "license": "AGPL-3.0-only",
+            "evidence": "Explicit maintainer instruction during preparation of the 3.0.0 release.",
+            "limits": "Records the maintainer attestation; not an independent authorship or legal certification. Original helper bytes and upstream dependency notices remain unchanged."
+        }
     },
     "approved": [
         {

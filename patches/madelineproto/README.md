@@ -11,6 +11,13 @@ CancelledException import and two union catches guarded by getPrevious() instanc
 TimeoutException. It rethrows other cancellation. Historical source was a script;
 original-reference.patch is a reproduced unified diff, not a historical diff.
 
+On **2026-10-16**, the WizardLoop project maintainer stated that they authored this
+historical UpdateLoop helper and explicitly authorized its distribution under
+**AGPL-3.0-only**. The attestation applies to the exact script hash above and is
+recorded in the manifest. The original headerless script bytes remain unchanged;
+the statement does not relicense upstream MadelineProto source or certify
+independent authorship/legal review. See [licensing](../../docs/LICENSING.md).
+
 The applied update-loop-timeout-cancellation.patch is a **new reviewed derivative**.
 Both difference branches retain those guards, check isRunning()/authorization,
 and return the existing 10-second interval on a transient timeout. This lets the

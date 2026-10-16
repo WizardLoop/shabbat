@@ -1,4 +1,4 @@
-* text=auto
+* text=auto eol=lf
 *.php text eol=lf
 *.json text eol=lf
 *.md text eol=lf
@@ -20,3 +20,6 @@ LICENSES/** -text
 migrations/** -text
 resources/templates/** -text
 tests/Fixtures/** -text
+
+# Preserve pinned preferred-source supplement bytes and original upstream notices.
+resources/release/preferred-source/** -text

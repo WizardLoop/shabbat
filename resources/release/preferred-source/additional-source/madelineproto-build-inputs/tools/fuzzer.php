@@ -1,0 +1,322 @@
+<?php declare(strict_types=1);
+
+use Amp\CancelledException;
+use Amp\Http\Client\HttpClientBuilder;
+use Amp\Http\Client\Request;
+use danog\MadelineProto\API;
+use danog\MadelineProto\Logger;
+use danog\MadelineProto\Magic;
+use danog\MadelineProto\PTSException;
+use danog\MadelineProto\RPCError\BusinessConnectionNotAllowedError;
+use danog\MadelineProto\RPCErrorException;
+use danog\MadelineProto\Settings;
+use danog\MadelineProto\Settings\Logger as SettingsLogger;
+use danog\MadelineProto\Settings\TLSchema;
+use danog\MadelineProto\TL\TL;
+use danog\MadelineProto\Tools;
+use Revolt\EventLoop;
+use Webmozart\Assert\Assert;
+
+use function Amp\async;
+use function Amp\Future\await;
+
+/*
+Copyright 2016-2020 Daniil Gentili
+(https://daniil.it)
+This file is part of MadelineProto.
+MadelineProto is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+MadelineProto is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU Affero General Public License for more details.
+You should have received a copy of the GNU General Public License along with MadelineProto.
+If not, see <http://www.gnu.org/licenses/>.
+ */
+
+require 'vendor/autoload.php';
+$logger = new Logger(new SettingsLogger);
+
+set_error_handler(['\danog\MadelineProto\Exception', 'ExceptionErrorHandler']);
+
+/**
+ * @internal
+ */
+function getTLSchema(): TLSchema
+{
+    $layerFile = glob(__DIR__."/../src/TL_telegram_v*.tl")[0];
+    return (new TLSchema)->setAPISchema($layerFile)->setSecretSchema('')->setFuzzMode(true);
+}
+
+/**
+ * Get TL info of layer.
+ *
+ * @internal
+ *
+ * @return void
+ */
+function getTL(TLSchema $schema)
+{
+    $layer = new TL();
+    $layer->init($schema);
+
+    return ['methods' => $layer->getMethods(), 'constructors' => $layer->getConstructors()];
+}
+$schema = getTLSchema();
+$layer = getTL($schema);
+$res = '';
+
+Magic::start(true);
+$auth = '';
+try {
+    $auth = getenv('TELERPC_AUTH_TOKEN') ?: '';
+} catch (Throwable) {
+}
+Assert::true(preg_match('/^[a-zA-Z0-9_-]*$/', $auth) === 1, 'TELERPC_AUTH_TOKEN can only contain a-z, A-Z, 0-9, _ and -');
+
+$client = HttpClientBuilder::buildDefault();
+if ($auth) {
+    $res = json_decode(
+        (
+            $client
+                ->request(new Request('https://report-rpc-error.madelineproto.xyz/?auth='.$auth.'&cleanup=1'))
+        )->getBody()->buffer(),
+        true,
+    );
+    Assert::true($res['ok']);
+    echo "Cleaned up old reports".PHP_EOL;
+} else {
+    echo "No TELERPC_AUTH_TOKEN set, not cleaning up old reports".PHP_EOL;
+}
+
+if ($auth) {
+    $layerNumber = $schema->getLayer();
+    $res = json_decode(
+        (
+            $client
+                ->request(new Request('https://report-rpc-error.madelineproto.xyz/?auth='.$auth.'&setLayer='.$layerNumber))
+        )->getBody()->buffer(),
+        true,
+    );
+    Assert::true($res['ok']);
+    echo "Set layer number to $layerNumber".PHP_EOL;
+} else {
+    echo "No TELERPC_AUTH_TOKEN set, not setting layer number".PHP_EOL;
+}
+
+$settings = new Settings;
+$settings->setSchema($schema);
+$settings->getLogger()->setLevel(Logger::ULTRA_VERBOSE);
+
+echo "Unauthed:".PHP_EOL;
+$unauthed = new \danog\MadelineProto\API('fuzz_unauth.madeline');
+$unauthed->updateSettings($settings);
+Assert::false($unauthed->getSelf(), "fuzz_unauth.madeline is authed!");
+$unauthed->restart();
+
+echo "Bot login:".PHP_EOL;
+$bot = new \danog\MadelineProto\API('fuzz_bot.madeline');
+$bot->start();
+$bot->updateSettings($settings);
+Assert::true($bot->isSelfBot(), "fuzz_bot.madeline is not a bot!");
+$u = $bot->getSelf()['username'];
+Assert::true($bot->getSelf()['bot_business'], "fuzz_bot.madeline ($u) is not a business bot, enable business mode in botfather!");
+$bot->restart();
+
+echo "User login:".PHP_EOL;
+$user = new \danog\MadelineProto\API('fuzz_user.madeline');
+$user->start();
+$user->updateSettings($settings);
+Assert::true($user->isSelfUser(), "fuzz_user.madeline is not a user!");
+$user->restart();
+
+$user->getSelf();
+$bot->getSelf();
+
+$cId = null;
+
+$toggleBusiness = static function (bool $enable) use ($user, $bot, &$cId): void {
+    $bot->getUpdates();
+
+    Logger::log($enable ? "Initializing business connection..." : "Deinitializing business connection...");
+    $rights = ['_' => 'businessBotRights'];
+    foreach ($user->getTL()->getConstructors()->findByPredicate('businessBotRights')['params'] as $param) {
+        if ($param['type'] === 'true') {
+            $rights[$param['name']] = true;
+        }
+    }
+
+    foreach ([$enable, !$enable] as $deleted) {
+        $user->account->updateConnectedBot(
+            bot: $bot->getSelf()['username'],
+            deleted: $deleted,
+            rights: $rights,
+            recipients: [
+                '_' => 'inputBusinessBotRecipients',
+                'existing_chats' => true,
+                'new_chats' => true,
+                'contacts' => true,
+                'non_contacts' => true,
+            ],
+        );
+    }
+    $cId = null;
+    $offset = 0;
+    do {
+        foreach ($bot->getUpdates(['offset' => $offset, 'timeout' => 10.0]) as $u) {
+            $offset = $u['update_id'] + 1;
+            $u = $u['update'];
+            if ($u['_'] !== 'updateBotBusinessConnect') {
+                continue;
+            }
+            if ($u['connection']['disabled'] !== !$enable) {
+                continue;
+            }
+            $cId = $u['connection']['connection_id'];
+            break 2;
+        }
+    } while (true);
+    $bot->account->getBotBusinessConnection(
+        connection_id: $cId,
+    );
+    $bot->setNoop();
+
+    Logger::log($enable ? "Initialized business connection!" : "Deinitialized business connection!");
+};
+
+$toggleBusiness(true);
+
+function call(API $API, string $method, array $args = []): void
+{
+    Tools::getVar($API, 'wrapper')->getAPI()->methodCallAsyncRead($method, $args);
+}
+
+function getCancellationReason(CancelledException $e): string
+{
+    return $e->getPrevious()?->getMessage() ?? $e->getMessage();
+}
+
+$methods = [];
+
+$wait = static function (bool $force = false) use (&$methods): void {
+    if (count($methods) >= 10 || $force) {
+        Logger::log("Processing ".implode(", ", array_keys($methods)));
+        await($methods);
+        Logger::log("Done!");
+        Assert::isEmpty($methods, "Some methods were not processed!");
+    }
+};
+
+foreach ($layer['methods']->by_id as $constructor) {
+    $name = $constructor['method'];
+    if (strtolower($name) === 'account.deleteaccount'
+        || !str_contains($name, '.')) {
+        continue;
+    }
+    $methods["unauthed $name"]= async(static function () use ($unauthed, $name, &$methods): void {
+        try {
+            call($unauthed, $name);
+        } catch (CancelledException $e) {
+            throw new \RuntimeException("Got cancellation for unauthed $name: ".getCancellationReason($e), previous: $e);
+        } catch (RPCErrorException|PTSException) {
+        }
+        unset($methods["unauthed $name"]);
+    });
+    $wait();
+}
+
+$names = [];
+foreach ($layer['methods']->by_id as $constructor) {
+    $name = $constructor['method'];
+    if (strtolower($name) === 'account.deleteaccount'
+        || strtolower($name) === 'auth.logout'
+        || $name === 'auth.resetAuthorizations'
+        || $name === 'auth.dropTempAuthKeys'
+        || $name === 'account.resetAuthorization'
+        || $name === 'account.resetPassword'
+        || $name === 'account.updateUsername'
+        || $name === 'photos.updateProfilePhoto'
+        || $name === 'photos.uploadProfilePhoto'
+        || $name === 'payments.resolveStarGiftOffer' // tmp
+        || !str_contains($name, '.')) {
+        continue;
+    }
+    $names []= $constructor['method'];
+}
+
+foreach ($names as $name) {
+    $methods["bot $name"]= async(static function () use ($bot, $name, &$methods): void {
+        try {
+            call($bot, $name);
+        } catch (CancelledException $e) {
+            throw new \RuntimeException("Got cancellation for bot $name: ".getCancellationReason($e), previous: $e);
+        } catch (RPCErrorException|PTSException) {
+        }
+        unset($methods["bot $name"]);
+    });
+    $methods["user $name"] = async(static function () use ($user, $name, &$methods): void {
+        try {
+            call($user, $name);
+        } catch (CancelledException $e) {
+            throw new \RuntimeException("Got cancellation for user $name: ".getCancellationReason($e), previous: $e);
+        } catch (RPCErrorException|PTSException) {
+        }
+        unset($methods["user $name"]);
+    });
+    $methods["business $name"] = async(static function () use ($bot, $name, $cId, $client, $auth, &$methods): void {
+        $ok = true;
+        try {
+            call($bot, $name, ['businessConnectionId' => $cId]);
+        } catch (CancelledException $e) {
+            throw new \RuntimeException("Got cancellation for business $name: ".getCancellationReason($e), previous: $e);
+        } catch (PTSException|BusinessConnectionNotAllowedError) {
+            $ok = false;
+        } catch (RPCErrorException $e) {
+            echo "Got ".$e->getMessage()." for business $name".PHP_EOL;
+        }
+
+        if ($ok && $auth) {
+            $res = json_decode(
+                (
+                    $client
+                        ->request(new Request('https://report-rpc-error.madelineproto.xyz/?auth='.$auth.'&error=BUSINESS_CONNECTION_INVALID&method='.urlencode($name).'&code=400'))
+                )->getBody()->buffer(),
+                true,
+            );
+        }
+        unset($methods["business $name"]);
+    });
+    $methods["business invalid $name"] = async(static function () use ($bot, $name, &$methods): void {
+        try {
+            call($bot, $name, ['businessConnectionId' => '']);
+        } catch (CancelledException $e) {
+            throw new \RuntimeException("Got cancellation for business invalid $name: ".getCancellationReason($e), previous: $e);
+        } catch (RPCErrorException|PTSException) {
+        }
+        unset($methods["business invalid $name"]);
+    });
+
+    $wait();
+}
+
+$wait(true);
+
+$toggleBusiness(false);
+
+foreach ($names as $name) {
+    $methods["bot disconnected $name"]= async(static function () use ($bot, $name, &$methods): void {
+        try {
+            call($bot, $name);
+        } catch (CancelledException $e) {
+            throw new \RuntimeException("Got cancellation for bot disconnected $name: ".getCancellationReason($e), previous: $e);
+        } catch (RPCErrorException|PTSException) {
+        }
+        unset($methods["bot disconnected $name"]);
+    });
+
+    $wait();
+}
+
+$wait(true);
+
+unset($bot, $user, $unauthed, $wait, $toggleBusiness);
+
+// Give time for error reporting routine to finish
+EventLoop::run();

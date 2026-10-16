@@ -1,16 +1,18 @@
 # Publication and release status
 
-## Current GitHub prerelease
+## Stable release 3.0.0
 
-The owner-authorized `v3.0.0-dev.9` publication uses the reviewed merge commit and remains a prerelease. The deployment asset is `shabbat-3.0.0-dev.9.zip`; the separate `shabbat-3.0.0-dev.9-corresponding-source.zip` contains the 57 locked runtime package trees and the preferred-source supplements described below. `SHA256SUMS` and `RELEASE_MANIFEST.json` identify the final archives, source fingerprint and CI evidence. Release `build-info.json` records the actual merge commit and `local_changes=false` only after exact source equality. See [release notes](RELEASE_NOTES.md) and [legacy production cutover](PRODUCTION_UPGRADE.md).
+The owner-authorized `v3.0.0` stable release uses the exact reviewed merge commit. Its deployment asset is `shabbat-3.0.0.zip`; `shabbat-3.0.0-corresponding-source.zip` adds the 57 locked runtime package trees and preferred-source supplements below. `SHA256SUMS` and `RELEASE_MANIFEST.json` identify the archives, source fingerprint and scope; the matching Actions run supplies CI evidence. Archive `build-info.json` records the actual commit and `local_changes=false` after exact source equality. See [release notes](RELEASE_NOTES.md) and [production cutover](PRODUCTION_UPGRADE.md).
 
-Composer 2.10.3 replaces the old build-tool pin; application dependency versions, approved patch bytes and existing SQL migration bytes are unchanged. The generic developer packager output is not substituted for the scoped runtime source asset. Publishing the GitHub release does not deploy or restart the bot.
+Stable packaging is now repository tooling: `composer package` / `php scripts/package.php` reads a clean committed Git tree and verifies the locked runtime sources and committed supplement inventory before writing the two ZIPs and metadata to `dist/`. Git and Python 3.9+ are packaging prerequisites. The old three-archive installed-tool path is explicitly `--development` and is not a release source offer. [Release preparation](RELEASE.md) documents the checks and prerequisites.
+
+The owner reported successful dev.9 live locking, unlocking, restoration of original group permissions and restart on 2026-10-16. The stable promotion preserves that runtime behavior; it does not convert those tests into holy-day, load, soak, all-client or production-migration acceptance. The Docker PHP 8.4 base moves to security-patched 8.4.26; Composer stays 2.10.3. Application lock, approved patch bytes and SQL migration bytes remain preserved. Publishing the GitHub release does not deploy or restart the bot.
 
 ## Historical local preparation
 
 The earlier local documentation/public-source preparation of **3.0.0-dev.9** preserved runtime behavior and locked dependencies. That preparation itself created no commit, tag, GitHub release or production deployment. Its historical artifact names and metadata are recorded below; use the current release assets above for deployment.
 
-## Delivery layout
+## Historical local delivery layout
 
 | Path in the local delivery | Contents |
 |---|---|
@@ -20,7 +22,7 @@ The earlier local documentation/public-source preparation of **3.0.0-dev.9** pre
 | `artifacts/SHA256SUMS` | SHA-256 hashes for the delivered ZIPs |
 | `checks/` | Sanitized implementation inventory, original-source preservation evidence, executed-check reports, archive manifests and documented blockers |
 
-The archive-only `build-info.json` records the verified original baseline commit, `local_changes=true` and the exact publication-source fingerprint. It is excluded from `repo/` and Git; it neither creates nor claims a new commit. Extract the publication ZIP into a new directory, retain that metadata unchanged, and follow the README. It is a source distribution requiring `composer install` or a Docker build, not a preconfigured bot. The existing `scripts/package.php` remains a separate developer packager that produces its documented three archive types from an installed development tree; do not confuse those names/scope with this publication delivery.
+The archive-only `build-info.json` records the verified original baseline commit, `local_changes=true` and the exact publication-source fingerprint. It is excluded from `repo/` and Git; it neither creates nor claims a new commit. Extract the publication ZIP into a new directory, retain that metadata unchanged, and follow the README. It is a source distribution requiring `composer install` or a Docker build, not a preconfigured bot. At that time `scripts/package.php` was a separate three-archive developer packager. Stable 3.0.0 replaces its default with the reviewed two-archive release workflow and retains the old behavior only under `--development`; historical archive names and scope do not describe current release assets.
 
 ## Corresponding-source scope
 
@@ -54,4 +56,4 @@ See [licensing](LICENSING.md), [third-party notices](../THIRD_PARTY_NOTICES.md),
 - Current acceptance and feature gaps are documented in [implementation status](IMPLEMENTATION_STATUS.md); they are not silently fixed or marketed as complete.
 - Exact test results belong to the final separate checks report. Previously recorded dev.9 results do not replace a clean-install check of this copy.
 
-When publishing manually, use the exact reviewed source and preserve its corresponding-source offer. Do not upload private environment/session/data files. The historical local preparation performed no remote publication or production action; the later authorized GitHub prerelease is described at the top of this document.
+When publishing manually, use the exact reviewed source and preserve its corresponding-source offer. Do not upload private environment/session/data files. The historical local preparation performed no remote publication or production action; the current authorized stable release is described at the top of this document.

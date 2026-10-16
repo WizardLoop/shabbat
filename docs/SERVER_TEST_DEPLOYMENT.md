@@ -1,61 +1,105 @@
-# Deploy the publication source to an isolated test server
+# Test stable 3.0.0 with a separate bot
 
-Use a separate test bot and the existing `shabbat-test` Compose project in `/root/shabbat-test`. These are operator instructions; publication preparation does not execute them. Keep `.env`, named data/session volumes and private backups. The supplied publication ZIP contains source without installed dependencies; Docker installs the locked runtime dependencies and patches during the build.
+Use a **new test bot identity and disposable groups**. The fresh-install procedure below uses `/root/shabbat-test-3.0.0` and Compose project `shabbat-staging-300`; it preserves both the existing `/root/shabbat-test` installation and production `/root/shabat`. These are instructions, not an executed deployment. Never run two clients against one bot/session/database.
 
-For a new test server, follow [installation](INSTALLATION.md) first. For the older file-based bot, follow [explicit legacy migration](MIGRATION.md); updating an existing SQLite test installation is a different operation.
+An existing SQLite test deployment should follow the [stopped-writer upgrade](../README.md#upgrade-and-legacy-import) and [complete backup/restore procedure](BACKUP_RESTORE.md), preserving its existing project/volumes. Do not unpack this release over its old files or apply the fresh-volume instructions below to its state. The file-based production bot has its own [full cutover guide](PRODUCTION_UPGRADE.md).
 
-## Upload
+## Prepare a fresh isolated source directory
 
-From a local shell opened in the delivered `shabbat-publication/artifacts` folder, with SSH/SCP access to the test server, replace `SERVER_IP`:
-
-```sh
-scp shabbat-3.0.0-dev.9-publication.zip SHA256SUMS root@SERVER_IP:/root/shabbat-test/
-```
-
-This copies the source ZIP and checksum file to an already existing directory. It does not stop or start the bot. The corresponding-source archive is a separate source-offer artifact; it is not required for this Docker installation command.
-
-## Update the existing test deployment
-
-Run on Linux from the test directory with Docker access. Stop at the first error. Preserve a private backup of data/session/library state before cutover; the migration step also creates and verifies its application-database backup.
+Run on the Linux test host in the same Bash session, with root/Docker access, Compose v2, `curl`, `unzip` and `sha256sum`. The commands create a new source directory and download public release assets; they do not start a bot.
 
 ```sh
-set -eu
-cd /root/shabbat-test
-sha256sum -c SHA256SUMS --ignore-missing
-docker compose -p shabbat-test stop shabbat
-unzip -o shabbat-3.0.0-dev.9-publication.zip
+set -euo pipefail
+umask 077
+VERSION=3.0.0
+ARCHIVE="shabbat-${VERSION}.zip"
+TEST_SOURCE=/root/shabbat-test-3.0.0
+TEST_PROJECT=shabbat-staging-300
+UPLOAD_DIR=/root/shabbat-test-release-upload
+test "$TEST_SOURCE" = /root/shabbat-test-3.0.0
+test ! -e "$TEST_SOURCE"
+if docker volume inspect "${TEST_PROJECT}_bot-data" >/dev/null 2>&1 \
+  || docker volume inspect "${TEST_PROJECT}_madeline-session" >/dev/null 2>&1; then
+  printf '%s\n' 'STOP: the test project already has state; inspect it before another attempt.' >&2
+  exit 1
+fi
+install -d -m 700 "$UPLOAD_DIR"
+RELEASE_URL="https://github.com/WizardLoop/shabbat/releases/download/v${VERSION}"
+curl --fail --location --proto '=https' --tlsv1.2 \
+  "$RELEASE_URL/$ARCHIVE" -o "$UPLOAD_DIR/$ARCHIVE"
+curl --fail --location --proto '=https' --tlsv1.2 \
+  "$RELEASE_URL/SHA256SUMS" -o "$UPLOAD_DIR/SHA256SUMS"
+(
+  cd "$UPLOAD_DIR"
+  awk -v asset="$ARCHIVE" '
+    $2 == asset {
+      if (NF != 2 || length($1) != 64 || $1 ~ /[^0-9a-f]/) exit 1
+      print $1 "  " asset
+      count++
+    }
+    END { if (count != 1) exit 1 }
+  ' SHA256SUMS > deployment.sha256
+  sha256sum --check deployment.sha256
+)
+install -d -m 700 "$TEST_SOURCE"
+unzip -q "$UPLOAD_DIR/$ARCHIVE" -d "$TEST_SOURCE"
+cd "$TEST_SOURCE"
+test "$(cat VERSION)" = "$VERSION"
+test -f build-info.json
+cp .env.example .env
 chmod 600 .env
-docker compose -p shabbat-test config --quiet
-docker compose -p shabbat-test build shabbat
-docker compose -p shabbat-test run --rm --no-deps shabbat php scripts/verify-patches.php
-docker compose -p shabbat-test run --rm --no-deps shabbat php bin/self-check.php --release
-docker compose -p shabbat-test run --rm --no-deps shabbat php bin/runtime-permissions.php --require-non-root
-docker compose -p shabbat-test run --rm --no-deps shabbat php -r 'if (is_dir("/app/data/backups") === false && mkdir("/app/data/backups", 0700, true) === false) { exit(1); }'
-docker compose -p shabbat-test run --rm --no-deps shabbat php bin/migrate.php --writers-stopped --backup-dir /app/data/backups --db /app/data/shabbat.sqlite
-docker compose -p shabbat-test run --rm --no-deps shabbat php bin/check-calendar.php
-docker compose -p shabbat-test up -d --force-recreate shabbat
-docker compose -p shabbat-test logs --tail=120 shabbat
 ```
 
-The final `up` command starts the configured bot and its networked actions. Earlier build/check/migration commands do not send Telegram messages. An existing database needs the backup directory; a new database initializes its schema. The runtime requires all 16 migration sources and rejects changed applied checksums.
+For manual upload, transfer the deployment ZIP and `SHA256SUMS` to `UPLOAD_DIR` and use the same exact checksum check before extracting. The separate corresponding-source archive is the source-offer artifact; it is not the deployment ZIP. Retain release `build-info.json` unchanged; it records the actual release commit and fingerprint with `local_changes=false`.
 
-After the first completed scheduler cycle:
+Edit the new `.env` privately with the new test bot's Telegram credentials, trusted `ADMIN`, GeoNames account and container paths from [configuration](CONFIGURATION.md). Never copy production credentials/data/session. Set `SOURCE_URL=https://github.com/WizardLoop/shabbat/releases/tag/v3.0.0` for this unchanged release and leave `BUILD_COMMIT` absent.
+
+## Build, initialize and start deliberately
+
+In the same shell at the fresh source root:
 
 ```sh
-docker compose -p shabbat-test exec -T shabbat php bin/health.php --deep
-docker compose -p shabbat-test ps
+test_compose() {
+  docker compose --project-name "$TEST_PROJECT" \
+    --project-directory "$TEST_SOURCE" --file "$TEST_SOURCE/docker-compose.yml" "$@"
+}
+unset BUILD_COMMIT
+test_compose config --quiet
+test_compose build shabbat
+test_compose run --rm --no-deps shabbat php scripts/verify-patches.php
+test_compose run --rm --no-deps shabbat php bin/self-check.php --release
+test_compose run --rm --no-deps shabbat php bin/runtime-permissions.php --require-non-root
+test_compose run --rm --no-deps shabbat php bin/check-calendar.php
+test_compose run --rm --no-deps shabbat php bin/migrate.php --writers-stopped --db /app/data/shabbat.sqlite
 ```
 
-Verify `/source` reports `3.0.0-dev.9` and the expected source identity. Retain the archive build metadata: its commit is the original baseline, explicitly accompanied by local changes and this publication fingerprint, not a new publication commit. Docker refuses missing or mismatched archive identity. Provide the exact accessible source URL before public operation.
+These commands build/install/patch the locked runtime, check the platform/filesystem, query public calendar providers and initialize the empty test database. They do not open a Telegram session. Existing-volume assertions are intentional; investigate a partial attempt instead of deleting state to force a pass.
 
-## Existing permission problems and acceptance
+When the test bot identity and disposable groups are ready, start its networked activity:
 
-1. Outside a protected period and without an active lock, review the group's normal rights in Telegram. An older overly permissive snapshot cannot reconstruct restrictions that were never saved correctly.
-2. In group settings, open **Resolve permission problem**, refresh, inspect the displayed group/rights, then confirm the intended supported action. Adopting current permissions preserves the earlier evidence and does not itself change Telegram rights.
-3. In a disposable group, disable media, invitations or pinning before closing/opening. Verify exact restoration, repeat after restart and check scheduled transitions separately. Include forum/non-forum groups if used.
-4. Review `/testzmanim GROUP_ID` and its JSON-file export when investigating; avoid repeated forced restoration or deleting lock-state records.
-5. Watch both heartbeat ages, oldest due jobs and delivery delay. A running process alone does not prove the queue is keeping up.
+```sh
+test_compose up -d --no-build shabbat
+test_compose ps
+test_compose logs --tail=120 shabbat
+```
 
-Do not use `down -v`, copy test data into production or run both versions on one session/database. [Rollback](BACKUP_RESTORE.md) requires matching code, data and session/library state; it cannot undo Telegram actions already accepted.
+Keep logs private. After both scheduler passes complete:
 
-The publication checks report records local results and limits. Docker image build and live Telegram acceptance must be performed on the target test server when unavailable locally. See [delivery safety](DEV9_DELIVERY_SAFETY.md) and [publication status](PUBLICATION_STATUS.md).
+```sh
+test_compose exec -T shabbat php bin/health.php --deep
+test_compose ps
+```
+
+Verify `/source` reports 3.0.0 and the exact release commit/source URL. Health requires recent permission and notification heartbeats; an offline database cannot satisfy it. Stop the test bot when the planned test is finished using `test_compose stop shabbat`. Preserve its project/volumes for diagnosis and later tests.
+
+## Permission recovery and acceptance
+
+The owner already reported successful dev.9 live locking, unlocking, original-permission restoration and restart. Record new results against the exact stable source separately; do not expand that earlier confirmation into holiday/load/soak acceptance.
+
+1. In a disposable group, set specific normal restrictions such as disabled media, invitations or pinning. Confirm the intended group/settings and exercise closing/opening, read back the exact restored rights, then repeat across a restart.
+2. For an unresolved older snapshot, outside protected periods and active locks, review the normal Telegram rights. In **Resolve permission problem**, refresh, inspect the group/rights and explicitly choose the supported action. Adopting current permissions preserves older evidence and does not itself send a restriction update.
+3. Test automatic protected-period transitions separately. Include forum/non-forum groups, inline/GPS, client rendering, rich messages, custom emoji, broadcasts, command menus and Stars only where used, with controlled disposable data.
+4. Inspect `/testzmanim GROUP_ID` and its private export when needed. Do not delete lock-state records or repeatedly force restoration to hide a conflict.
+5. Observe both heartbeat ages, oldest due jobs, delivery delay and retry behavior under representative traffic, including a real wall-clock soak. Record what ran and what remains untested.
+
+Do not use `down -v`, transfer test state into production or run old/new instances on one session. [Rollback](BACKUP_RESTORE.md) needs matching source, database and library/session state; it cannot undo Telegram actions already accepted. See [delivery safety](DEV9_DELIVERY_SAFETY.md), [implementation status](IMPLEMENTATION_STATUS.md) and [publication status](PUBLICATION_STATUS.md).

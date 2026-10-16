@@ -54,6 +54,7 @@
     "check-locales": "@php scripts/check-locales.php",
     "dependencies": "@php scripts/dependencies.php",
     "self-check": "@php bin/self-check.php",
+    "package": "@php scripts/package.php",
     "style": "phpcs --standard=phpcs.xml.dist -n",
     "style-fix": "phpcbf --standard=phpcs.xml.dist",
     "style-review": "phpcs --standard=phpcs.xml.dist"

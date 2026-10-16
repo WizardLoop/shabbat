@@ -1856,7 +1856,7 @@
     "local_patches": [
         {
             "manifest": "patches/madelineproto/manifest.json",
-            "sha256": "1f46278a04f34ff574e30f034b800d3120b9e47ad2135270f9242150989b57fe",
+            "sha256": "a2dc6507d5f7dc8d80ec2dd0b5cfdb267ae71d83d3a7131b1023898c626274fd",
             "package": "danog/madelineproto",
             "target": "src/Loop/Update/UpdateLoop.php",
             "approved": [
