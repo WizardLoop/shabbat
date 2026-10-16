@@ -1,0 +1,27 @@
+{
+    "schema_version": 1,
+    "reviewed_at": "2026-10-13",
+    "package": "danog/madelineproto",
+    "target": "src/Loop/Update/UpdateLoop.php",
+    "original_reference": {
+        "path": "local-reference/newsearch-v2/docker/patch-madeline-update-loop.php",
+        "also_found": "local-reference/psy new/release-r21-work/docker/patch-madeline-update-loop.php",
+        "sha256": "1ec2691498e878d28ca8e9cde94b00c803d9ccba789096ffc8471156dfb429e9",
+        "note": "Historical artifact was a guarded PHP patch script; reference unified diff is reproduced from that script. Paths are logical local-reference identifiers, not public download URLs."
+    },
+    "approved": [
+        {
+            "version": "8.7.0",
+            "commit": "7b99dd0f2d964a492c377912ffce9f5ce61aa9ed",
+            "mode": "patch",
+            "baseline": "baseline/UpdateLoop.php",
+            "source_url": "https://github.com/danog/MadelineProto/blob/7b99dd0f2d964a492c377912ffce9f5ce61aa9ed/src/Loop/Update/UpdateLoop.php",
+            "original_sha256": "2fbcbb73822258102837f53f4a231b87526d66809be7acd6339156ea778a8c2f",
+            "patched_sha256": "8f6cb1a483c879024bddea289e90d4bf2d71dd15716102bc83a1f34a243782e4",
+            "patch": "update-loop-timeout-cancellation.patch",
+            "patch_sha256": "2f5c34d5e2749d3575ef9de1ec80bff60a9ced1240ca61ef8727583ee939f592"
+        }
+    ],
+    "official_versions": [],
+    "notes": "No released official solution was verified. New versions require source, call-chain and behavioral review before admission."
+}

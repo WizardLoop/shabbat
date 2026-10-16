@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security report
+    url: https://t.me/WizardLoop
+    about: Report vulnerabilities privately to the existing WizardLoop contact; redact credentials and private data.

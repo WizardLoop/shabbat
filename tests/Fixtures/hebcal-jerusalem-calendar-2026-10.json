@@ -1,0 +1,1506 @@
+{
+  "range": {
+    "start": "2026-09-23",
+    "end": "2026-12-10"
+  },
+  "items": [
+    {
+      "date": "2026-09-23",
+      "category": "hebdate",
+      "title": "י״ב תִּשְׁרֵי",
+      "title_orig": "12 Tishrei 5787",
+      "hebrew": "י״ב תשרי",
+      "hdate": "12 Tishrei 5787"
+    },
+    {
+      "date": "2026-09-23",
+      "category": "dafyomi",
+      "title": "בכורות דף ה׳",
+      "title_orig": "Bechorot 5",
+      "hebrew": "בכורות דף ה׳",
+      "hdate": "12 Tishrei 5787"
+    },
+    {
+      "date": "2026-09-24",
+      "category": "hebdate",
+      "title": "י״ג תִּשְׁרֵי",
+      "title_orig": "13 Tishrei 5787",
+      "hebrew": "י״ג תשרי",
+      "hdate": "13 Tishrei 5787"
+    },
+    {
+      "date": "2026-09-24",
+      "category": "dafyomi",
+      "title": "בכורות דף ו׳",
+      "title_orig": "Bechorot 6",
+      "hebrew": "בכורות דף ו׳",
+      "hdate": "13 Tishrei 5787"
+    },
+    {
+      "date": "2026-09-25",
+      "category": "hebdate",
+      "title": "י״ד תִּשְׁרֵי",
+      "title_orig": "14 Tishrei 5787",
+      "hebrew": "י״ד תשרי",
+      "hdate": "14 Tishrei 5787"
+    },
+    {
+      "date": "2026-09-25",
+      "category": "holiday",
+      "title": "עֶרֶב סֻכּוֹת",
+      "title_orig": "Erev Sukkot",
+      "hebrew": "ערב סוכות",
+      "hdate": "14 Tishrei 5787"
+    },
+    {
+      "date": "2026-09-25",
+      "category": "dafyomi",
+      "title": "בכורות דף ז׳",
+      "title_orig": "Bechorot 7",
+      "hebrew": "בכורות דף ז׳",
+      "hdate": "14 Tishrei 5787"
+    },
+    {
+      "date": "2026-09-26",
+      "category": "hebdate",
+      "title": "ט״ו תִּשְׁרֵי",
+      "title_orig": "15 Tishrei 5787",
+      "hebrew": "ט״ו תשרי",
+      "hdate": "15 Tishrei 5787"
+    },
+    {
+      "date": "2026-09-26",
+      "category": "holiday",
+      "title": "סֻכּוֹת א׳",
+      "title_orig": "Sukkot I",
+      "hebrew": "סוכות א׳",
+      "hdate": "15 Tishrei 5787",
+      "yomtov": true
+    },
+    {
+      "date": "2026-09-26",
+      "category": "dafyomi",
+      "title": "בכורות דף ח׳",
+      "title_orig": "Bechorot 8",
+      "hebrew": "בכורות דף ח׳",
+      "hdate": "15 Tishrei 5787"
+    },
+    {
+      "date": "2026-09-27",
+      "category": "hebdate",
+      "title": "ט״ז תִּשְׁרֵי",
+      "title_orig": "16 Tishrei 5787",
+      "hebrew": "ט״ז תשרי",
+      "hdate": "16 Tishrei 5787"
+    },
+    {
+      "date": "2026-09-27",
+      "category": "holiday",
+      "title": "סֻכּוֹת ב׳ (חוה״מ)",
+      "title_orig": "Sukkot II (CH''M)",
+      "hebrew": "סוכות ב׳ (חוה״מ)",
+      "hdate": "16 Tishrei 5787"
+    },
+    {
+      "date": "2026-09-27",
+      "category": "dafyomi",
+      "title": "בכורות דף ט׳",
+      "title_orig": "Bechorot 9",
+      "hebrew": "בכורות דף ט׳",
+      "hdate": "16 Tishrei 5787"
+    },
+    {
+      "date": "2026-09-28",
+      "category": "hebdate",
+      "title": "י״ז תִּשְׁרֵי",
+      "title_orig": "17 Tishrei 5787",
+      "hebrew": "י״ז תשרי",
+      "hdate": "17 Tishrei 5787"
+    },
+    {
+      "date": "2026-09-28",
+      "category": "holiday",
+      "title": "סֻכּוֹת ג׳ (חוה״מ)",
+      "title_orig": "Sukkot III (CH''M)",
+      "hebrew": "סוכות ג׳ (חוה״מ)",
+      "hdate": "17 Tishrei 5787"
+    },
+    {
+      "date": "2026-09-28",
+      "category": "dafyomi",
+      "title": "בכורות דף י׳",
+      "title_orig": "Bechorot 10",
+      "hebrew": "בכורות דף י׳",
+      "hdate": "17 Tishrei 5787"
+    },
+    {
+      "date": "2026-09-29",
+      "category": "hebdate",
+      "title": "י״ח תִּשְׁרֵי",
+      "title_orig": "18 Tishrei 5787",
+      "hebrew": "י״ח תשרי",
+      "hdate": "18 Tishrei 5787"
+    },
+    {
+      "date": "2026-09-29",
+      "category": "holiday",
+      "title": "סֻכּוֹת ד׳ (חוה״מ)",
+      "title_orig": "Sukkot IV (CH''M)",
+      "hebrew": "סוכות ד׳ (חוה״מ)",
+      "hdate": "18 Tishrei 5787"
+    },
+    {
+      "date": "2026-09-29",
+      "category": "dafyomi",
+      "title": "בכורות דף י״א",
+      "title_orig": "Bechorot 11",
+      "hebrew": "בכורות דף י״א",
+      "hdate": "18 Tishrei 5787"
+    },
+    {
+      "date": "2026-09-30",
+      "category": "hebdate",
+      "title": "י״ט תִּשְׁרֵי",
+      "title_orig": "19 Tishrei 5787",
+      "hebrew": "י״ט תשרי",
+      "hdate": "19 Tishrei 5787"
+    },
+    {
+      "date": "2026-09-30",
+      "category": "holiday",
+      "title": "סֻכּוֹת ה׳ (חוה״מ)",
+      "title_orig": "Sukkot V (CH''M)",
+      "hebrew": "סוכות ה׳ (חוה״מ)",
+      "hdate": "19 Tishrei 5787"
+    },
+    {
+      "date": "2026-09-30",
+      "category": "dafyomi",
+      "title": "בכורות דף י״ב",
+      "title_orig": "Bechorot 12",
+      "hebrew": "בכורות דף י״ב",
+      "hdate": "19 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-01",
+      "category": "hebdate",
+      "title": "כ׳ תִּשְׁרֵי",
+      "title_orig": "20 Tishrei 5787",
+      "hebrew": "כ׳ תשרי",
+      "hdate": "20 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-01",
+      "category": "holiday",
+      "title": "סֻכּוֹת ו׳ (חוה״מ)",
+      "title_orig": "Sukkot VI (CH''M)",
+      "hebrew": "סוכות ו׳ (חוה״מ)",
+      "hdate": "20 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-01",
+      "category": "dafyomi",
+      "title": "בכורות דף י״ג",
+      "title_orig": "Bechorot 13",
+      "hebrew": "בכורות דף י״ג",
+      "hdate": "20 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-02",
+      "category": "hebdate",
+      "title": "כ״א תִּשְׁרֵי",
+      "title_orig": "21 Tishrei 5787",
+      "hebrew": "כ״א תשרי",
+      "hdate": "21 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-02",
+      "category": "holiday",
+      "title": "סֻכּוֹת ז׳ (הוֹשַׁעְנָא רַבָּה)",
+      "title_orig": "Sukkot VII (Hoshana Raba)",
+      "hebrew": "סוכות ז׳ (הושענא רבה)",
+      "hdate": "21 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-02",
+      "category": "dafyomi",
+      "title": "בכורות דף י״ד",
+      "title_orig": "Bechorot 14",
+      "hebrew": "בכורות דף י״ד",
+      "hdate": "21 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-03",
+      "category": "hebdate",
+      "title": "כ״ב תִּשְׁרֵי",
+      "title_orig": "22 Tishrei 5787",
+      "hebrew": "כ״ב תשרי",
+      "hdate": "22 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-03",
+      "category": "holiday",
+      "title": "שְׁמִינִי עֲצֶרֶת",
+      "title_orig": "Shmini Atzeret",
+      "hebrew": "שמיני עצרת",
+      "hdate": "22 Tishrei 5787",
+      "yomtov": true
+    },
+    {
+      "date": "2026-10-03",
+      "category": "dafyomi",
+      "title": "בכורות דף ט״ו",
+      "title_orig": "Bechorot 15",
+      "hebrew": "בכורות דף ט״ו",
+      "hdate": "22 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-04",
+      "category": "hebdate",
+      "title": "כ״ג תִּשְׁרֵי",
+      "title_orig": "23 Tishrei 5787",
+      "hebrew": "כ״ג תשרי",
+      "hdate": "23 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-04",
+      "category": "dafyomi",
+      "title": "בכורות דף ט״ז",
+      "title_orig": "Bechorot 16",
+      "hebrew": "בכורות דף ט״ז",
+      "hdate": "23 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-05",
+      "category": "hebdate",
+      "title": "כ״ד תִּשְׁרֵי",
+      "title_orig": "24 Tishrei 5787",
+      "hebrew": "כ״ד תשרי",
+      "hdate": "24 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-05",
+      "category": "dafyomi",
+      "title": "בכורות דף י״ז",
+      "title_orig": "Bechorot 17",
+      "hebrew": "בכורות דף י״ז",
+      "hdate": "24 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-06",
+      "category": "hebdate",
+      "title": "כ״ה תִּשְׁרֵי",
+      "title_orig": "25 Tishrei 5787",
+      "hebrew": "כ״ה תשרי",
+      "hdate": "25 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-06",
+      "category": "dafyomi",
+      "title": "בכורות דף י״ח",
+      "title_orig": "Bechorot 18",
+      "hebrew": "בכורות דף י״ח",
+      "hdate": "25 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-07",
+      "category": "hebdate",
+      "title": "כ״ו תִּשְׁרֵי",
+      "title_orig": "26 Tishrei 5787",
+      "hebrew": "כ״ו תשרי",
+      "hdate": "26 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-07",
+      "category": "dafyomi",
+      "title": "בכורות דף י״ט",
+      "title_orig": "Bechorot 19",
+      "hebrew": "בכורות דף י״ט",
+      "hdate": "26 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-08",
+      "category": "hebdate",
+      "title": "כ״ז תִּשְׁרֵי",
+      "title_orig": "27 Tishrei 5787",
+      "hebrew": "כ״ז תשרי",
+      "hdate": "27 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-08",
+      "category": "dafyomi",
+      "title": "בכורות דף כ׳",
+      "title_orig": "Bechorot 20",
+      "hebrew": "בכורות דף כ׳",
+      "hdate": "27 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-09",
+      "category": "hebdate",
+      "title": "כ״ח תִּשְׁרֵי",
+      "title_orig": "28 Tishrei 5787",
+      "hebrew": "כ״ח תשרי",
+      "hdate": "28 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-09",
+      "category": "dafyomi",
+      "title": "בכורות דף כ״א",
+      "title_orig": "Bechorot 21",
+      "hebrew": "בכורות דף כ״א",
+      "hdate": "28 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-10",
+      "category": "hebdate",
+      "title": "כ״ט תִּשְׁרֵי",
+      "title_orig": "29 Tishrei 5787",
+      "hebrew": "כ״ט תשרי",
+      "hdate": "29 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-10",
+      "category": "parashat",
+      "title": "פָּרָשַׁת בְּרֵאשִׁית",
+      "title_orig": "Parashat Bereshit",
+      "hebrew": "פרשת בראשית",
+      "hdate": "29 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-10",
+      "category": "dafyomi",
+      "title": "בכורות דף כ״ב",
+      "title_orig": "Bechorot 22",
+      "hebrew": "בכורות דף כ״ב",
+      "hdate": "29 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-10",
+      "category": "mevarchim",
+      "title": "מְבָרְכִים חוֹדֶשׁ חֶשְׁוָן",
+      "title_orig": "Shabbat Mevarchim Chodesh Cheshvan",
+      "hebrew": "מברכים חודש חֶשְׁוָן",
+      "hdate": "29 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-11",
+      "category": "hebdate",
+      "title": "ל׳ תִּשְׁרֵי",
+      "title_orig": "30 Tishrei 5787",
+      "hebrew": "ל׳ תשרי",
+      "hdate": "30 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-11",
+      "category": "dafyomi",
+      "title": "בכורות דף כ״ג",
+      "title_orig": "Bechorot 23",
+      "hebrew": "בכורות דף כ״ג",
+      "hdate": "30 Tishrei 5787"
+    },
+    {
+      "date": "2026-10-12",
+      "category": "hebdate",
+      "title": "א׳ חֶשְׁוָן תשפ״ז",
+      "title_orig": "1 Cheshvan 5787",
+      "hebrew": "א׳ חשון",
+      "hdate": "1 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-12",
+      "category": "dafyomi",
+      "title": "בכורות דף כ״ד",
+      "title_orig": "Bechorot 24",
+      "hebrew": "בכורות דף כ״ד",
+      "hdate": "1 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-13",
+      "category": "hebdate",
+      "title": "ב׳ חֶשְׁוָן",
+      "title_orig": "2 Cheshvan 5787",
+      "hebrew": "ב׳ חשון",
+      "hdate": "2 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-13",
+      "category": "dafyomi",
+      "title": "בכורות דף כ״ה",
+      "title_orig": "Bechorot 25",
+      "hebrew": "בכורות דף כ״ה",
+      "hdate": "2 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-14",
+      "category": "hebdate",
+      "title": "ג׳ חֶשְׁוָן",
+      "title_orig": "3 Cheshvan 5787",
+      "hebrew": "ג׳ חשון",
+      "hdate": "3 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-14",
+      "category": "dafyomi",
+      "title": "בכורות דף כ״ו",
+      "title_orig": "Bechorot 26",
+      "hebrew": "בכורות דף כ״ו",
+      "hdate": "3 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-15",
+      "category": "hebdate",
+      "title": "ד׳ חֶשְׁוָן",
+      "title_orig": "4 Cheshvan 5787",
+      "hebrew": "ד׳ חשון",
+      "hdate": "4 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-15",
+      "category": "dafyomi",
+      "title": "בכורות דף כ״ז",
+      "title_orig": "Bechorot 27",
+      "hebrew": "בכורות דף כ״ז",
+      "hdate": "4 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-16",
+      "category": "hebdate",
+      "title": "ה׳ חֶשְׁוָן",
+      "title_orig": "5 Cheshvan 5787",
+      "hebrew": "ה׳ חשון",
+      "hdate": "5 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-16",
+      "category": "dafyomi",
+      "title": "בכורות דף כ״ח",
+      "title_orig": "Bechorot 28",
+      "hebrew": "בכורות דף כ״ח",
+      "hdate": "5 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-17",
+      "category": "hebdate",
+      "title": "ו׳ חֶשְׁוָן",
+      "title_orig": "6 Cheshvan 5787",
+      "hebrew": "ו׳ חשון",
+      "hdate": "6 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-17",
+      "category": "parashat",
+      "title": "פָּרָשַׁת נֹחַ",
+      "title_orig": "Parashat Noach",
+      "hebrew": "פרשת נח",
+      "hdate": "6 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-17",
+      "category": "dafyomi",
+      "title": "בכורות דף כ״ט",
+      "title_orig": "Bechorot 29",
+      "hebrew": "בכורות דף כ״ט",
+      "hdate": "6 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-18",
+      "category": "hebdate",
+      "title": "ז׳ חֶשְׁוָן",
+      "title_orig": "7 Cheshvan 5787",
+      "hebrew": "ז׳ חשון",
+      "hdate": "7 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-18",
+      "category": "dafyomi",
+      "title": "בכורות דף ל׳",
+      "title_orig": "Bechorot 30",
+      "hebrew": "בכורות דף ל׳",
+      "hdate": "7 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-19",
+      "category": "hebdate",
+      "title": "ח׳ חֶשְׁוָן",
+      "title_orig": "8 Cheshvan 5787",
+      "hebrew": "ח׳ חשון",
+      "hdate": "8 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-19",
+      "category": "dafyomi",
+      "title": "בכורות דף ל״א",
+      "title_orig": "Bechorot 31",
+      "hebrew": "בכורות דף ל״א",
+      "hdate": "8 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-20",
+      "category": "hebdate",
+      "title": "ט׳ חֶשְׁוָן",
+      "title_orig": "9 Cheshvan 5787",
+      "hebrew": "ט׳ חשון",
+      "hdate": "9 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-20",
+      "category": "dafyomi",
+      "title": "בכורות דף ל״ב",
+      "title_orig": "Bechorot 32",
+      "hebrew": "בכורות דף ל״ב",
+      "hdate": "9 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-21",
+      "category": "hebdate",
+      "title": "י׳ חֶשְׁוָן",
+      "title_orig": "10 Cheshvan 5787",
+      "hebrew": "י׳ חשון",
+      "hdate": "10 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-21",
+      "category": "dafyomi",
+      "title": "בכורות דף ל״ג",
+      "title_orig": "Bechorot 33",
+      "hebrew": "בכורות דף ל״ג",
+      "hdate": "10 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-22",
+      "category": "hebdate",
+      "title": "י״א חֶשְׁוָן",
+      "title_orig": "11 Cheshvan 5787",
+      "hebrew": "י״א חשון",
+      "hdate": "11 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-22",
+      "category": "dafyomi",
+      "title": "בכורות דף ל״ד",
+      "title_orig": "Bechorot 34",
+      "hebrew": "בכורות דף ל״ד",
+      "hdate": "11 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-23",
+      "category": "hebdate",
+      "title": "י״ב חֶשְׁוָן",
+      "title_orig": "12 Cheshvan 5787",
+      "hebrew": "י״ב חשון",
+      "hdate": "12 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-23",
+      "category": "dafyomi",
+      "title": "בכורות דף ל״ה",
+      "title_orig": "Bechorot 35",
+      "hebrew": "בכורות דף ל״ה",
+      "hdate": "12 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-24",
+      "category": "hebdate",
+      "title": "י״ג חֶשְׁוָן",
+      "title_orig": "13 Cheshvan 5787",
+      "hebrew": "י״ג חשון",
+      "hdate": "13 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-24",
+      "category": "parashat",
+      "title": "פָּרָשַׁת לֶךְ־לְךָ",
+      "title_orig": "Parashat Lech-Lecha",
+      "hebrew": "פרשת לך־לך",
+      "hdate": "13 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-24",
+      "category": "dafyomi",
+      "title": "בכורות דף ל״ו",
+      "title_orig": "Bechorot 36",
+      "hebrew": "בכורות דף ל״ו",
+      "hdate": "13 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-25",
+      "category": "hebdate",
+      "title": "י״ד חֶשְׁוָן",
+      "title_orig": "14 Cheshvan 5787",
+      "hebrew": "י״ד חשון",
+      "hdate": "14 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-25",
+      "category": "dafyomi",
+      "title": "בכורות דף ל״ז",
+      "title_orig": "Bechorot 37",
+      "hebrew": "בכורות דף ל״ז",
+      "hdate": "14 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-26",
+      "category": "hebdate",
+      "title": "ט״ו חֶשְׁוָן",
+      "title_orig": "15 Cheshvan 5787",
+      "hebrew": "ט״ו חשון",
+      "hdate": "15 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-26",
+      "category": "dafyomi",
+      "title": "בכורות דף ל״ח",
+      "title_orig": "Bechorot 38",
+      "hebrew": "בכורות דף ל״ח",
+      "hdate": "15 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-27",
+      "category": "hebdate",
+      "title": "ט״ז חֶשְׁוָן",
+      "title_orig": "16 Cheshvan 5787",
+      "hebrew": "ט״ז חשון",
+      "hdate": "16 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-27",
+      "category": "dafyomi",
+      "title": "בכורות דף ל״ט",
+      "title_orig": "Bechorot 39",
+      "hebrew": "בכורות דף ל״ט",
+      "hdate": "16 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-28",
+      "category": "hebdate",
+      "title": "י״ז חֶשְׁוָן",
+      "title_orig": "17 Cheshvan 5787",
+      "hebrew": "י״ז חשון",
+      "hdate": "17 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-28",
+      "category": "dafyomi",
+      "title": "בכורות דף מ׳",
+      "title_orig": "Bechorot 40",
+      "hebrew": "בכורות דף מ׳",
+      "hdate": "17 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-29",
+      "category": "hebdate",
+      "title": "י״ח חֶשְׁוָן",
+      "title_orig": "18 Cheshvan 5787",
+      "hebrew": "י״ח חשון",
+      "hdate": "18 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-29",
+      "category": "dafyomi",
+      "title": "בכורות דף מ״א",
+      "title_orig": "Bechorot 41",
+      "hebrew": "בכורות דף מ״א",
+      "hdate": "18 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-30",
+      "category": "hebdate",
+      "title": "י״ט חֶשְׁוָן",
+      "title_orig": "19 Cheshvan 5787",
+      "hebrew": "י״ט חשון",
+      "hdate": "19 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-30",
+      "category": "dafyomi",
+      "title": "בכורות דף מ״ב",
+      "title_orig": "Bechorot 42",
+      "hebrew": "בכורות דף מ״ב",
+      "hdate": "19 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-31",
+      "category": "hebdate",
+      "title": "כ׳ חֶשְׁוָן",
+      "title_orig": "20 Cheshvan 5787",
+      "hebrew": "כ׳ חשון",
+      "hdate": "20 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-31",
+      "category": "parashat",
+      "title": "פָּרָשַׁת וַיֵּרָא",
+      "title_orig": "Parashat Vayera",
+      "hebrew": "פרשת וירא",
+      "hdate": "20 Cheshvan 5787"
+    },
+    {
+      "date": "2026-10-31",
+      "category": "dafyomi",
+      "title": "בכורות דף מ״ג",
+      "title_orig": "Bechorot 43",
+      "hebrew": "בכורות דף מ״ג",
+      "hdate": "20 Cheshvan 5787"
+    },
+    {
+      "date": "2026-11-01",
+      "category": "hebdate",
+      "title": "כ״א חֶשְׁוָן",
+      "title_orig": "21 Cheshvan 5787",
+      "hebrew": "כ״א חשון",
+      "hdate": "21 Cheshvan 5787"
+    },
+    {
+      "date": "2026-11-01",
+      "category": "dafyomi",
+      "title": "בכורות דף מ״ד",
+      "title_orig": "Bechorot 44",
+      "hebrew": "בכורות דף מ״ד",
+      "hdate": "21 Cheshvan 5787"
+    },
+    {
+      "date": "2026-11-02",
+      "category": "hebdate",
+      "title": "כ״ב חֶשְׁוָן",
+      "title_orig": "22 Cheshvan 5787",
+      "hebrew": "כ״ב חשון",
+      "hdate": "22 Cheshvan 5787"
+    },
+    {
+      "date": "2026-11-02",
+      "category": "dafyomi",
+      "title": "בכורות דף מ״ה",
+      "title_orig": "Bechorot 45",
+      "hebrew": "בכורות דף מ״ה",
+      "hdate": "22 Cheshvan 5787"
+    },
+    {
+      "date": "2026-11-03",
+      "category": "hebdate",
+      "title": "כ״ג חֶשְׁוָן",
+      "title_orig": "23 Cheshvan 5787",
+      "hebrew": "כ״ג חשון",
+      "hdate": "23 Cheshvan 5787"
+    },
+    {
+      "date": "2026-11-03",
+      "category": "dafyomi",
+      "title": "בכורות דף מ״ו",
+      "title_orig": "Bechorot 46",
+      "hebrew": "בכורות דף מ״ו",
+      "hdate": "23 Cheshvan 5787"
+    },
+    {
+      "date": "2026-11-04",
+      "category": "hebdate",
+      "title": "כ״ד חֶשְׁוָן",
+      "title_orig": "24 Cheshvan 5787",
+      "hebrew": "כ״ד חשון",
+      "hdate": "24 Cheshvan 5787"
+    },
+    {
+      "date": "2026-11-04",
+      "category": "dafyomi",
+      "title": "בכורות דף מ״ז",
+      "title_orig": "Bechorot 47",
+      "hebrew": "בכורות דף מ״ז",
+      "hdate": "24 Cheshvan 5787"
+    },
+    {
+      "date": "2026-11-05",
+      "category": "hebdate",
+      "title": "כ״ה חֶשְׁוָן",
+      "title_orig": "25 Cheshvan 5787",
+      "hebrew": "כ״ה חשון",
+      "hdate": "25 Cheshvan 5787"
+    },
+    {
+      "date": "2026-11-05",
+      "category": "dafyomi",
+      "title": "בכורות דף מ״ח",
+      "title_orig": "Bechorot 48",
+      "hebrew": "בכורות דף מ״ח",
+      "hdate": "25 Cheshvan 5787"
+    },
+    {
+      "date": "2026-11-06",
+      "category": "hebdate",
+      "title": "כ״ו חֶשְׁוָן",
+      "title_orig": "26 Cheshvan 5787",
+      "hebrew": "כ״ו חשון",
+      "hdate": "26 Cheshvan 5787"
+    },
+    {
+      "date": "2026-11-06",
+      "category": "dafyomi",
+      "title": "בכורות דף מ״ט",
+      "title_orig": "Bechorot 49",
+      "hebrew": "בכורות דף מ״ט",
+      "hdate": "26 Cheshvan 5787"
+    },
+    {
+      "date": "2026-11-07",
+      "category": "hebdate",
+      "title": "כ״ז חֶשְׁוָן",
+      "title_orig": "27 Cheshvan 5787",
+      "hebrew": "כ״ז חשון",
+      "hdate": "27 Cheshvan 5787"
+    },
+    {
+      "date": "2026-11-07",
+      "category": "parashat",
+      "title": "פָּרָשַׁת חַיֵּי שָֹרָה",
+      "title_orig": "Parashat Chayei Sara",
+      "hebrew": "פרשת חיי שרה",
+      "hdate": "27 Cheshvan 5787"
+    },
+    {
+      "date": "2026-11-07",
+      "category": "dafyomi",
+      "title": "בכורות דף נ׳",
+      "title_orig": "Bechorot 50",
+      "hebrew": "בכורות דף נ׳",
+      "hdate": "27 Cheshvan 5787"
+    },
+    {
+      "date": "2026-11-07",
+      "category": "mevarchim",
+      "title": "מְבָרְכִים חוֹדֶשׁ כִּסְלֵו",
+      "title_orig": "Shabbat Mevarchim Chodesh Kislev",
+      "hebrew": "מברכים חודש כִּסְלֵו",
+      "hdate": "27 Cheshvan 5787"
+    },
+    {
+      "date": "2026-11-08",
+      "category": "hebdate",
+      "title": "כ״ח חֶשְׁוָן",
+      "title_orig": "28 Cheshvan 5787",
+      "hebrew": "כ״ח חשון",
+      "hdate": "28 Cheshvan 5787"
+    },
+    {
+      "date": "2026-11-08",
+      "category": "dafyomi",
+      "title": "בכורות דף נ״א",
+      "title_orig": "Bechorot 51",
+      "hebrew": "בכורות דף נ״א",
+      "hdate": "28 Cheshvan 5787"
+    },
+    {
+      "date": "2026-11-09",
+      "category": "hebdate",
+      "title": "כ״ט חֶשְׁוָן",
+      "title_orig": "29 Cheshvan 5787",
+      "hebrew": "כ״ט חשון",
+      "hdate": "29 Cheshvan 5787"
+    },
+    {
+      "date": "2026-11-09",
+      "category": "dafyomi",
+      "title": "בכורות דף נ״ב",
+      "title_orig": "Bechorot 52",
+      "hebrew": "בכורות דף נ״ב",
+      "hdate": "29 Cheshvan 5787"
+    },
+    {
+      "date": "2026-11-10",
+      "category": "hebdate",
+      "title": "ל׳ חֶשְׁוָן",
+      "title_orig": "30 Cheshvan 5787",
+      "hebrew": "ל׳ חשון",
+      "hdate": "30 Cheshvan 5787"
+    },
+    {
+      "date": "2026-11-10",
+      "category": "dafyomi",
+      "title": "בכורות דף נ״ג",
+      "title_orig": "Bechorot 53",
+      "hebrew": "בכורות דף נ״ג",
+      "hdate": "30 Cheshvan 5787"
+    },
+    {
+      "date": "2026-11-11",
+      "category": "hebdate",
+      "title": "א׳ כִּסְלֵו תשפ״ז",
+      "title_orig": "1 Kislev 5787",
+      "hebrew": "א׳ כסלו",
+      "hdate": "1 Kislev 5787"
+    },
+    {
+      "date": "2026-11-11",
+      "category": "dafyomi",
+      "title": "בכורות דף נ״ד",
+      "title_orig": "Bechorot 54",
+      "hebrew": "בכורות דף נ״ד",
+      "hdate": "1 Kislev 5787"
+    },
+    {
+      "date": "2026-11-12",
+      "category": "hebdate",
+      "title": "ב׳ כִּסְלֵו",
+      "title_orig": "2 Kislev 5787",
+      "hebrew": "ב׳ כסלו",
+      "hdate": "2 Kislev 5787"
+    },
+    {
+      "date": "2026-11-12",
+      "category": "dafyomi",
+      "title": "בכורות דף נ״ה",
+      "title_orig": "Bechorot 55",
+      "hebrew": "בכורות דף נ״ה",
+      "hdate": "2 Kislev 5787"
+    },
+    {
+      "date": "2026-11-13",
+      "category": "hebdate",
+      "title": "ג׳ כִּסְלֵו",
+      "title_orig": "3 Kislev 5787",
+      "hebrew": "ג׳ כסלו",
+      "hdate": "3 Kislev 5787"
+    },
+    {
+      "date": "2026-11-13",
+      "category": "dafyomi",
+      "title": "בכורות דף נ״ו",
+      "title_orig": "Bechorot 56",
+      "hebrew": "בכורות דף נ״ו",
+      "hdate": "3 Kislev 5787"
+    },
+    {
+      "date": "2026-11-14",
+      "category": "hebdate",
+      "title": "ד׳ כִּסְלֵו",
+      "title_orig": "4 Kislev 5787",
+      "hebrew": "ד׳ כסלו",
+      "hdate": "4 Kislev 5787"
+    },
+    {
+      "date": "2026-11-14",
+      "category": "parashat",
+      "title": "פָּרָשַׁת תּוֹלְדוֹת",
+      "title_orig": "Parashat Toldot",
+      "hebrew": "פרשת תולדות",
+      "hdate": "4 Kislev 5787"
+    },
+    {
+      "date": "2026-11-14",
+      "category": "dafyomi",
+      "title": "בכורות דף נ״ז",
+      "title_orig": "Bechorot 57",
+      "hebrew": "בכורות דף נ״ז",
+      "hdate": "4 Kislev 5787"
+    },
+    {
+      "date": "2026-11-15",
+      "category": "hebdate",
+      "title": "ה׳ כִּסְלֵו",
+      "title_orig": "5 Kislev 5787",
+      "hebrew": "ה׳ כסלו",
+      "hdate": "5 Kislev 5787"
+    },
+    {
+      "date": "2026-11-15",
+      "category": "dafyomi",
+      "title": "בכורות דף נ״ח",
+      "title_orig": "Bechorot 58",
+      "hebrew": "בכורות דף נ״ח",
+      "hdate": "5 Kislev 5787"
+    },
+    {
+      "date": "2026-11-16",
+      "category": "hebdate",
+      "title": "ו׳ כִּסְלֵו",
+      "title_orig": "6 Kislev 5787",
+      "hebrew": "ו׳ כסלו",
+      "hdate": "6 Kislev 5787"
+    },
+    {
+      "date": "2026-11-16",
+      "category": "dafyomi",
+      "title": "בכורות דף נ״ט",
+      "title_orig": "Bechorot 59",
+      "hebrew": "בכורות דף נ״ט",
+      "hdate": "6 Kislev 5787"
+    },
+    {
+      "date": "2026-11-17",
+      "category": "hebdate",
+      "title": "ז׳ כִּסְלֵו",
+      "title_orig": "7 Kislev 5787",
+      "hebrew": "ז׳ כסלו",
+      "hdate": "7 Kislev 5787"
+    },
+    {
+      "date": "2026-11-17",
+      "category": "dafyomi",
+      "title": "בכורות דף ס׳",
+      "title_orig": "Bechorot 60",
+      "hebrew": "בכורות דף ס׳",
+      "hdate": "7 Kislev 5787"
+    },
+    {
+      "date": "2026-11-18",
+      "category": "hebdate",
+      "title": "ח׳ כִּסְלֵו",
+      "title_orig": "8 Kislev 5787",
+      "hebrew": "ח׳ כסלו",
+      "hdate": "8 Kislev 5787"
+    },
+    {
+      "date": "2026-11-18",
+      "category": "dafyomi",
+      "title": "בכורות דף ס״א",
+      "title_orig": "Bechorot 61",
+      "hebrew": "בכורות דף ס״א",
+      "hdate": "8 Kislev 5787"
+    },
+    {
+      "date": "2026-11-19",
+      "category": "hebdate",
+      "title": "ט׳ כִּסְלֵו",
+      "title_orig": "9 Kislev 5787",
+      "hebrew": "ט׳ כסלו",
+      "hdate": "9 Kislev 5787"
+    },
+    {
+      "date": "2026-11-19",
+      "category": "dafyomi",
+      "title": "ערכין דף ב׳",
+      "title_orig": "Arachin 2",
+      "hebrew": "ערכין דף ב׳",
+      "hdate": "9 Kislev 5787"
+    },
+    {
+      "date": "2026-11-20",
+      "category": "hebdate",
+      "title": "י׳ כִּסְלֵו",
+      "title_orig": "10 Kislev 5787",
+      "hebrew": "י׳ כסלו",
+      "hdate": "10 Kislev 5787"
+    },
+    {
+      "date": "2026-11-20",
+      "category": "dafyomi",
+      "title": "ערכין דף ג׳",
+      "title_orig": "Arachin 3",
+      "hebrew": "ערכין דף ג׳",
+      "hdate": "10 Kislev 5787"
+    },
+    {
+      "date": "2026-11-21",
+      "category": "hebdate",
+      "title": "י״א כִּסְלֵו",
+      "title_orig": "11 Kislev 5787",
+      "hebrew": "י״א כסלו",
+      "hdate": "11 Kislev 5787"
+    },
+    {
+      "date": "2026-11-21",
+      "category": "parashat",
+      "title": "פָּרָשַׁת וַיֵּצֵא",
+      "title_orig": "Parashat Vayetzei",
+      "hebrew": "פרשת ויצא",
+      "hdate": "11 Kislev 5787"
+    },
+    {
+      "date": "2026-11-21",
+      "category": "dafyomi",
+      "title": "ערכין דף ד׳",
+      "title_orig": "Arachin 4",
+      "hebrew": "ערכין דף ד׳",
+      "hdate": "11 Kislev 5787"
+    },
+    {
+      "date": "2026-11-22",
+      "category": "hebdate",
+      "title": "י״ב כִּסְלֵו",
+      "title_orig": "12 Kislev 5787",
+      "hebrew": "י״ב כסלו",
+      "hdate": "12 Kislev 5787"
+    },
+    {
+      "date": "2026-11-22",
+      "category": "dafyomi",
+      "title": "ערכין דף ה׳",
+      "title_orig": "Arachin 5",
+      "hebrew": "ערכין דף ה׳",
+      "hdate": "12 Kislev 5787"
+    },
+    {
+      "date": "2026-11-23",
+      "category": "hebdate",
+      "title": "י״ג כִּסְלֵו",
+      "title_orig": "13 Kislev 5787",
+      "hebrew": "י״ג כסלו",
+      "hdate": "13 Kislev 5787"
+    },
+    {
+      "date": "2026-11-23",
+      "category": "dafyomi",
+      "title": "ערכין דף ו׳",
+      "title_orig": "Arachin 6",
+      "hebrew": "ערכין דף ו׳",
+      "hdate": "13 Kislev 5787"
+    },
+    {
+      "date": "2026-11-24",
+      "category": "hebdate",
+      "title": "י״ד כִּסְלֵו",
+      "title_orig": "14 Kislev 5787",
+      "hebrew": "י״ד כסלו",
+      "hdate": "14 Kislev 5787"
+    },
+    {
+      "date": "2026-11-24",
+      "category": "dafyomi",
+      "title": "ערכין דף ז׳",
+      "title_orig": "Arachin 7",
+      "hebrew": "ערכין דף ז׳",
+      "hdate": "14 Kislev 5787"
+    },
+    {
+      "date": "2026-11-25",
+      "category": "hebdate",
+      "title": "ט״ו כִּסְלֵו",
+      "title_orig": "15 Kislev 5787",
+      "hebrew": "ט״ו כסלו",
+      "hdate": "15 Kislev 5787"
+    },
+    {
+      "date": "2026-11-25",
+      "category": "dafyomi",
+      "title": "ערכין דף ח׳",
+      "title_orig": "Arachin 8",
+      "hebrew": "ערכין דף ח׳",
+      "hdate": "15 Kislev 5787"
+    },
+    {
+      "date": "2026-11-26",
+      "category": "hebdate",
+      "title": "ט״ז כִּסְלֵו",
+      "title_orig": "16 Kislev 5787",
+      "hebrew": "ט״ז כסלו",
+      "hdate": "16 Kislev 5787"
+    },
+    {
+      "date": "2026-11-26",
+      "category": "dafyomi",
+      "title": "ערכין דף ט׳",
+      "title_orig": "Arachin 9",
+      "hebrew": "ערכין דף ט׳",
+      "hdate": "16 Kislev 5787"
+    },
+    {
+      "date": "2026-11-27",
+      "category": "hebdate",
+      "title": "י״ז כִּסְלֵו",
+      "title_orig": "17 Kislev 5787",
+      "hebrew": "י״ז כסלו",
+      "hdate": "17 Kislev 5787"
+    },
+    {
+      "date": "2026-11-27",
+      "category": "dafyomi",
+      "title": "ערכין דף י׳",
+      "title_orig": "Arachin 10",
+      "hebrew": "ערכין דף י׳",
+      "hdate": "17 Kislev 5787"
+    },
+    {
+      "date": "2026-11-28",
+      "category": "hebdate",
+      "title": "י״ח כִּסְלֵו",
+      "title_orig": "18 Kislev 5787",
+      "hebrew": "י״ח כסלו",
+      "hdate": "18 Kislev 5787"
+    },
+    {
+      "date": "2026-11-28",
+      "category": "parashat",
+      "title": "פָּרָשַׁת וַיִּשְׁלַח",
+      "title_orig": "Parashat Vayishlach",
+      "hebrew": "פרשת וישלח",
+      "hdate": "18 Kislev 5787"
+    },
+    {
+      "date": "2026-11-28",
+      "category": "dafyomi",
+      "title": "ערכין דף י״א",
+      "title_orig": "Arachin 11",
+      "hebrew": "ערכין דף י״א",
+      "hdate": "18 Kislev 5787"
+    },
+    {
+      "date": "2026-11-29",
+      "category": "hebdate",
+      "title": "י״ט כִּסְלֵו",
+      "title_orig": "19 Kislev 5787",
+      "hebrew": "י״ט כסלו",
+      "hdate": "19 Kislev 5787"
+    },
+    {
+      "date": "2026-11-29",
+      "category": "dafyomi",
+      "title": "ערכין דף י״ב",
+      "title_orig": "Arachin 12",
+      "hebrew": "ערכין דף י״ב",
+      "hdate": "19 Kislev 5787"
+    },
+    {
+      "date": "2026-11-30",
+      "category": "hebdate",
+      "title": "כ׳ כִּסְלֵו",
+      "title_orig": "20 Kislev 5787",
+      "hebrew": "כ׳ כסלו",
+      "hdate": "20 Kislev 5787"
+    },
+    {
+      "date": "2026-11-30",
+      "category": "dafyomi",
+      "title": "ערכין דף י״ג",
+      "title_orig": "Arachin 13",
+      "hebrew": "ערכין דף י״ג",
+      "hdate": "20 Kislev 5787"
+    },
+    {
+      "date": "2026-12-01",
+      "category": "hebdate",
+      "title": "כ״א כִּסְלֵו",
+      "title_orig": "21 Kislev 5787",
+      "hebrew": "כ״א כסלו",
+      "hdate": "21 Kislev 5787"
+    },
+    {
+      "date": "2026-12-01",
+      "category": "dafyomi",
+      "title": "ערכין דף י״ד",
+      "title_orig": "Arachin 14",
+      "hebrew": "ערכין דף י״ד",
+      "hdate": "21 Kislev 5787"
+    },
+    {
+      "date": "2026-12-02",
+      "category": "hebdate",
+      "title": "כ״ב כִּסְלֵו",
+      "title_orig": "22 Kislev 5787",
+      "hebrew": "כ״ב כסלו",
+      "hdate": "22 Kislev 5787"
+    },
+    {
+      "date": "2026-12-02",
+      "category": "dafyomi",
+      "title": "ערכין דף ט״ו",
+      "title_orig": "Arachin 15",
+      "hebrew": "ערכין דף ט״ו",
+      "hdate": "22 Kislev 5787"
+    },
+    {
+      "date": "2026-12-03",
+      "category": "hebdate",
+      "title": "כ״ג כִּסְלֵו",
+      "title_orig": "23 Kislev 5787",
+      "hebrew": "כ״ג כסלו",
+      "hdate": "23 Kislev 5787"
+    },
+    {
+      "date": "2026-12-03",
+      "category": "dafyomi",
+      "title": "ערכין דף ט״ז",
+      "title_orig": "Arachin 16",
+      "hebrew": "ערכין דף ט״ז",
+      "hdate": "23 Kislev 5787"
+    },
+    {
+      "date": "2026-12-04",
+      "category": "hebdate",
+      "title": "כ״ד כִּסְלֵו",
+      "title_orig": "24 Kislev 5787",
+      "hebrew": "כ״ד כסלו",
+      "hdate": "24 Kislev 5787"
+    },
+    {
+      "date": "2026-12-04",
+      "category": "holiday",
+      "title": "חֲנוּכָּה: א׳ נֵר",
+      "title_orig": "Chanukah: 1 Candle",
+      "hebrew": "חנוכה: א׳ נר",
+      "hdate": "24 Kislev 5787"
+    },
+    {
+      "date": "2026-12-04",
+      "category": "dafyomi",
+      "title": "ערכין דף י״ז",
+      "title_orig": "Arachin 17",
+      "hebrew": "ערכין דף י״ז",
+      "hdate": "24 Kislev 5787"
+    },
+    {
+      "date": "2026-12-05",
+      "category": "hebdate",
+      "title": "כ״ה כִּסְלֵו",
+      "title_orig": "25 Kislev 5787",
+      "hebrew": "כ״ה כסלו",
+      "hdate": "25 Kislev 5787"
+    },
+    {
+      "date": "2026-12-05",
+      "category": "holiday",
+      "title": "חֲנוּכָּה: ב׳ נֵרוֹת",
+      "title_orig": "Chanukah: 2 Candles",
+      "hebrew": "חנוכה: ב׳ נרות",
+      "hdate": "25 Kislev 5787"
+    },
+    {
+      "date": "2026-12-05",
+      "category": "parashat",
+      "title": "פָּרָשַׁת וַיֵּשֶׁב",
+      "title_orig": "Parashat Vayeshev",
+      "hebrew": "פרשת וישב",
+      "hdate": "25 Kislev 5787"
+    },
+    {
+      "date": "2026-12-05",
+      "category": "dafyomi",
+      "title": "ערכין דף י״ח",
+      "title_orig": "Arachin 18",
+      "hebrew": "ערכין דף י״ח",
+      "hdate": "25 Kislev 5787"
+    },
+    {
+      "date": "2026-12-05",
+      "category": "mevarchim",
+      "title": "מְבָרְכִים חוֹדֶשׁ טֵבֵת",
+      "title_orig": "Shabbat Mevarchim Chodesh Tevet",
+      "hebrew": "מברכים חודש טֵבֵת",
+      "hdate": "25 Kislev 5787"
+    },
+    {
+      "date": "2026-12-06",
+      "category": "hebdate",
+      "title": "כ״ו כִּסְלֵו",
+      "title_orig": "26 Kislev 5787",
+      "hebrew": "כ״ו כסלו",
+      "hdate": "26 Kislev 5787"
+    },
+    {
+      "date": "2026-12-06",
+      "category": "holiday",
+      "title": "חֲנוּכָּה: ג׳ נֵרוֹת",
+      "title_orig": "Chanukah: 3 Candles",
+      "hebrew": "חנוכה: ג׳ נרות",
+      "hdate": "26 Kislev 5787"
+    },
+    {
+      "date": "2026-12-06",
+      "category": "dafyomi",
+      "title": "ערכין דף י״ט",
+      "title_orig": "Arachin 19",
+      "hebrew": "ערכין דף י״ט",
+      "hdate": "26 Kislev 5787"
+    },
+    {
+      "date": "2026-12-07",
+      "category": "hebdate",
+      "title": "כ״ז כִּסְלֵו",
+      "title_orig": "27 Kislev 5787",
+      "hebrew": "כ״ז כסלו",
+      "hdate": "27 Kislev 5787"
+    },
+    {
+      "date": "2026-12-07",
+      "category": "holiday",
+      "title": "חֲנוּכָּה: ד׳ נֵרוֹת",
+      "title_orig": "Chanukah: 4 Candles",
+      "hebrew": "חנוכה: ד׳ נרות",
+      "hdate": "27 Kislev 5787"
+    },
+    {
+      "date": "2026-12-07",
+      "category": "dafyomi",
+      "title": "ערכין דף כ׳",
+      "title_orig": "Arachin 20",
+      "hebrew": "ערכין דף כ׳",
+      "hdate": "27 Kislev 5787"
+    },
+    {
+      "date": "2026-12-08",
+      "category": "hebdate",
+      "title": "כ״ח כִּסְלֵו",
+      "title_orig": "28 Kislev 5787",
+      "hebrew": "כ״ח כסלו",
+      "hdate": "28 Kislev 5787"
+    },
+    {
+      "date": "2026-12-08",
+      "category": "holiday",
+      "title": "חֲנוּכָּה: ה׳ נֵרוֹת",
+      "title_orig": "Chanukah: 5 Candles",
+      "hebrew": "חנוכה: ה׳ נרות",
+      "hdate": "28 Kislev 5787"
+    },
+    {
+      "date": "2026-12-08",
+      "category": "dafyomi",
+      "title": "ערכין דף כ״א",
+      "title_orig": "Arachin 21",
+      "hebrew": "ערכין דף כ״א",
+      "hdate": "28 Kislev 5787"
+    },
+    {
+      "date": "2026-12-09",
+      "category": "hebdate",
+      "title": "כ״ט כִּסְלֵו",
+      "title_orig": "29 Kislev 5787",
+      "hebrew": "כ״ט כסלו",
+      "hdate": "29 Kislev 5787"
+    },
+    {
+      "date": "2026-12-09",
+      "category": "holiday",
+      "title": "חֲנוּכָּה: ו׳ נֵרוֹת",
+      "title_orig": "Chanukah: 6 Candles",
+      "hebrew": "חנוכה: ו׳ נרות",
+      "hdate": "29 Kislev 5787"
+    },
+    {
+      "date": "2026-12-09",
+      "category": "dafyomi",
+      "title": "ערכין דף כ״ב",
+      "title_orig": "Arachin 22",
+      "hebrew": "ערכין דף כ״ב",
+      "hdate": "29 Kislev 5787"
+    },
+    {
+      "date": "2026-12-10",
+      "category": "hebdate",
+      "title": "ל׳ כִּסְלֵו",
+      "title_orig": "30 Kislev 5787",
+      "hebrew": "ל׳ כסלו",
+      "hdate": "30 Kislev 5787"
+    },
+    {
+      "date": "2026-12-10",
+      "category": "holiday",
+      "title": "חַג הַבָּנוֹת",
+      "title_orig": "Chag HaBanot",
+      "hebrew": "חג הבנות",
+      "hdate": "30 Kislev 5787"
+    },
+    {
+      "date": "2026-12-10",
+      "category": "holiday",
+      "title": "חֲנוּכָּה: ז׳ נֵרוֹת",
+      "title_orig": "Chanukah: 7 Candles",
+      "hebrew": "חנוכה: ז׳ נרות",
+      "hdate": "30 Kislev 5787"
+    },
+    {
+      "date": "2026-12-10",
+      "category": "dafyomi",
+      "title": "ערכין דף כ״ג",
+      "title_orig": "Arachin 23",
+      "hebrew": "ערכין דף כ״ג",
+      "hdate": "30 Kislev 5787"
+    }
+  ]
+}

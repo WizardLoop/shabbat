@@ -1,0 +1,38 @@
+name: Prepare release artifacts
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    environment: release-review
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1
+        with:
+          php-version: "8.4"
+          extensions: pdo_sqlite, mbstring, xml, dom, fileinfo, zlib, zip
+          tools: composer:2.10.3
+          coverage: none
+      - run: composer validate --strict --no-check-all
+      - run: composer install --no-interaction --prefer-dist
+      - run: composer check-platform-reqs
+      - run: composer audit --locked --format=json
+      - run: composer lint
+      - run: composer style
+      - run: composer test
+      - run: composer analyse
+      - run: composer check-docs
+      - run: composer check-locales
+      - run: composer dependencies
+      - run: php bin/self-check.php
+      - run: docker build --build-arg BUILD_COMMIT="${{ github.sha }}" -t shabbat-release .
+      - run: docker run --rm shabbat-release php bin/runtime-permissions.php --require-non-root
+      - run: docker run --rm shabbat-release php bin/self-check.php --release
+      - run: php scripts/package.php
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: reviewed-release-archives
+          path: dist/
+          if-no-files-found: error

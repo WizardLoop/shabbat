@@ -20,7 +20,7 @@ body:
   - type: textarea
     attributes:
       label: "Screenshots/Logs"
-      description: "Add any screenshots or logs to help explain your problem."
+      description: "Use synthetic examples and redact tokens, sessions, private group/user IDs, payment data and live databases."
   - type: input
     attributes:
       label: "Bot Version / Commit"
@@ -32,3 +32,8 @@ body:
         - Self-hosted Linux
         - Windows
         - Other
+
+  - type: textarea
+    attributes:
+      label: "Runtime and verification"
+      description: "PHP version, SQLite loaded by PHP, patch verification, failing offline test and whether this is isolated staging. Do not attach secrets."

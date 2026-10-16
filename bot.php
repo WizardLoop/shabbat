@@ -7,7 +7,8 @@ declare(strict_types=1);
  * This file is Written by wizardloop!
  * @author    wizardloop 
  * @copyright wizardloop
- * @license   https://opensource.org/license/mit MIT License
+ * SPDX-License-Identifier: AGPL-3.0-only
+ * Original MIT notice retained in LICENSES/SHABBAT-LEGACY-MIT.txt.
  * @link wizardloop => https://wizardloop.t.me 
  */
 
@@ -46,6 +47,7 @@ use BroadcastTool\BroadcastManager;
 
 class Shabbat extends SimpleEventHandler
 {
+use \Shabbat\Runtime\BotIntegration;
 
 /*
 * text - ברירת מחדל כניסה ויציאת שבת וחג
@@ -779,13 +781,15 @@ private function isShabbatOrHolidayNow(): bool {
 * מנהלים
 */
 public function getReportPeers() {
-    return array_map('trim', explode(',', parse_ini_file(__DIR__.'/.env')['ADMIN']));
+    return array_values(array_filter(array_map('trim', explode(',', getenv('ADMIN') ?: ''))));
 }
 
 public function onStart(): void {
-try {
-    $this->sendMessageToAdmins("<b>The system has been restarted!</b>",parseMode: ParseMode::HTML);
-} catch (\Throwable $e) {}
+\Shabbat\Runtime\Runner::attachHandler($this, $this->v5StopWorkers(...));
+$this->v3App();
+\Shabbat\Runtime\Runner::notifyStartup(fn(\Amp\Cancellation $cancellation) => $this->sendMessageToAdmins(
+    "<b>The system has been restarted!</b>", parseMode: ParseMode::HTML, cancellation: $cancellation
+));
 }
 
 /*
@@ -800,6 +804,8 @@ $this->channels->leaveChannel(channel: $message->chatId );
 
 #[FilterCommandCaseInsensitive('start')]
 public function StartCommand(Incoming & PrivateMessage & IsNotEdited $message): void {
+$this->v3Message($message);
+return;
 try {
 $senderid = $message->senderId;
 $messageid = $message->id;
@@ -909,6 +915,8 @@ unlink(__DIR__."/data/$senderid/grs1.txt");
 
 #[FilterButtonQueryData('חזרה')]
 public function BackCommand(callbackQuery $query) {
+$this->v3App()->ui->handleCallback($this->v3Query($query,'sb:start'));
+return;
 try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -1008,7 +1016,9 @@ unlink(__DIR__."/"."data/$userid/grs1.txt");
 }
 
 #[FilterButtonQueryData('זמנישבת')]
-public function ShabbatTimes(callbackQuery $query) {	
+public function ShabbatTimes(callbackQuery $query) {
+$this->v3App()->ui->handleCallback($this->v3Query($query,'sb:show:shabbat'));
+return;
 try {
 $bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרה"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
@@ -1025,6 +1035,8 @@ $this->messages->sendMessage(peer: $query->userId, message: $e->getMessage());
 
 #[FilterButtonQueryData('כלהפקודות')]
 public function AllCommands(callbackQuery $query) {
+$this->v3App()->ui->handleCallback($this->v3Query($query,'sb:help'));
+return;
 try {
 $txtbot = "<b>ברוכים הבאים לתפריט העזרה!</b> 🆘
 בתפריט זה תמצאו את כל הפקודות והמידע";
@@ -1071,6 +1083,8 @@ $query->editText($message = "$txtbot", $replyMarkup = $bot_API_markup, ParseMode
 
 #[FilterButtonQueryData('פקודותלמנהלים')]
 public function CommandForAdmins(callbackQuery $query) {
+$this->v3App()->ui->handleCallback($this->v3Query($query,'sb:help'));
+return;
 try {
 $txtbot = "💡 <b>רשימת פקודות זמינות:</b>
 /add - שליחת פקודה זו בקבוצה תוסיף את הקבוצה לבסיס נתונים על מנת שהיא תסגר בשבתות וחגים!
@@ -1100,6 +1114,8 @@ $query->editText($message = "$txtbot", $replyMarkup = $bot_API_markup, ParseMode
 
 #[FilterButtonQueryData('פקודותלכלהמשתמשים')]
 public function CommandForAll(callbackQuery $query) {
+$this->v3App()->ui->handleCallback($this->v3Query($query,'sb:help'));
+return;
 try {
 $me = $this->getSelf();
 $me_username = '@'.$me['username'];
@@ -1129,6 +1145,8 @@ $query->editText($message = "$txtbot", $replyMarkup = $bot_API_markup, ParseMode
 
 #[FiltersOr(new FilterCommandCaseInsensitive('shabat'), new FilterCommandCaseInsensitive('shabbat'))]
 public function shabatCommand(Incoming & IsNotEdited $message): void {
+$this->v3Message($message);
+return;
 try {
 $senderid = $message->senderId;
 $messageid = $message->id;
@@ -1161,6 +1179,8 @@ $this->messages->sendMessage(peer: $message->chatId, message: $e->getMessage());
 }
 	
 public function onUpdateBotInlineQuery($update) {
+$this->v3App()->ui->handleInline($update);
+return;
 try {
 
 $ShabatTimes = $this->getZmanimForCities();
@@ -1221,6 +1241,18 @@ $query->answer($message = "אני לא יכול לסגור את ההודעה, ס
 
 #[FilterCommandCaseInsensitive('add')]
 public function addgroupCommand(Incoming & GroupMessage & IsNotEdited $message): void {
+$app=$this->v3App();
+if(!$app->gateway->isGroupAdmin((string)$message->senderId,(string)$message->chatId)){$message->reply($this->v3Text((string)$message->senderId,'permission_required'));return;}
+$info=$this->getInfo($message->chatId);
+$existing=$app->settings->getGroup((string)$message->chatId);$new=$existing===null;
+if($existing!==null&&!$existing['active']){
+$app->settings->reactivateGroup((string)$message->chatId,(string)$message->senderId,(string)($info['Chat']['title']??$message->chatId));
+}else{
+$app->settings->ensureGroup((string)$message->chatId,(string)($info['Chat']['title']??$message->chatId),['mode'=>'off']);
+}
+if($new){$app->gateway->sendPrivate((string)$message->senderId,$this->v3Text((string)$message->senderId,'group_new_wizard'));}
+$this->v3Message($message,'/settings');
+return;
 try {
 $senderid = $message->senderId;
 $messageid = $message->id;
@@ -1347,6 +1379,10 @@ $sentMessage = $this->messages->sendMessage(peer: $message->chatId, message: $er
 	
 #[FilterCommandCaseInsensitive('remove')]
 public function removegroupCommand(Incoming & GroupMessage & IsNotEdited $message): void {
+$app=$this->v3App();
+if(!$app->gateway->isGroupAdmin((string)$message->senderId,(string)$message->chatId)){$message->reply($this->v3Text((string)$message->senderId,'permission_required'));return;}
+try{$app->settings->deactivateGroup((string)$message->chatId,(string)$message->senderId);$message->reply($this->v3Text((string)$message->senderId,'group_removed'));}catch(\Throwable $error){$message->reply($error->getMessage());}
+return;
 try {
 $senderid = $message->senderId;
 $messageid = $message->id;
@@ -1494,6 +1530,8 @@ $sentMessage = $this->messages->sendMessage(peer: $message->chatId, message: $er
 	
 #[FilterCommandCaseInsensitive('settings')]
 public function grupsettingsCommand(Incoming & GroupMessage & IsNotEdited $message): void {
+$this->v3Message($message);
+return;
 	try {
 $senderid = $message->senderId;
 $messageid = $message->id;
@@ -1653,6 +1691,8 @@ $sentMessage = $this->messages->sendMessage(peer: $message->chatId, message: $er
 	
 #[FiltersOr(new FilterCommandCaseInsensitive('add'), new FilterCommandCaseInsensitive('remove'), new FilterCommandCaseInsensitive('settings'))]
 public function ifNotCommands(Incoming & PrivateMessage & IsNotEdited $message): void {
+$this->v3Message($message);
+return;
 try {
 $messageid = $message->id;
 
@@ -1669,6 +1709,7 @@ $this->messages->deleteMessages(revoke: true, id: [$sentMessage2]);
 
 #[FilterButtonQueryData('חזרהלהגדרות')]
 public function backtosettings(callbackQuery $query) {
+if(!$this->legacySettingsPanelIsCurrent($query)){return;}
 try {
 $userid = $query->userId;   
 $chatid = $query->chatId; 
@@ -1710,6 +1751,7 @@ $query->editText($message = "$txtbot", $replyMarkup = $bot_API_markup, ParseMode
 
 #[FilterButtonQueryData('החזרברירתמחדל')]
 public function defaultset(callbackQuery $query) {
+if(!$this->legacySettingsPanelIsCurrent($query)){return;}
 try {
 $userid = $query->userId;   
 $chatid = $query->chatId; 
@@ -1734,6 +1776,7 @@ $query->editText($message = "$txtbot", $replyMarkup = $bot_API_markup, ParseMode
 
 #[FilterButtonQueryData('החזרברירתמחדלאישור')]
 public function defaultset1(callbackQuery $query) {
+if(!$this->legacySettingsPanelIsCurrent($query)){return;}
 try {
 $userid = $query->userId;   
 $chatid = $query->chatId; 
@@ -1801,6 +1844,7 @@ unlink(__DIR__."/"."data/$filex/MsgCloserButtons.txt");
 
 #[FilterButtonQueryData('הסברזמנישבת')]
 public function infotimes(callbackQuery $query) {
+if(!$this->legacySettingsPanelIsCurrent($query)){return;}
 try {
 $query->answer($message = "האם הקבוצה תקבל מידי יום שישי / יום חג (בשעה 13:30) הודעה עם זמני כניסת השבת/חג!", $alert = true, $url = null, $cacheTime = 0);		
 } catch (Throwable $e) {
@@ -1809,6 +1853,7 @@ $query->answer($message = "האם הקבוצה תקבל מידי יום שישי
 
 #[FilterButtonQueryData('הסברהודעותלפאח')]
 public function infomessages(callbackQuery $query) {
+if(!$this->legacySettingsPanelIsCurrent($query)){return;}
 try {
 $query->answer($message = "האם הקבוצה תקבל מידי יום שישי/יום חג הודעה שתשלח בערב הכניסה(כשהקבוצה נסגרת) ובזמן הבדלה(יציאה) כשהקבוצה נפתחת!
 • ניתן להשתמש בברירת מחדל.
@@ -1819,6 +1864,7 @@ $query->answer($message = "האם הקבוצה תקבל מידי יום שישי
 
 #[FilterButtonQueryData('שלחזמני')]
 public function TimesON(callbackQuery $query) {
+if(!$this->legacySettingsPanelIsCurrent($query)){return;}
 try {
 $userid = $query->userId;   
 $chatid = $query->chatId; 
@@ -1842,6 +1888,7 @@ $query->editText($message = "<b>הקבוצה תקבל מידי יום שישי/�
 
 #[FilterButtonQueryData('שלחזמני1')]
 public function TimesOFF(callbackQuery $query) {
+if(!$this->legacySettingsPanelIsCurrent($query)){return;}
 try {
 $userid = $query->userId;   
 $chatid = $query->chatId; 
@@ -1867,6 +1914,7 @@ $query->editText($message = "<b>הקבוצה לא תקבל מידי יום שי�
 
 #[FilterButtonQueryData('הודעותלפניואחרי')]
 public function MessagesON(callbackQuery $query) {
+if(!$this->legacySettingsPanelIsCurrent($query)){return;}
 try {
 $userid = $query->userId;   
 $chatid = $query->chatId; 
@@ -1891,6 +1939,7 @@ $query->editText($message = "<b>הקבוצה תקבל מידי יום שישי/�
 
 #[FilterButtonQueryData('הודעותלפניואחרי1')]
 public function MessagesOFF(callbackQuery $query) {
+if(!$this->legacySettingsPanelIsCurrent($query)){return;}
 try {
 $userid = $query->userId;   
 $chatid = $query->chatId; 
@@ -2522,6 +2571,7 @@ private function validateButtonsInput(string $input): bool {
 
 #[FilterButtonQueryData('הודעתפתיחה')]
 public function openMessageGroup(callbackQuery $query) {
+if(!$this->legacySettingsPanelIsCurrent($query)){return;}
 try {
 $userid = $query->userId;   
 $chatid = $query->chatId; 
@@ -2551,6 +2601,7 @@ unlink(__DIR__."/"."data/$userid/grs1.txt");
 
 #[FilterButtonQueryData('הודעתסגירה')]
 public function closeGroupMessage(callbackQuery $query) {
+if(!$this->legacySettingsPanelIsCurrent($query)){return;}
 try {
 $userid = $query->userId;   
 $chatid = $query->chatId; 
@@ -2580,6 +2631,7 @@ unlink(__DIR__."/"."data/$userid/grs1.txt");
 
 #[FilterButtonQueryData('חזרהתפריטהודעה')]
 public function backGroupMessage(callbackQuery $query) {
+if(!$this->legacySettingsPanelIsCurrent($query)){return;}
 try {
 $userid = $query->userId;   
 $chatid = $query->chatId; 
@@ -2623,6 +2675,7 @@ unlink(__DIR__."/"."data/$userid/grs1.txt");
 
 #[FilterButtonQueryData('הגדרטקסט')] 
 public function GroupTextSet1(callbackQuery $query) {
+if(!$this->legacySettingsPanelIsCurrent($query)){return;}
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -2688,6 +2741,7 @@ Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
 
 #[FilterButtonQueryData('מחקטקסט')] 
 public function RemoveText1(callbackQuery $query) {
+if(!$this->legacySettingsPanelIsCurrent($query)){return;}
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -2705,6 +2759,7 @@ $query->editText($message = "האם אתה באמת בטוח שאתה רוצה �
 
 #[FilterButtonQueryData('מחקטקסטאישור')] 
 public function RemoveText1_1(callbackQuery $query) {
+if(!$this->legacySettingsPanelIsCurrent($query)){return;}
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -2755,6 +2810,7 @@ $query->editText($message = "<b>הטקסט הוסר</b> 🗑", $replyMarkup = $b
 
 #[FilterButtonQueryData('צפהבטקסט')] 
 public function GroupTextView1(callbackQuery $query) {
+if(!$this->legacySettingsPanelIsCurrent($query)){return;}
 	try {
 $userid = $query->userId;    
 $msgqutryid = $query->messageId;
@@ -2846,6 +2902,7 @@ $query->answer($message = "ההודעה לא מוגדרת.", $alert = true, $url
 
 #[FilterButtonQueryData('הגדרמדיה')] 
 public function GroupMsgMedia1(callbackQuery $query) {
+if(!$this->legacySettingsPanelIsCurrent($query)){return;}
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -2907,6 +2964,7 @@ Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
 
 #[FilterButtonQueryData('צפהבמדיה')] 
 public function GroupMsgMediaView1(callbackQuery $query) {
+if(!$this->legacySettingsPanelIsCurrent($query)){return;}
 	try {
 $userid = $query->userId;    
 $msgqutryid = $query->messageId;
@@ -2999,6 +3057,7 @@ $query->answer($message = "ההודעה לא מוגדרת.", $alert = true, $url
 
 #[FilterButtonQueryData('מחקמדיה')] 
 public function RemoveMedia1(callbackQuery $query) {
+if(!$this->legacySettingsPanelIsCurrent($query)){return;}
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -3016,6 +3075,7 @@ $query->editText($message = "האם אתה באמת בטוח שאתה רוצה �
 
 #[FilterButtonQueryData('מחקמדיהאישור')] 
 public function RemoveMedia1_1(callbackQuery $query) {
+if(!$this->legacySettingsPanelIsCurrent($query)){return;}
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -3063,6 +3123,7 @@ $query->editText($message = "<b>המדיה הוסרה</b> 🗑", $replyMarkup = 
 
 #[FilterButtonQueryData('צפהבכפתורים')] 
 public function buttonsmanageviewgroup1(callbackQuery $query) {
+if(!$this->legacySettingsPanelIsCurrent($query)){return;}
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -3182,6 +3243,7 @@ $query->editText($message = $e->getMessage());
 
 #[FilterButtonQueryData('הגדרכפתורים')] 
 public function GroupMsgButtonSet1(callbackQuery $query) {
+if(!$this->legacySettingsPanelIsCurrent($query)){return;}
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -3389,6 +3451,7 @@ Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
 
 #[FilterButtonQueryData('מחקכפתורים')] 
 public function RemoveButtons1(callbackQuery $query) {
+if(!$this->legacySettingsPanelIsCurrent($query)){return;}
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -3406,6 +3469,7 @@ $query->editText($message = "האם אתה באמת בטוח שאתה רוצה �
 
 #[FilterButtonQueryData('מחקכפתוריםאישור')] 
 public function RemoveButtons1_1(callbackQuery $query) {
+if(!$this->legacySettingsPanelIsCurrent($query)){return;}
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -3453,6 +3517,7 @@ $query->editText($message = "<b>הכפתורים הוסרו</b> 🗑", $replyMar
 
 #[Handler]
 public function HandleGroupMsgSet1(Incoming & PrivateMessage $message): void {
+return; // Edits are accepted only by the new scoped TemplateEditor.
 		try {
 $messagetext = $message->message;
 $entities = $message->entities;
@@ -3946,6 +4011,7 @@ $Updates = $this->messages->editMessage(peer: $senderid, id: $filexmsgid, messag
 
 #[FilterButtonQueryData('תצוגהמקדימהפתיחה')] 
 public function view_welcomeMessage_full(callbackQuery $query) {
+if(!$this->legacySettingsPanelIsCurrent($query)){return;}
 	try {
 $userid = $query->userId;    
 $msgqutryid = $query->messageId;
@@ -4253,6 +4319,9 @@ $this->messages->sendMessage(peer: $userid, message: "כאן תוכל להגדי
 public function StatsGroups(
     Incoming & IsNotEdited $message
 ): void {
+$this->v3Statistics($message);
+return;
+
 
     try {
 
@@ -4265,7 +4334,7 @@ public function StatsGroups(
             $sentMessage
         );
 
-        $dialogs = $this->getDialogIds();
+        $dialogs = $this->v3KnownPeers();
 
         $supergroups = 0;
         $normalGroups = 0;
@@ -4381,8 +4450,21 @@ public function StatsGroups(
 }
 
 /* ================ cron ================ */
-#[Cron(period: 60.0)] 
+#[Cron(period: 1.0)]
+public function shabatNotifications(): void {
+$this->v3App()->notificationTick();
+$this->v4FlushTefillinAcknowledgements();
+}
+
+#[Cron(period: 15.0)]
+public function shabbatBroadcastCron(): void {
+$this->v4RunBroadcastJobs();
+}
+
+#[Cron(period: 15.0)]
 public function shabatCronClose(): void {
+$this->v3App()->permissionTick();
+return;
 try {
 	
 date_default_timezone_set("Asia/Jerusalem");
@@ -4593,6 +4675,7 @@ if ($processedGroups > 0) {
 
 #[Cron(period: 60.0)] 
 public function shabatCronOpen(): void {
+return; // Restoration belongs to the per-group reconciler.
 try {
 	
 date_default_timezone_set("Asia/Jerusalem");
@@ -4773,6 +4856,7 @@ if ($openedGroups > 0) {
 
 #[Cron(period: 60.0)] 
 public function shabatCronAlert(): void {
+return; // Announcements belong to the persistent outbox.
 try {
 	
 date_default_timezone_set("Asia/Jerusalem");
@@ -4862,6 +4946,8 @@ if ($alertedGroups > 0) {
 /* ================ payments / donate ================ */
 #[FilterCommandCaseInsensitive('donate')]
 public function Payments(Incoming & PrivateMessage & IsNotEdited $message): void {
+$this->v3DonationMenu((string)$message->senderId);
+return;
 try {
 $messagetext = $message->message;
 $messageid = $message->id;
@@ -4946,6 +5032,8 @@ $sentMessage = $this->messages->sendMessage(peer: $senderid, reply_to: $inputRep
 } catch (Throwable $e) {}
 }
 public function onupdateBotPrecheckoutQuery($update) {
+$this->v3App()->donations?->answerPrecheckout($update);
+return;
 		try{
 if ($this->isSelfBot()) {
 $userid = $update['user_id'];
@@ -4956,6 +5044,8 @@ $sucses = $this->messages->setBotPrecheckoutResults(success: true, query_id: $qu
 } catch (\Throwable $e) {}
 }
 public function onUpdateNewMessage($update) {
+if($this->v3RawLocation($update)){return;}
+if(($update['message']['action']['_']??'')==='messageActionPaymentSentMe'){$this->v3RecordPayment($update);return;}
 		try{
 if ($this->isSelfBot()) {
         $msg = $update['message'];
@@ -4994,7 +5084,7 @@ $username = "@".$username;
             $currency = $msg['action']['currency'];
             $payload  = (string) $msg['action']['payload'];
             $charge   = $msg['action']['charge']['id'];
-echo $charge;
+// Payment charge identifiers stay out of logs.
 $parts = explode('|', $payload);
 if (count($parts) < 3) return;
 $type    = $parts[0];
@@ -5034,8 +5124,11 @@ USERNAME: $username
 */
 #[FilterCommandCaseInsensitive('closegroups')]
 public function closeGroupManually(
-    Incoming & PrivateMessage & FromAdmin & IsNotEdited $message
+    Incoming & PrivateMessage & IsNotEdited $message
 ): void {
+$this->v3ManualGroups($message,true);
+return;
+
 
     try {
 
@@ -5213,8 +5306,11 @@ continue;
 */
 #[FilterCommandCaseInsensitive('opengroups')]
 public function openGroupManually(
-    Incoming & PrivateMessage & FromAdmin & IsNotEdited $message
+    Incoming & PrivateMessage & IsNotEdited $message
 ): void {
+$this->v3ManualGroups($message,false);
+return;
+
 
     try {
 
@@ -5328,8 +5424,11 @@ continue;
 */
 #[FilterCommandCaseInsensitive('testzmanim')]
 public function testzmanim(
-    Incoming & PrivateMessage & FromAdmin & IsNotEdited $message
+    Incoming & PrivateMessage & IsNotEdited $message
 ): void {
+$this->v3TestZmanim($message);
+return;
+
 
     try {
 
@@ -5392,8 +5491,11 @@ public function testzmanim(
 * הגדרת פקודות
 */
 #[FilterCommandCaseInsensitive('setcommands')]
-public function setcommands(Incoming & PrivateMessage & FromAdmin & IsNotEdited $message): void
+public function setcommands(Incoming & PrivateMessage & IsNotEdited $message): void
 {
+$this->v3SetCommands($message);
+return;
+
     try {
 
         $this->bots->setBotCommands(
@@ -5563,7 +5665,8 @@ public function getAdminKeyboard() {
 }
 
 #[FilterCommandCaseInsensitive('admin')]
-public function admincommand(Incoming & PrivateMessage & FromAdmin & IsNotEdited $message): void {
+public function admincommand(Incoming & PrivateMessage & IsNotEdited $message): void {
+$this->v3OperatorMain($message); return;
 		try {
 $senderid = $message->senderId;
 $User_Full = $this->getInfo($message->senderId);
@@ -5587,14 +5690,17 @@ $this->messages->sendMessage(peer: $message->senderId, message: "<b>ברוך ה�
 /restart - אתחל את המערכת
 
 ", reply_markup: $markup, parse_mode: 'HTML');
-    if (file_exists("data/$senderid/grs1.txt")) {
-unlink("data/$senderid/grs1.txt");
+    if (\Shabbat\Storage\AdminStateFiles::exists("data/$senderid/grs1.txt")) {
+\Shabbat\Storage\AdminStateFiles::delete("data/$senderid/grs1.txt");
 }
 } catch (Throwable $e) {}
     }
 
 #[FilterButtonQueryData('חזרהמנהל')] 
 public function addsohe1hazor(callbackQuery $query) {
+if(!$this->legacySystemQueryAllowed($query)){return;}
+$this->v3OperatorPanel($query,'main'); return;
+
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -5613,8 +5719,8 @@ $query->editText($message = "<b>ברוך הבא מנהל! 👋</b>
 /restart - אתחל את המערכת
 
 ", $replyMarkup = $markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
-if (file_exists("data/$userid/grs1.txt")) {
-unlink("data/$userid/grs1.txt");
+if (\Shabbat\Storage\AdminStateFiles::exists("data/$userid/grs1.txt")) {
+\Shabbat\Storage\AdminStateFiles::delete("data/$userid/grs1.txt");
 }
 }
 } catch (Throwable $e) {}
@@ -5622,6 +5728,9 @@ unlink("data/$userid/grs1.txt");
 
 #[FilterButtonQueryData('חזרהמנהל2')] 
 public function addsohe1hazor2(callbackQuery $query) {
+if(!$this->legacySystemQueryAllowed($query)){return;}
+$this->v3OperatorPanel($query,'clear'); return;
+
 	try {
 $userid = $query->userId;  
 $msgid = $query->messageId;  
@@ -5641,21 +5750,21 @@ $this->messages->sendMessage(peer: $userid, message: "<b>ברוך הבא מנה�
 
 ", reply_markup: $markup, parse_mode: 'HTML');
 
-if (file_exists(__DIR__."/data/$userid/grs1.txt")) {
-unlink(__DIR__."/data/$userid/grs1.txt");
+if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/$userid/grs1.txt")) {
+\Shabbat\Storage\AdminStateFiles::delete(__DIR__."/data/$userid/grs1.txt");
 }
 
-    if (file_exists(__DIR__."/data/BUTTONS.txt")) {
-unlink(__DIR__."/data/BUTTONS.txt");  
+    if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/BUTTONS.txt")) {
+\Shabbat\Storage\AdminStateFiles::delete(__DIR__."/data/BUTTONS.txt");
 	}	
- if (file_exists(__DIR__."/data/$userid/txt.txt")) {
-unlink(__DIR__."/data/$userid/txt.txt");  
+ if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/$userid/txt.txt")) {
+\Shabbat\Storage\AdminStateFiles::delete(__DIR__."/data/$userid/txt.txt");
 }
-  if (file_exists(__DIR__."/data/$userid/ent.txt")) {
-unlink(__DIR__."/data/$userid/ent.txt");  
+  if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/$userid/ent.txt")) {
+\Shabbat\Storage\AdminStateFiles::delete(__DIR__."/data/$userid/ent.txt");
   }	  
-  if (file_exists(__DIR__."/data/$userid/media.txt")) {
-unlink(__DIR__."/data/$userid/media.txt");  
+  if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/$userid/media.txt")) {
+\Shabbat\Storage\AdminStateFiles::delete(__DIR__."/data/$userid/media.txt");
   }	 
 
 }
@@ -5664,7 +5773,7 @@ unlink(__DIR__."/data/$userid/media.txt");
 
 /* ================ restart ================ */
 public static function getPlugins(): array {
-    return [\danog\MadelineProto\EventHandler\Plugin\RestartPlugin::class];
+    return []; // Restart is handled by BotIntegration::gracefulRestart with application shutdown fences.
 }
 public static function getPluginPaths(): string|array|null {
     return null;
@@ -5675,6 +5784,9 @@ public static function getPluginPaths(): string|array|null {
 #[FilterButtonQueryData('רשימתמשתמשים')] 
 public function reshimamishtamshim(callbackQuery $query)
 {
+if(!$this->legacySystemQueryAllowed($query)){return;}
+$this->v3OperatorPanel($query,'subscribers'); return;
+
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -5683,12 +5795,12 @@ if($first_name == null){
 $first_name = "null";
 }
 
-$dialogs = $this->getDialogIds();
+$dialogs = $this->v3KnownPeers();
 $newLangsComma = implode("\n", $dialogs);
-Amp\File\write(__DIR__."/ids.txt",$newLangsComma);
+\Shabbat\Storage\AdminStateFiles::write(__DIR__."/ids.txt",$newLangsComma);
 
-    if (file_exists(__DIR__."/ids.txt")) {
-$filex = Amp\File\read(__DIR__."/ids.txt");
+    if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/ids.txt")) {
+$filex = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/ids.txt");
 $numFruits = count($dialogs);
 
 if($filex != null){
@@ -5696,14 +5808,14 @@ $file = __DIR__."/ids.txt";
 $outputFile = __DIR__."/idsnew.txt"; 
 $startLine = 1; 
 $endLine = 5; 
-$lines = file($file); 
+$lines = \Shabbat\Storage\AdminStateFiles::lines($file);
 $selectedLines = array_slice($lines, $startLine - 1, $endLine - $startLine + 1);
-Amp\File\write($outputFile, implode("", $selectedLines));
-$outputFilex = Amp\File\read(__DIR__."/idsnew.txt"); 
+\Shabbat\Storage\AdminStateFiles::write($outputFile, implode("", $selectedLines));
+$outputFilex = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/idsnew.txt");
 
-Amp\File\write(__DIR__."/data/startline_cat.txt","$startLine");
-Amp\File\write(__DIR__."/data/endline_cat.txt","$endLine");
-Amp\File\write(__DIR__."/data/page_var.txt","1");
+\Shabbat\Storage\AdminStateFiles::write(__DIR__."/data/startline_cat.txt","$startLine");
+\Shabbat\Storage\AdminStateFiles::write(__DIR__."/data/endline_cat.txt","$endLine");
+\Shabbat\Storage\AdminStateFiles::write(__DIR__."/data/page_var.txt","1");
 
 $category = array_filter(array_map('trim', explode("\n", $outputFilex)));
 
@@ -5762,7 +5874,7 @@ $query->editText($message = "<b>$newLangsComma</b>", $replyMarkup = $bot_API_mar
 }
 
 	}	
-    if (!file_exists(__DIR__."/ids.txt")) {
+    if (!\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/ids.txt")) {
 if($filex == null){
 $newLangsComma = "אין עדיין משתמשים..";
 $bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהמנהל"]];
@@ -5778,6 +5890,9 @@ $query->editText($message = "<b>$newLangsComma</b>", $replyMarkup = $bot_API_mar
 
 #[FilterButtonQueryData('רשימתמנוייםהמשך')] 
 public function reshimamishtamshim2(callbackQuery $query) {
+if(!$this->legacySystemQueryAllowed($query)){return;}
+$this->v3OperatorPanel($query,'next'); return;
+
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -5786,17 +5901,17 @@ if($first_name == null){
 $first_name = "null";
 }
 
-$dialogs = $this->getDialogIds();
+$dialogs = $this->v3KnownPeers();
 $newLangsComma = implode("\n", $dialogs);
-Amp\File\write(__DIR__."/ids.txt",$newLangsComma);
+\Shabbat\Storage\AdminStateFiles::write(__DIR__."/ids.txt",$newLangsComma);
 
-    if (file_exists(__DIR__."/ids.txt")) {
-$filex = Amp\File\read(__DIR__."/ids.txt");
+    if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/ids.txt")) {
+$filex = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/ids.txt");
 $numFruits = count($dialogs);
 
 if($filex != null){
-$startx = Amp\File\read(__DIR__."/data/startline_cat.txt"); 
-$endx = Amp\File\read(__DIR__."/data/endline_cat.txt"); 
+$startx = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/data/startline_cat.txt");
+$endx = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/data/endline_cat.txt");
 
 
 
@@ -5804,17 +5919,17 @@ $file = __DIR__."/ids.txt";
 $outputFile = __DIR__."/idsnew.txt"; 
 $startLine = $startx + 5; 
 $endLine = $endx + 5; 
-$lines = file($file); 
+$lines = \Shabbat\Storage\AdminStateFiles::lines($file);
 $selectedLines = array_slice($lines, $startLine - 1, $endLine - $startLine + 1);
-Amp\File\write($outputFile, implode("", $selectedLines));
-$outputFilex = Amp\File\read(__DIR__."/idsnew.txt"); 
+\Shabbat\Storage\AdminStateFiles::write($outputFile, implode("", $selectedLines));
+$outputFilex = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/idsnew.txt");
 
-$pages_varx = Amp\File\read(__DIR__."/data/page_var.txt"); 
+$pages_varx = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/data/page_var.txt");
 $pages_var = $pages_varx + 1; 
 
-Amp\File\write(__DIR__."/data/startline_cat.txt","$startLine");
-Amp\File\write(__DIR__."/data/endline_cat.txt","$endLine");
-Amp\File\write(__DIR__."/data/page_var.txt","$pages_var");
+\Shabbat\Storage\AdminStateFiles::write(__DIR__."/data/startline_cat.txt","$startLine");
+\Shabbat\Storage\AdminStateFiles::write(__DIR__."/data/endline_cat.txt","$endLine");
+\Shabbat\Storage\AdminStateFiles::write(__DIR__."/data/page_var.txt","$pages_var");
 
 $category = array_filter(array_map('trim', explode("\n", $outputFilex)));
 
@@ -5873,7 +5988,7 @@ $query->editText($message = "<b>$newLangsComma</b>", $replyMarkup = $bot_API_mar
 }
 
 	}	
-    if (!file_exists(__DIR__."/ids.txt")) {
+    if (!\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/ids.txt")) {
 if($filex == null){
 $newLangsComma = "אין עדיין משתמשים..";
 $bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהמנהל"]];
@@ -5888,6 +6003,9 @@ $query->editText($message = "<b>$newLangsComma</b>", $replyMarkup = $bot_API_mar
 
 #[FilterButtonQueryData('רשימתמנוייםהקודם')] 
 public function reshimamishtamshim3(callbackQuery $query) {
+if(!$this->legacySystemQueryAllowed($query)){return;}
+$this->v3OperatorPanel($query,'previous'); return;
+
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -5896,33 +6014,33 @@ if($first_name == null){
 $first_name = "null";
 }
 
-$dialogs = $this->getDialogIds();
+$dialogs = $this->v3KnownPeers();
 $newLangsComma = implode("\n", $dialogs);
-Amp\File\write(__DIR__."/ids.txt",$newLangsComma);
+\Shabbat\Storage\AdminStateFiles::write(__DIR__."/ids.txt",$newLangsComma);
 
-    if (file_exists(__DIR__."/ids.txt")) {
-$filex = Amp\File\read(__DIR__."/ids.txt");
+    if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/ids.txt")) {
+$filex = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/ids.txt");
 $numFruits = count($dialogs);
 
 if($filex != null){
-$startx = Amp\File\read(__DIR__."/data/startline_cat.txt"); 
-$endx = Amp\File\read(__DIR__."/data/endline_cat.txt"); 
+$startx = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/data/startline_cat.txt");
+$endx = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/data/endline_cat.txt");
 
 $file = __DIR__."/ids.txt";
 $outputFile = __DIR__."/idsnew.txt"; 
 $startLine = $startx - 5; 
 $endLine = $endx - 5; 
-$lines = file($file); 
+$lines = \Shabbat\Storage\AdminStateFiles::lines($file);
 $selectedLines = array_slice($lines, $startLine - 1, $endLine - $startLine + 1);
-Amp\File\write($outputFile, implode("", $selectedLines));
-$outputFilex = Amp\File\read(__DIR__."/idsnew.txt"); 
+\Shabbat\Storage\AdminStateFiles::write($outputFile, implode("", $selectedLines));
+$outputFilex = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/idsnew.txt");
 
-$pages_varx = Amp\File\read(__DIR__."/data/page_var.txt"); 
+$pages_varx = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/data/page_var.txt");
 $pages_var = $pages_varx - 1; 
 
-Amp\File\write(__DIR__."/data/startline_cat.txt","$startLine");
-Amp\File\write(__DIR__."/data/endline_cat.txt","$endLine");
-Amp\File\write(__DIR__."/data/page_var.txt","$pages_var");
+\Shabbat\Storage\AdminStateFiles::write(__DIR__."/data/startline_cat.txt","$startLine");
+\Shabbat\Storage\AdminStateFiles::write(__DIR__."/data/endline_cat.txt","$endLine");
+\Shabbat\Storage\AdminStateFiles::write(__DIR__."/data/page_var.txt","$pages_var");
 
 $category = array_filter(array_map('trim', explode("\n", $outputFilex)));
 
@@ -5982,7 +6100,7 @@ $query->editText($message = "<b>$newLangsComma</b>", $replyMarkup = $bot_API_mar
 }
 
 	}	
-    if (!file_exists(__DIR__."/ids.txt")) {
+    if (!\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/ids.txt")) {
 if($filex == null){
 $newLangsComma = "אין עדיין משתמשים..";
 $bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהמנהל"]];
@@ -5996,13 +6114,16 @@ $query->editText($message = "<b>$newLangsComma</b>", $replyMarkup = $bot_API_mar
 }
 
 #[FilterButtonQueryData('var_cat')]
-public function var_cat_command(callbackQuery $query) { 
+public function var_cat_command(callbackQuery $query) {
+if(!$this->legacySystemQueryAllowed($query)){return;}
+$this->v3OperatorPanel($query,'page'); return;
+
 try { 
-    if (file_exists(__DIR__."/ids.txt")) {
-$filex = Amp\File\read(__DIR__."/ids.txt"); 
+    if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/ids.txt")) {
+$filex = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/ids.txt");
 $numFruits = count(explode("\n",$filex));
-if (file_exists(__DIR__."/data/page_var.txt")) {
-$pages_varx = Amp\File\read(__DIR__."/data/page_var.txt"); 
+if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/page_var.txt")) {
+$pages_varx = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/data/page_var.txt");
 $pages_var = $pages_varx; 
 $resultpages = ceil($numFruits / 5);
 
@@ -6014,6 +6135,10 @@ $query->answer($message = "מציג דף $pages_var/$resultpages 📃", $alert =
 
 #[Handler]
 public function adnimhandle(callbackQuery $query): void {
+if (!$query instanceof \danog\MadelineProto\EventHandler\Query\ButtonQuery || !str_starts_with($query->data,'openprofile_')) { return; }
+if(!$this->legacySystemQueryAllowed($query)){return;}
+$this->v3OperatorProfile($query); return;
+
 		try {
 $userid = $query->userId;  
 $querydata = $query->data;  
@@ -6135,8 +6260,8 @@ $this->messages->editMessage(peer: $userid, id: $sentMessage2, message: "$txtuse
 
 } catch (Throwable $e) {}
 
-if (file_exists(__DIR__."/data/$userid/grs1.txt")) {
-unlink(__DIR__."/data/$userid/grs1.txt");
+if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/$userid/grs1.txt")) {
+\Shabbat\Storage\AdminStateFiles::delete(__DIR__."/data/$userid/grs1.txt");
 }
 
 }
@@ -6149,6 +6274,9 @@ unlink(__DIR__."/data/$userid/grs1.txt");
 #[FilterButtonQueryData('סטטיסטיקות')]
 public function StatsUsers(callbackQuery $query)
 {
+if(!$this->legacySystemQueryAllowed($query)){return;}
+$this->v3OperatorPanel($query,'stats'); return;
+
     try {
         $bot_API_markup = [
             'inline_keyboard' => [
@@ -6158,7 +6286,7 @@ public function StatsUsers(callbackQuery $query)
 
         $query->editText("⌛️", null, ParseMode::HTML);
 
-$dialogs = $this->getDialogIds();
+$dialogs = $this->v3KnownPeers();
 
         $numChannels = $numSupergroups = $numChats = $numBots = 0;
         $numUsers = 0;
@@ -6203,6 +6331,8 @@ $allIds = $numUsers + $numChannels + $numSupergroups + $numChats + $numBots;
 
 #[FilterButtonQueryData('closeMsg')]
 public function closeBroadcastMsg(callbackQuery $query) {
+if(!$this->legacySystemQueryAllowed($query)){return;}
+
 	try {
 $this->messages->deleteMessages(revoke: true, id: [$query->messageId]); 
 } catch (\Throwable $e) {
@@ -6218,6 +6348,9 @@ $query->answer($message = "I can't close the message, close it yourself.", $aler
 #[FilterButtonQueryData('Broadcast')] 
 public function broadcastCommand(callbackQuery $query)
 {
+if(!$this->legacySystemQueryAllowed($query)){return;}
+$this->v3OperatorPanel($query,'broadcast'); return;
+
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -6241,15 +6374,18 @@ $query->editText($message = "<b>תפריט שידור, אנא בחר:</b>", $rep
 #[FilterButtonQueryData('deleteLastBroadcast')]
 public function deleteLastBroadcast(callbackQuery $query)
 {
+if(!$this->legacySystemQueryAllowed($query)){return;}
+$this->v3OperatorMaintenance($query,'delete_last'); return;
+
 try {
-$API = new \danog\MadelineProto\API(__DIR__.'/bot.shabbat');
+$API = new \danog\MadelineProto\API(getenv('SESSION_PATH') ?: __DIR__.'/bot.shabbat');
 $manager = new BroadcastManager($API);
-BroadcastManager::setDataDir(__DIR__ . '/data');
+BroadcastManager::setDataDir(getenv('DATA_DIR') ?: __DIR__ . '/data');
 if (!$manager->hasLastBroadcast()) {
 $query->answer($message = "אין הודעת שידור למחיקה!", $alert = true, $url = null, $cacheTime = 0);
 	}else{
 $query->answer($message = "אנא המתן...", $alert = false, $url = null, $cacheTime = 0);
-$allUsers = $this->getDialogIds(); 
+$allUsers = $this->v3KnownPeers();
 $manager->deleteLastBroadcastForAll($allUsers, $query->userId, 20);
     }
 } catch (Throwable $e) {}
@@ -6258,16 +6394,19 @@ $manager->deleteLastBroadcastForAll($allUsers, $query->userId, 20);
 #[FilterButtonQueryData('deleteAllBroadcast')]
 public function deleteAllBroadcast(callbackQuery $query)
 {
+if(!$this->legacySystemQueryAllowed($query)){return;}
+$this->v3OperatorMaintenance($query,'delete_all'); return;
+
 try {
-$API = new \danog\MadelineProto\API(__DIR__.'/bot.shabbat');
+$API = new \danog\MadelineProto\API(getenv('SESSION_PATH') ?: __DIR__.'/bot.shabbat');
 $manager = new BroadcastManager($API);
-BroadcastManager::setDataDir(__DIR__ . '/data');
+BroadcastManager::setDataDir(getenv('DATA_DIR') ?: __DIR__ . '/data');
 
 if (!$manager->hasAllBroadcast()) {
 $query->answer($message = "אין הודעות שידור למחיקה!", $alert = true, $url = null, $cacheTime = 0);
 	}else{
 $query->answer($message = "אנא המתן...", $alert = false, $url = null, $cacheTime = 0);
-$allUsers = $this->getDialogIds(); 
+$allUsers = $this->v3KnownPeers();
 $manager->deleteAllBroadcastsForAll($allUsers, $query->userId, 20);
     }
 } catch (Throwable $e) {}
@@ -6276,12 +6415,15 @@ $manager->deleteAllBroadcastsForAll($allUsers, $query->userId, 20);
 #[FilterButtonQueryData('cancelPinned')]
 public function cancelPinned(callbackQuery $query)
 {
+if(!$this->legacySystemQueryAllowed($query)){return;}
+$this->v3OperatorMaintenance($query,'unpin'); return;
+
 try {
-$api = new \danog\MadelineProto\API(__DIR__.'/bot.shabbat');
+$api = new \danog\MadelineProto\API(getenv('SESSION_PATH') ?: __DIR__.'/bot.shabbat');
 $manager = new BroadcastManager($api);
-BroadcastManager::setDataDir(__DIR__ . '/data');
+BroadcastManager::setDataDir(getenv('DATA_DIR') ?: __DIR__ . '/data');
 $query->answer($message = "אנא המתן...", $alert = false, $url = null, $cacheTime = 0);
-$allUsers = $this->getDialogIds(); 
+$allUsers = $this->v3KnownPeers();
 $subfilter = 'users';
 $filter_sub = $manager->filterPeers($allUsers, $subfilter);
 $subs = $filter_sub['targets'];
@@ -6291,12 +6433,15 @@ $manager->unpinAllMessagesForAll($subs, $query->userId, 20);
 
 #[FilterButtonQueryData('LastBrodDATA')]
 public function LastBrodDATA(callbackQuery $query)
-{  
+{
+if(!$this->legacySystemQueryAllowed($query)){return;}
+$this->v3OperatorPanel($query,'progress'); return;
+
 try{
 
-$API = new \danog\MadelineProto\API(__DIR__.'/bot.shabbat');
+$API = new \danog\MadelineProto\API(getenv('SESSION_PATH') ?: __DIR__.'/bot.shabbat');
 $manager = new BroadcastManager($API);
-BroadcastManager::setDataDir(__DIR__ . '/data');
+BroadcastManager::setDataDir(getenv('DATA_DIR') ?: __DIR__ . '/data');
 if ($manager->lastBroadcastData()) {
 $filex = $manager->lastBroadcastData();
 $bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"Broadcast"]];
@@ -6314,6 +6459,9 @@ $query->answer($message = $filex, $alert = true, $url = null, $cacheTime = 0);
 #[FilterButtonQueryData('setBroadcast')] 
 public function setBroadcast(callbackQuery $query)
 {
+if(!$this->legacySystemQueryAllowed($query)){return;}
+$this->v3OperatorPanel($query,'edit'); return;
+
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -6322,9 +6470,9 @@ if($first_name == null){
 $first_name = "null";
 }
 
-$api = new \danog\MadelineProto\API(__DIR__.'/bot.shabbat');
+$api = new \danog\MadelineProto\API(getenv('SESSION_PATH') ?: __DIR__.'/bot.shabbat');
 $manager = new BroadcastManager($api);
-BroadcastManager::setDataDir(__DIR__ . '/data');
+BroadcastManager::setDataDir(getenv('DATA_DIR') ?: __DIR__ . '/data');
 
 if(!$manager->progress()){
 
@@ -6334,13 +6482,13 @@ $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 $query->editText($message = "<b>נא שלח את ההודעה שתרצה לשלוח:</b>", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
 
 $userDir = __DIR__ . "/data/$userid";
-        if (!is_dir($userDir)) {
-            mkdir($userDir, 0777, true);
+        if (!\Shabbat\Storage\AdminStateFiles::isDirectory($userDir)) {
+            \Shabbat\Storage\AdminStateFiles::mkdir($userDir, 0777, true);
         }
 		
-Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'broadcast1');
+\Shabbat\Storage\AdminStateFiles::write(__DIR__."/data/$userid/grs1.txt", 'broadcast1');
 $msgqutryid = $query->messageId;
-Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
+\Shabbat\Storage\AdminStateFiles::write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
 
 }else{
 $message = "יש שידור פעיל כרגע אנא המתן..";  
@@ -6350,9 +6498,9 @@ $query->answer($message = $message, $alert = true, $url = null, $cacheTime = 0);
 } catch (Throwable $e) {}
 }
 
-    #[Handler]
-    public function handlebroadcast1(Incoming & PrivateMessage & FromAdmin $message): void
+    public function handlebroadcast1(Incoming & PrivateMessage $message): void
     {
+if ($this->v3OperatorCapture($message,'broadcast1')) { return; }
 		try {
 $messagetext = $message->message;
 $messageid = $message->id;
@@ -6375,13 +6523,13 @@ $username = "null";
 }
 
 $userDir = __DIR__ . "/data/$senderid";
-        if (!is_dir($userDir)) {
-            mkdir($userDir, 0777, true);
+        if (!\Shabbat\Storage\AdminStateFiles::isDirectory($userDir)) {
+            \Shabbat\Storage\AdminStateFiles::mkdir($userDir, 0777, true);
         }
 		
 
-    if (file_exists(__DIR__."/data/$senderid/grs1.txt")) {
-$check = Amp\File\read(__DIR__."/data/$senderid/grs1.txt");    
+    if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/$senderid/grs1.txt")) {
+$check = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/data/$senderid/grs1.txt");
 if($check == "broadcast1"){
     
 if(!preg_match('/^\/([Ss]tart)/',$messagetext)){   
@@ -6414,8 +6562,8 @@ $sentMessage = $this->messages->sendMessage(peer: $message->senderId, message: "
 כמות התווים ששלחת: $messageLength", reply_markup: $bot_API_markup);
 
 
- if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
-$filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
+ if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
+$filexmsgid = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/data/$senderid/messagetodelete.txt");
 
 			try {
 $this->messages->deleteMessages(revoke: true, id: [$filexmsgid]); 
@@ -6429,36 +6577,36 @@ if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
 }
 }
 
-unlink(__DIR__."/data/$senderid/messagetodelete.txt");
+\Shabbat\Storage\AdminStateFiles::delete(__DIR__."/data/$senderid/messagetodelete.txt");
 }
 
 }else{
 
-  if (file_exists(__DIR__."/data/$senderid/grs1.txt")) {
-unlink(__DIR__."/data/$senderid/grs1.txt");  
+  if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/$senderid/grs1.txt")) {
+\Shabbat\Storage\AdminStateFiles::delete(__DIR__."/data/$senderid/grs1.txt");
   }	
-    if (file_exists(__DIR__."/data/BUTTONS.txt")) {
-unlink(__DIR__."/data/BUTTONS.txt");  
+    if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/BUTTONS.txt")) {
+\Shabbat\Storage\AdminStateFiles::delete(__DIR__."/data/BUTTONS.txt");
 	}	
- if (file_exists(__DIR__."/data/$senderid/txt.txt")) {
-unlink(__DIR__."/data/$senderid/txt.txt");  
+ if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/$senderid/txt.txt")) {
+\Shabbat\Storage\AdminStateFiles::delete(__DIR__."/data/$senderid/txt.txt");
 }
-  if (file_exists(__DIR__."/data/$senderid/ent.txt")) {
-unlink(__DIR__."/data/$senderid/ent.txt");  
+  if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/$senderid/ent.txt")) {
+\Shabbat\Storage\AdminStateFiles::delete(__DIR__."/data/$senderid/ent.txt");
   }	  
-  if (file_exists(__DIR__."/data/$senderid/media.txt")) {
-unlink(__DIR__."/data/$senderid/media.txt");  
+  if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/$senderid/media.txt")) {
+\Shabbat\Storage\AdminStateFiles::delete(__DIR__."/data/$senderid/media.txt");
   }	 
 
 
 if($messagetext != null){
-Amp\File\write(__DIR__."/data/$senderid/txt.txt", "$messagetext");
-Amp\File\write(__DIR__."/data/$senderid/ent.txt", json_encode(array_map(static fn($e) => $e->toMTProto(),$entities,)));	
+\Shabbat\Storage\AdminStateFiles::write(__DIR__."/data/$senderid/txt.txt", "$messagetext");
+\Shabbat\Storage\AdminStateFiles::write(__DIR__."/data/$senderid/ent.txt", json_encode(array_map(static fn($e) => $e->toMTProto(),$entities,)));
 }
 if(!$messagefile){
 }else{
 $botApiFileId = $message->media->botApiFileId;
-Amp\File\write(__DIR__."/data/$senderid/media.txt", "$botApiFileId");
+\Shabbat\Storage\AdminStateFiles::write(__DIR__."/data/$senderid/media.txt", "$botApiFileId");
 }
 
 			try {
@@ -6473,8 +6621,8 @@ if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
 }
 }
 
- if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
-$filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
+ if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
+$filexmsgid = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/data/$senderid/messagetodelete.txt");
 
 			try {
 $this->messages->deleteMessages(revoke: true, id: [$filexmsgid]); 
@@ -6488,21 +6636,21 @@ if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
 }
 }
 
-unlink(__DIR__."/data/$senderid/messagetodelete.txt");
+\Shabbat\Storage\AdminStateFiles::delete(__DIR__."/data/$senderid/messagetodelete.txt");
 }
 
 
-if (file_exists(__DIR__."/data/broadcastsend.txt")) {
-$broadcast_send = Amp\File\read(__DIR__."/data/broadcastsend.txt");
+if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/broadcastsend.txt")) {
+$broadcast_send = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/data/broadcastsend.txt");
 }
-if (!file_exists(__DIR__."/data/broadcastsend.txt")) {
+if (!\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/broadcastsend.txt")) {
 $broadcast_send = "משתמשים";
 }
 
-if (file_exists(__DIR__."/data/pinmessage.txt")) {
+if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/pinmessage.txt")) {
 $bot_API_markup[] = [['text'=>"📌 נעץ הודעה בצ'אט: ✔️",'callback_data'=>"נעץהודעהללא"]];
 }
-if (!file_exists(__DIR__."/data/pinmessage.txt")) {
+if (!\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/pinmessage.txt")) {
 $bot_API_markup[] = [['text'=>"📌 נעץ הודעה בצ'אט: ✖️",'callback_data'=>"נעץהודעה"]];
 }
 
@@ -6516,18 +6664,18 @@ $bot_API_markup[] = [['text'=>"✅ שדר הודעה ✅",'callback_data'=>"שד
 $bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"חזרהמנהל2"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
- if (file_exists(__DIR__."/data/$senderid/txt.txt")) {
-$filexmsgidtxt = Amp\File\read(__DIR__."/data/$senderid/txt.txt");  
+ if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/$senderid/txt.txt")) {
+$filexmsgidtxt = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/data/$senderid/txt.txt");
 }else{
 $filexmsgidtxt = null; 
 }
-  if (file_exists(__DIR__."/data/$senderid/ent.txt")) {
-$filexmsgident = json_decode(Amp\File\read(__DIR__."/data/$senderid/ent.txt"),true);  
+  if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/$senderid/ent.txt")) {
+$filexmsgident = json_decode(\Shabbat\Storage\AdminStateFiles::read(__DIR__."/data/$senderid/ent.txt"),true);
   }else{
 $filexmsgident = null;  
   }	  
-  if (file_exists(__DIR__."/data/$senderid/media.txt")) {
-$filexmsgidmedia = Amp\File\read(__DIR__."/data/$senderid/media.txt");  
+  if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/$senderid/media.txt")) {
+$filexmsgidmedia = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/data/$senderid/media.txt");
   }else{
 $filexmsgidmedia = null;  
   }	 
@@ -6564,6 +6712,9 @@ $sentMessage = $this->messages->sendMessage(peer: $message->senderId, message: "
 #[FilterButtonQueryData('חזרהתפריטשידור')] 
 public function hazarashidur(callbackQuery $query)
 {
+if(!$this->legacySystemQueryAllowed($query)){return;}
+$this->v3OperatorPanel($query,'draft'); return;
+
 	try {
 $userid = $query->userId; 
 $msgqutryid = $query->messageId;   
@@ -6573,18 +6724,18 @@ if($first_name == null){
 $first_name = "null";
 }
 
-if (file_exists(__DIR__."/data/broadcastsend.txt")) {
-$broadcast_send = Amp\File\read(__DIR__."/data/broadcastsend.txt");
+if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/broadcastsend.txt")) {
+$broadcast_send = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/data/broadcastsend.txt");
 }
-if (!file_exists(__DIR__."/data/broadcastsend.txt")) {
+if (!\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/broadcastsend.txt")) {
 $broadcast_send = "משתמשים";
 }
 
 
-if (file_exists(__DIR__."/data/pinmessage.txt")) {
+if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/pinmessage.txt")) {
 $bot_API_markup[] = [['text'=>"📌 נעץ הודעה בצ'אט: ✔️",'callback_data'=>"נעץהודעהללא"]];
 }
-if (!file_exists(__DIR__."/data/pinmessage.txt")) {
+if (!\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/pinmessage.txt")) {
 $bot_API_markup[] = [['text'=>"📌 נעץ הודעה בצ'אט: ✖️",'callback_data'=>"נעץהודעה"]];
 }
 $bot_API_markup[] = [['text'=>"📮 יעד תפוצה: $broadcast_send",'callback_data'=>"מצבתפוצה"]];
@@ -6597,13 +6748,13 @@ $bot_API_markup[] = [['text'=>"✅ שדר הודעה ✅",'callback_data'=>"שד
 $bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"חזרהמנהל2"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 
- if (file_exists(__DIR__."/data/$userid/txt.txt")) {
-$filexmsgidtxt = Amp\File\read(__DIR__."/data/$userid/txt.txt");  
+ if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/$userid/txt.txt")) {
+$filexmsgidtxt = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/data/$userid/txt.txt");
 }else{
 $filexmsgidtxt = null; 
 }
-  if (file_exists(__DIR__."/data/$userid/ent.txt")) {
-$filexmsgident = json_decode(Amp\File\read(__DIR__."/data/$userid/ent.txt"),true);  
+  if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/$userid/ent.txt")) {
+$filexmsgident = json_decode(\Shabbat\Storage\AdminStateFiles::read(__DIR__."/data/$userid/ent.txt"),true);
   }else{
 $filexmsgident = null;  
   }	
@@ -6619,6 +6770,9 @@ $query->editText($message = "תפריט שידור אנא בחר:", $replyMarkup
 #[FilterButtonQueryData('נעץהודעה')] 
 public function addsoheshidur1forneitza1(callbackQuery $query)
 {
+if(!$this->legacySystemQueryAllowed($query)){return;}
+$this->v3OperatorPanel($query,'pin'); return;
+
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -6627,7 +6781,7 @@ if($first_name == null){
 $first_name = "null";
 }
 
-Amp\File\write(__DIR__."/data/pinmessage.txt","on");
+\Shabbat\Storage\AdminStateFiles::write(__DIR__."/data/pinmessage.txt","on");
 
 $bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהתפריטשידור"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
@@ -6639,6 +6793,9 @@ $query->editText($message = "כעת ההודעה תנעץ בצ'אט ✔️", $re
 #[FilterButtonQueryData('נעץהודעהללא')] 
 public function addsoheshidur1forneitza2(callbackQuery $query)
 {
+if(!$this->legacySystemQueryAllowed($query)){return;}
+$this->v3OperatorPanel($query,'unpin'); return;
+
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -6647,8 +6804,8 @@ if($first_name == null){
 $first_name = "null";
 }
 
-if (file_exists(__DIR__."/data/pinmessage.txt")) {
-unlink(__DIR__."/data/pinmessage.txt");
+if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/pinmessage.txt")) {
+\Shabbat\Storage\AdminStateFiles::delete(__DIR__."/data/pinmessage.txt");
 }
 
 $bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהתפריטשידור"]];
@@ -6661,6 +6818,9 @@ $query->editText($message = "כעת ההודעה לא תנעץ בצ'אט ✖️"
 #[FilterButtonQueryData('מצבתפוצה')] 
 public function broadsetsenders(callbackQuery $query)
 {
+if(!$this->legacySystemQueryAllowed($query)){return;}
+$this->v3OperatorPanel($query,'audience'); return;
+
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -6684,6 +6844,9 @@ $query->editText($message = "<b>אנא בחר מצב תפוצה 🔘</b>
 #[FilterButtonQueryData('מצבתפוצה1')] 
 public function broadsetsenders1(callbackQuery $query)
 {
+if(!$this->legacySystemQueryAllowed($query)){return;}
+$this->v3OperatorPanel($query,'audience:users'); return;
+
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -6692,7 +6855,7 @@ if($first_name == null){
 $first_name = "null";
 }
 
-Amp\File\write(__DIR__."/data/broadcastsend.txt","משתמשים");
+\Shabbat\Storage\AdminStateFiles::write(__DIR__."/data/broadcastsend.txt","משתמשים");
 
 $bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהתפריטשידור"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
@@ -6704,6 +6867,9 @@ $query->editText($message = "<b>התפוצה שנבחרה:</b> רק למשתמש
 #[FilterButtonQueryData('מצבתפוצה2')] 
 public function broadsetsenders2(callbackQuery $query)
 {
+if(!$this->legacySystemQueryAllowed($query)){return;}
+$this->v3OperatorPanel($query,'audience:channels'); return;
+
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -6712,7 +6878,7 @@ if($first_name == null){
 $first_name = "null";
 }
 
-Amp\File\write(__DIR__."/data/broadcastsend.txt","ערוצים");
+\Shabbat\Storage\AdminStateFiles::write(__DIR__."/data/broadcastsend.txt","ערוצים");
 
 $bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהתפריטשידור"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
@@ -6724,6 +6890,9 @@ $query->editText($message = "<b>התפוצה שנבחרה:</b> רק לערוצי
 #[FilterButtonQueryData('מצבתפוצה3')] 
 public function broadsetsenders3(callbackQuery $query)
 {
+if(!$this->legacySystemQueryAllowed($query)){return;}
+$this->v3OperatorPanel($query,'audience:groups'); return;
+
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -6732,7 +6901,7 @@ if($first_name == null){
 $first_name = "null";
 }
 
-Amp\File\write(__DIR__."/data/broadcastsend.txt","קבוצות");
+\Shabbat\Storage\AdminStateFiles::write(__DIR__."/data/broadcastsend.txt","קבוצות");
 
 $bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהתפריטשידור"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
@@ -6744,6 +6913,9 @@ $query->editText($message = "<b>התפוצה שנבחרה:</b> רק לקבוצו
 #[FilterButtonQueryData('מצבתפוצה4')] 
 public function broadsetsenders4(callbackQuery $query)
 {
+if(!$this->legacySystemQueryAllowed($query)){return;}
+$this->v3OperatorPanel($query,'audience:all'); return;
+
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -6752,7 +6924,7 @@ if($first_name == null){
 $first_name = "null";
 }
 
-Amp\File\write(__DIR__."/data/broadcastsend.txt","כולם");
+\Shabbat\Storage\AdminStateFiles::write(__DIR__."/data/broadcastsend.txt","כולם");
 
 $bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהתפריטשידור"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
@@ -6764,6 +6936,9 @@ $query->editText($message = "<b>התפוצה שנבחרה:</b> כולם", $reply
 #[FilterButtonQueryData('הוספתכפתורים')] 
 public function hosafkaf(callbackQuery $query)
 {
+if(!$this->legacySystemQueryAllowed($query)){return;}
+$this->v3OperatorPanel($query,'buttons'); return;
+
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -6795,15 +6970,15 @@ closeMsg (סגור הודעה)
 <u>דוגמה:</u>
 <pre>סגור - data:closeMsg</pre>", $replyMarkup = $bot_API_markup, ParseMode::HTML, $noWebpage = false, $scheduleDate = NULL);
 
-Amp\File\write(__DIR__."/data/$userid/grs1.txt", 'addBUTTONS');
+\Shabbat\Storage\AdminStateFiles::write(__DIR__."/data/$userid/grs1.txt", 'addBUTTONS');
 $msgqutryid = $query->messageId;
-Amp\File\write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
+\Shabbat\Storage\AdminStateFiles::write(__DIR__."/data/$userid/messagetodelete.txt", "$msgqutryid");
 } catch (Throwable $e) {}
 }
 
-#[Handler]
-public function handlebuttons(Incoming & PrivateMessage & FromAdmin $message): void
+public function handlebuttons(Incoming & PrivateMessage $message): void
     {
+if ($this->v3OperatorCapture($message,'addBUTTONS')) { return; }
 		try {
 $messagetext = $message->message;
 $entities = $message->entities;
@@ -6824,8 +6999,8 @@ if($username == null){
 $username = "null";
 }
 
-    if (file_exists(__DIR__."/data/$senderid/grs1.txt")) {
-$edit = Amp\File\read(__DIR__."/data/$senderid/grs1.txt");    
+    if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/$senderid/grs1.txt")) {
+$edit = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/data/$senderid/grs1.txt");
 if($edit == "addBUTTONS"){
  
 if(!preg_match('/^\/([Ss]tart)/',$messagetext)){   
@@ -6893,7 +7068,7 @@ if (!function_exists("parseButtons")) {
 $parsedButtons = parseButtons($messagetext);
 
 if ($parsedButtons !== false) {
-unlink(__DIR__."/data/$senderid/grs1.txt");
+\Shabbat\Storage\AdminStateFiles::delete(__DIR__."/data/$senderid/grs1.txt");
 
 			try {
 $this->messages->deleteMessages(revoke: true, id: [$messageid]); 
@@ -6907,14 +7082,14 @@ if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
 }
 }
 
- if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
-$filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
+ if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
+$filexmsgid = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/data/$senderid/messagetodelete.txt");
 $bot_API_markup = [];
 $bot_API_markup[] = [['text'=>"חזרה",'callback_data'=>"חזרהתפריטשידור"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
 $Updates = $this->messages->editMessage(peer: $senderid, id: $filexmsgid, message: "<b>הכפתורים נשמרו בהצלחה! ✔️</b>", reply_markup: $bot_API_markup, parse_mode: 'HTML');
 
-Amp\File\write(__DIR__."/data/BUTTONS.txt", json_encode($parsedButtons, JSON_UNESCAPED_UNICODE));
+\Shabbat\Storage\AdminStateFiles::write(__DIR__."/data/BUTTONS.txt", json_encode($parsedButtons, JSON_UNESCAPED_UNICODE));
 
 }
 
@@ -6932,8 +7107,8 @@ if(preg_match("/MESSAGE_DELETE_FORBIDDEN/",$estring)){
 }
 }
 
- if (file_exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
-$filexmsgid = Amp\File\read(__DIR__."/data/$senderid/messagetodelete.txt");  
+ if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/$senderid/messagetodelete.txt")) {
+$filexmsgid = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/data/$senderid/messagetodelete.txt");
 $bot_API_markup = [];
 $bot_API_markup[] = [['text'=>"❌ ביטול ❌",'callback_data'=>"חזרהתפריטשידור"]];
 $bot_API_markup = [ 'inline_keyboard'=> $bot_API_markup,];
@@ -6980,6 +7155,9 @@ if(preg_match("/MESSAGE_NOT_MODIFIED/",$estring)){
 #[FilterButtonQueryData('צפהבכפתוריםמנהל')] 
 public function buttonsmanageview(callbackQuery $query)
 {
+if(!$this->legacySystemQueryAllowed($query)){return;}
+$this->v3OperatorPanel($query,'preview'); return;
+
 	try {
 $userid = $query->userId;    
 $User_Full = $this->getInfo($userid);
@@ -6990,16 +7168,16 @@ $first_name = "null";
 
 $buttons = __DIR__."/data/BUTTONS.txt";
 
-    if (file_exists($buttons)) {
+    if (\Shabbat\Storage\AdminStateFiles::exists($buttons)) {
 
 if (!function_exists('loadButtons')) {
     function loadButtons(string $file): array|null
     {
-        if (!file_exists($file)) {
+        if (!\Shabbat\Storage\AdminStateFiles::exists($file)) {
             return null;
         }
 
-        $json = Amp\File\read($file);
+        $json = \Shabbat\Storage\AdminStateFiles::read($file);
         $buttons = json_decode($json, true);
 
         if (!is_array($buttons)) {
@@ -7026,7 +7204,7 @@ $query->editText($message = "הכפתורים שלך:", $replyMarkup = $bot_API_
 
 	}
 	
-    if (!file_exists($buttons)) {
+    if (!\Shabbat\Storage\AdminStateFiles::exists($buttons)) {
 $BUTTONS = "לא הוגדרו עדיין כפתורים..";  
 $query->answer($message = "$BUTTONS", $alert = true, $url = null, $cacheTime = 10);
 	}
@@ -7037,6 +7215,9 @@ $query->answer($message = "$BUTTONS", $alert = true, $url = null, $cacheTime = 1
 #[FilterButtonQueryData('שדרהודעה')] 
 public function buttonsmanageview2(callbackQuery $query)
 {
+if(!$this->legacySystemQueryAllowed($query)){return;}
+$this->v3OperatorConfirmBroadcast($query); return;
+
 	try{
 $userid = $query->userId;  
 $msgqutryid = $query->messageId;   
@@ -7048,16 +7229,16 @@ $first_name = "null";
 
 $buttons = __DIR__."/data/BUTTONS.txt";
 
-    if (file_exists($buttons)) {
+    if (\Shabbat\Storage\AdminStateFiles::exists($buttons)) {
 
 if (!function_exists('loadButtons')) {
     function loadButtons(string $file): array|null
     {
-        if (!file_exists($file)) {
+        if (!\Shabbat\Storage\AdminStateFiles::exists($file)) {
             return null;
         }
 
-        $json = Amp\File\read($file);
+        $json = \Shabbat\Storage\AdminStateFiles::read($file);
         $buttons = json_decode($json, true);
 
         if (!is_array($buttons)) {
@@ -7086,36 +7267,36 @@ $bot_API_markup = null;
 $this->messages->deleteMessages(revoke: true, id: [$msgqutryid]); 
 } catch (Throwable $e) {}
 
- if (file_exists(__DIR__."/data/$userid/txt.txt")) {
-$filexmsgidtxt = Amp\File\read(__DIR__."/data/$userid/txt.txt");  
+ if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/$userid/txt.txt")) {
+$filexmsgidtxt = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/data/$userid/txt.txt");
 }else{
 $filexmsgidtxt = null; 
 }
-  if (file_exists(__DIR__."/data/$userid/ent.txt")) {
-$filexmsgident = json_decode(Amp\File\read(__DIR__."/data/$userid/ent.txt"),true);  
+  if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/$userid/ent.txt")) {
+$filexmsgident = json_decode(\Shabbat\Storage\AdminStateFiles::read(__DIR__."/data/$userid/ent.txt"),true);
   }else{
 $filexmsgident = null;  
   }	  
-  if (file_exists(__DIR__."/data/$userid/media.txt")) {
-$filexmsgidmedia = Amp\File\read(__DIR__."/data/$userid/media.txt");  
+  if (\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/$userid/media.txt")) {
+$filexmsgidmedia = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/data/$userid/media.txt");
   }else{
 $filexmsgidmedia = null;  
   }	 
 
         try {
-$dialogs = $this->getDialogIds();
+$dialogs = $this->v3KnownPeers();
         } catch (Throwable $e) { $dialogs = []; }
 
-    if (!file_exists(__DIR__."/data/pinmessage.txt")) {
+    if (!\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/pinmessage.txt")) {
 $pinmessage = false;
 	}else{
 $pinmessage = true;
 	}
 
-    if (!file_exists(__DIR__."/data/broadcastsend.txt")) {
+    if (!\Shabbat\Storage\AdminStateFiles::exists(__DIR__."/data/broadcastsend.txt")) {
 $subfilter = 'users';
 	}else{
-$check2 = Amp\File\read(__DIR__."/data/broadcastsend.txt");  
+$check2 = \Shabbat\Storage\AdminStateFiles::read(__DIR__."/data/broadcastsend.txt");
 
 if($check2 == "משתמשים"){
 $subfilter = 'users';
@@ -7147,9 +7328,9 @@ $messages = [['message' => "$filexmsgidtxt", 'entities' => $filexmsgident, 'repl
 
 }
 
-$api = new \danog\MadelineProto\API(__DIR__.'/bot.shabbat');
+$api = new \danog\MadelineProto\API(getenv('SESSION_PATH') ?: __DIR__.'/bot.shabbat');
 $manager = new BroadcastManager($api);
-BroadcastManager::setDataDir(__DIR__ . '/data');
+BroadcastManager::setDataDir(getenv('DATA_DIR') ?: __DIR__ . '/data');
 
 if(!$manager->progress()){
 $filter_sub = $manager->filterPeers($dialogs, $subfilter);
@@ -7168,28 +7349,15 @@ $query->answer($message = $message, $alert = true, $url = null, $cacheTime = 0);
 #[FilterButtonQueryData('בקרוב')]
 public function comingsoon(callbackQuery $query) {  
 try{
-$query->answer($message = "בקרוב מאוד זה יפעל 💡", $alert = true, $url = null, $cacheTime = 0);
+$query->answer($this->v3Text((string)$query->userId, 'unavailable'), true);
 } catch (Throwable $e) {}
 }
 
 }
 
 function RunBot(): void {
-	try {
-$API_ID = parse_ini_file(__DIR__."/".'.env')['API_ID'];
-$API_HASH = parse_ini_file(__DIR__."/".'.env')['API_HASH'];
-$BOT_TOKEN = parse_ini_file(__DIR__."/".'.env')['BOT_TOKEN'];
-$settings = new \danog\MadelineProto\Settings;
-$settings->setAppInfo((new \danog\MadelineProto\Settings\AppInfo)->setApiId((int)$API_ID)->setApiHash($API_HASH));
-
-$logger = (new \danog\MadelineProto\Settings\Logger)->setLevel(\danog\MadelineProto\Logger::ERROR);
-$settings->setLogger($logger);
-
-Shabbat::startAndLoopBot(__DIR__.'/bot.shabbat', $BOT_TOKEN, $settings);
-
-} catch (\Throwable $e) {
-if (strpos($e->getMessage(), 'bad_msg_notification') !== false) exit(1);
-if ($e instanceof \Amp\TimeoutException || $e instanceof \Amp\CancelledException) exit(1);
+    exit(\Shabbat\Runtime\Runner::run(Shabbat::class, __DIR__));
 }
+if (PHP_SAPI === 'cli' && realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__) {
+    RunBot();
 }
-RunBot();

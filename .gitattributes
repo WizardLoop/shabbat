@@ -1,0 +1,22 @@
+* text=auto
+*.php text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.sh text eol=lf
+*.yml text eol=lf
+*.patch text eol=lf
+*.diff text eol=lf
+Dockerfile text eol=lf
+*.sql text eol=lf
+
+# Preserve exact reviewed upstream, diff, and manifest bytes across clones.
+patches/** -text
+patches/**/baseline/** whitespace=-blank-at-eol,-blank-at-eof,-space-before-tab,cr-at-eol
+
+# Distributed publisher license text hashes must remain stable too.
+LICENSES/** -text
+
+# Database checksums and bundled licensed/provider text use the original bytes.
+migrations/** -text
+resources/templates/** -text
+tests/Fixtures/** -text

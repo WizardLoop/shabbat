@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<ruleset name="Shabbat new PHP">
+  <description>PSR-12 for new services, tools and tests. Legacy bot.php and immutable upstream patch baselines are syntax checked separately.</description>
+  <rule ref="PSR12"/>
+  <file>src</file>
+  <file>bin</file>
+  <file>scripts</file>
+  <file>tests</file>
+  <arg name="extensions" value="php"/>
+  <arg name="encoding" value="utf-8"/>
+  <arg value="s"/>
+  <exclude-pattern>tests/Fixtures/*</exclude-pattern>
+</ruleset>

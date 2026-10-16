@@ -1,0 +1,35 @@
+{
+  "retrieved_date": "2026-10-14",
+  "attribution": "Hebcal.com",
+  "license": "CC-BY-4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "service_docs": "https://www.hebcal.com/home/1663/zmanim-halachic-times-api",
+  "midnight_semantics": "https://hebcal.github.io/api/core/classes/Zmanim.html#nighthour",
+  "notes": "Public response excerpts. Only unused fields were removed and JSON whitespace was normalized. No time, date, event or offset value was invented or recalculated. Unit tests replay these immutable files without network access.",
+  "fixtures": [
+    {
+      "sha256": "7d4b71adf0c32552dfb44b008208dbd58938ee89b6914ac8fa20bffe90f24254",
+      "url": "https://www.hebcal.com/zmanim?cfg=json&latitude=31.778&longitude=35.235&tzid=Asia%2FJerusalem&start=2026-09-23&end=2026-12-10",
+      "file": "hebcal-jerusalem-solar-2026-10.json",
+      "projection": "date, location, unchanged chatzotNight/alotHaShachar/misheyakir/sunrise/sunset/tzeit7083deg/tzeit85deg time series"
+    },
+    {
+      "sha256": "d6f5a942d5caa9998d6334a75e1e686c4e06367e7fd6ee3e70430d0ed2561942",
+      "url": "https://www.hebcal.com/hebcal?v=1&cfg=json&start=2026-09-23&end=2026-12-10&i=on&maj=on&min=on&mf=on&s=on&mvch=on&o=on&F=on&d=on&hdp=1&lg=he",
+      "file": "hebcal-jerusalem-calendar-2026-10.json",
+      "projection": "range and every item with unchanged date/category/title/title_orig/hebrew/hdate/yomtov fields when present"
+    },
+    {
+      "sha256": "ef7c23b6cb56bce16b9d21fffa23f23ee351e98f713ead10c7b7c15e82bf4ba8",
+      "url": "https://www.hebcal.com/zmanim?cfg=json&latitude=31.778&longitude=35.235&tzid=Asia%2FJerusalem&start=2026-07-01&end=2026-07-02",
+      "file": "hebcal-jerusalem-solar-2026-07.json",
+      "projection": "date, location, unchanged chatzotNight/sunrise/sunset time series"
+    },
+    {
+      "sha256": "7a0689589543e8137d6d3dc9c736acdb89c2d0b30b639d9a2d8be262457777b2",
+      "url": "https://www.hebcal.com/zmanim?cfg=json&latitude=31.778&longitude=35.235&tzid=Asia%2FJerusalem&start=2026-03-26&end=2026-03-28",
+      "file": "hebcal-jerusalem-solar-2026-03.json",
+      "projection": "date, location, unchanged chatzotNight/sunrise/sunset time series"
+    }
+  ]
+}

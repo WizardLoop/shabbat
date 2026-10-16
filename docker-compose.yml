@@ -1,10 +1,25 @@
 services:
   shabbat:
-    build: .
-    restart: always
+    build:
+      context: .
+      args:
+        BUILD_COMMIT: ${BUILD_COMMIT:-}
+    restart: unless-stopped
     init: true
-    tty: true
-    working_dir: /app
+    env_file: .env
+    environment:
+      DATA_DIR: /app/data
+      SESSION_PATH: /app/runtime/bot.shabbat
     volumes:
-      - ./:/app
-    command: php /app/bot.php
+      - bot-data:/app/data
+      - madeline-session:/app/runtime
+    stop_grace_period: 60s
+    healthcheck:
+      test: ["CMD", "php", "bin/health.php"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+volumes:
+  bot-data:
+  madeline-session:
