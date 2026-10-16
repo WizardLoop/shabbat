@@ -4,6 +4,17 @@ declare(strict_types=1);
 
 // SPDX-License-Identifier: AGPL-3.0-only
 $root = dirname(__DIR__);
+$output = $root . '/docs/dependencies.json';
+foreach (array_slice($argv, 1) as $argument) {
+    if (str_starts_with($argument, '--output=')) {
+        $output = substr($argument, strlen('--output='));
+        if ($output === '') {
+            throw new InvalidArgumentException('Dependency report output must be a file path.');
+        }
+    } elseif ($argument !== '--check') {
+        throw new InvalidArgumentException('Unknown dependency inventory argument.');
+    }
+}
 $lock = json_decode((string) file_get_contents($root . '/composer.lock'), true, flags: JSON_THROW_ON_ERROR);
 $composer = json_decode((string) file_get_contents($root . '/composer.json'), true, flags: JSON_THROW_ON_ERROR);
 $report = ['schema_version' => 1, 'lock_sha256' => hash_file('sha256', $root . '/composer.lock'), 'packages' => [], 'services_and_assets' => [
@@ -107,17 +118,19 @@ foreach (['packages' => 'runtime', 'packages-dev' => 'dev'] as $section => $scop
         ];
     }
 }
-if (!is_dir($root . '/docs')) {
-    mkdir($root . '/docs', 0755, true);
+if (!is_dir(dirname($output))) {
+    mkdir(dirname($output), 0755, true);
 }
 $json = json_encode($report, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) . "\n";
 if (in_array('--check', $argv, true)) {
-    $saved = $root . '/docs/dependencies.json';
+    $saved = $output;
     if (!is_file($saved) || file_get_contents($saved) !== $json) {
         fwrite(STDERR, "Dependency report differs; regenerate with composer dependencies.\n");
         exit(1);
     }
 } else {
-    file_put_contents($root . '/docs/dependencies.json', $json);
+    if (file_put_contents($output, $json) !== strlen($json)) {
+        throw new RuntimeException('Unable to write dependency inventory.');
+    }
 }
 echo 'Dependency inventory: ' . count($report['packages']) . " locked packages. License text checks are evidence, not a legal certification.\n";

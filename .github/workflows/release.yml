@@ -25,7 +25,7 @@ jobs:
       - run: composer analyse
       - run: composer check-docs
       - run: composer check-locales
-      - run: composer dependencies
+      - run: composer dependencies -- --output="$RUNNER_TEMP/dependencies.json"
       - run: php bin/self-check.php
       - run: docker build --build-arg BUILD_COMMIT="${{ github.sha }}" -t shabbat-release .
       - run: docker run --rm shabbat-release php bin/runtime-permissions.php --require-non-root

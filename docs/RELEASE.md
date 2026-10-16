@@ -82,3 +82,5 @@ Exclude `.git`, actual `.env`, sessions, application/runtime databases and WAL/S
 Use [the complete `/root/shabat` legacy cutover guide](PRODUCTION_UPGRADE.md) for the old file-based production bot. Existing SQLite deployments use [migration](MIGRATION.md) and [backup/restore](BACKUP_RESTORE.md) instead of importing legacy data again. Stable 3.0.0 adds no migration after dev.9; all 16 sources remain required.
 
 Stop all writers before migration, retain matching source/database/session/BroadcastManager state, verify import/settings and restore, and monitor the first real production close/open cycle. Review old permission snapshots through the provenance-aware recovery panel. Keep the exact corresponding source available and set `SOURCE_URL` before public operation. Publication itself does not execute a server command or restart a bot.
+
+CI writes its host-specific dependency report outside the source checkout with `composer dependencies -- --output="$RUNNER_TEMP/dependencies.json"`. This keeps the committed inventory intact while retaining the same dependency/license inspection. For a local external report, pass an explicit private output path.

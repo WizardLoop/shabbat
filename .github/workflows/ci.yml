@@ -31,7 +31,7 @@ jobs:
       - run: composer analyse
       - run: composer check-locales
       - run: composer check-docs
-      - run: composer dependencies
+      - run: composer dependencies -- --output="$RUNNER_TEMP/dependencies.json"
       - run: composer self-check
       - name: Verify release packaging regressions
         if: matrix.php == '8.4'
