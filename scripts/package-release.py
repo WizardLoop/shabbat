@@ -11,6 +11,7 @@ import datetime
 import hashlib
 import json
 import os
+import posixpath
 from pathlib import Path, PurePosixPath
 import re
 import subprocess
@@ -64,7 +65,7 @@ def scan(path, data):
 
 
 def git(root, *args, data=None):
-    return subprocess.run(['git', '-C', str(root), *args], input=data,
+    return subprocess.run(['git', '--no-replace-objects', '-C', str(root), *args], input=data,
                           capture_output=True, check=True).stdout
 
 
@@ -139,6 +140,20 @@ def dependencies(root, app, dependency_archive=None):
             'Source inventory contains an unlocked/development package')
     require(all(any(p.startswith(prefix) for p in expected) for prefix in prefixes),
             'Source inventory omits a locked runtime package')
+    links = scope.get('source_symlinks', {})
+    for path, link in links.items():
+        require(path in expected and path.startswith('vendor/') and path not in preferred,
+                'Unexpected source symlink: ' + path)
+        prefix = next(prefix for prefix in prefixes if path.startswith(prefix))
+        target = link['target']
+        require(isinstance(target, str) and target and not target.startswith('/')
+                and '\\' not in target and not re.match(r'[A-Za-z]:', target),
+                'Unsafe source symlink target: ' + path)
+        resolved = posixpath.normpath(posixpath.join(posixpath.dirname(path), target))
+        require(resolved.startswith(prefix) and resolved in expected and resolved not in links,
+                'Source symlink escapes its package or has an unreviewed target: ' + path)
+        require(link['mode'] == '120777' and link['sha256'] == expected[path]
+                and sha(target.encode()) == expected[path], 'Unapproved source symlink: ' + path)
     archive = zipfile.ZipFile(dependency_archive) if dependency_archive else None
     try:
         if archive:
@@ -155,8 +170,12 @@ def dependencies(root, app, dependency_archive=None):
                 data = archive.read(path)
             else:
                 source = root / path
-                require(source.is_file() and not source.is_symlink(), 'Missing runtime source: ' + path)
-                data = source.read_bytes()
+                if source.is_symlink():
+                    require(path in links, 'Unapproved symlink in runtime source: ' + path)
+                    data = os.readlink(source).encode()
+                else:
+                    require(source.is_file(), 'Missing runtime source: ' + path)
+                    data = source.read_bytes()
             require(sha(data) == digest, 'Unapproved dependency source bytes: ' + path)
             scan(path, data)
             payload[path] = data
@@ -169,9 +188,9 @@ def dependencies(root, app, dependency_archive=None):
                 folder = root / 'vendor' / name
                 actual = set()
                 for file in folder.rglob('*'):
-                    require(not file.is_symlink(), 'Symlink in runtime source: ' + str(file))
-                    if file.is_file():
-                        path = file.relative_to(root).as_posix()
+                    path = file.relative_to(root).as_posix()
+                    require(not file.is_symlink() or path in links, 'Unapproved symlink in runtime source: ' + path)
+                    if file.is_file() or file.is_symlink():
                         if path in omitted:
                             require(sha(file.read_bytes()) == omitted[path], 'Changed public example key: ' + path)
                         else:
@@ -220,7 +239,7 @@ def package(root, output, dependency_archive=None):
                    'Application files match that Git tree byte for byte. The source offer includes '
                    'the locked runtime package sources, active local patches and their base files, '
                    'licenses, and the reviewed preferred-source supplements. All selected bytes are '
-                   'pinned by `source-scope.json`. Development dependencies and generated Composer '
+                   'pinned by `source-scope.json`. Reviewed upstream source symlinks retain their relative targets and Unix ZIP modes. Development dependencies and generated Composer '
                    'autoload files are excluded. This is a source offer, not an installed vendor tree.\n\n'
                    'External platform components and limitations:\n\n' +
                    '\n'.join('- ' + str(x) for x in scope['limits']) + '\n')
@@ -234,7 +253,9 @@ def package(root, output, dependency_archive=None):
         source_entries = dict(application_entries, **payload,
                               **{'source-scope.json': json_bytes(scope), 'SOURCE-SCOPE.md': source_text.encode()})
         artifacts = [write_archive(temp / names[0], application_entries, modes, stamp),
-                     write_archive(temp / names[1], source_entries, modes, stamp)]
+                     write_archive(temp / names[1], source_entries,
+                                   dict(modes, **{p: int(link['mode'], 8)
+                                                  for p, link in scope.get('source_symlinks', {}).items()}), stamp)]
         manifest = {'repository': 'https://github.com/WizardLoop/shabbat', 'tag': 'v' + version,
                     'version': version, 'prerelease': '-' in version, **metadata,
                     'git_files': len(app), 'composer_lock_sha256': sha(app['composer.lock']),

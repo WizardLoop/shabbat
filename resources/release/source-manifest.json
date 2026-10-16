@@ -584,6 +584,18 @@
             "file_count": 16
         }
     ],
+    "source_symlinks": {
+        "vendor/danog/async-orm/docs/index.md": {
+            "target": "../README.md",
+            "mode": "120777",
+            "sha256": "dbcc210d7f4962499db6d4cfa18658e26d05ee700c962a811cac911f095e22fd"
+        },
+        "vendor/danog/telegram-entities/docs/index.md": {
+            "target": "../README.md",
+            "mode": "120777",
+            "sha256": "dbcc210d7f4962499db6d4cfa18658e26d05ee700c962a811cac911f095e22fd"
+        }
+    },
     "files_sha256": {
         "additional-source/amphp-windows-process-wrapper/.gitattributes": "e6518f1394b1372580e03c792bf6b1a51766e1da051815457fc881bf78476ecd",
         "additional-source/amphp-windows-process-wrapper/.gitignore": "122661b5b5b483734ef04f7f291a24dcc786ffb0c9e92a1f35b2deb59ebb26fd",

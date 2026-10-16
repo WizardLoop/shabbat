@@ -61,6 +61,43 @@ final class SourceInputsTest extends TestCase
         }
     }
 
+    public function testApprovedSourceSymlinksRetainExactUpstreamTargetsWithinLockedPackages(): void
+    {
+        $manifest = $this->manifest();
+        $approved = [
+            'vendor/danog/async-orm/docs/index.md',
+            'vendor/danog/telegram-entities/docs/index.md',
+        ];
+        self::assertSame($approved, array_keys($manifest['source_symlinks']));
+        foreach ($manifest['source_symlinks'] as $path => $link) {
+            self::assertSame(['target', 'mode', 'sha256'], array_keys($link));
+            self::assertSame('../README.md', $link['target']);
+            self::assertSame('120777', $link['mode']);
+            self::assertSame('dbcc210d7f4962499db6d4cfa18658e26d05ee700c962a811cac911f095e22fd', $link['sha256']);
+            self::assertSame(hash('sha256', $link['target']), $link['sha256']);
+            self::assertSame($manifest['files_sha256'][$path], $link['sha256']);
+            self::assertArrayNotHasKey($path, $manifest['preferred_source']);
+            self::assertStringNotContainsString('\\', $link['target']);
+            self::assertStringNotContainsString(':', $link['target']);
+            self::assertStringNotContainsString("\0", $link['target']);
+            self::assertFalse(str_starts_with($link['target'], '/'));
+            $parts = explode('/', $path);
+            $packageRoot = implode('/', array_slice($parts, 0, 3));
+            $relative = explode('/', dirname(implode('/', array_slice($parts, 3))));
+            foreach (explode('/', $link['target']) as $component) {
+                if ($component === '..') {
+                    self::assertNotEmpty($relative, 'A source symlink must not escape its locked package.');
+                    array_pop($relative);
+                } elseif ($component !== '.' && $component !== '') {
+                    $relative[] = $component;
+                }
+            }
+            $target = $packageRoot . '/' . implode('/', $relative);
+            self::assertArrayHasKey($target, $manifest['files_sha256']);
+            self::assertArrayNotHasKey($target, $manifest['source_symlinks'], 'Approved source links resolve directly to regular files.');
+        }
+    }
+
     public function testPreferredSourceFilesAndOriginalLicensesMatchApprovedBytes(): void
     {
         $root = dirname(__DIR__);

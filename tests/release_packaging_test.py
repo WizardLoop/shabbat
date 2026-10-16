@@ -144,6 +144,37 @@ class ReleasePackagingTest(unittest.TestCase):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(data)
 
+    def source_symlink_fixture(self, native=False):
+        path = RUNTIME + "docs/index.md"
+        target = "../README.md"
+        readme = RUNTIME + "README.md"
+        pointer = target.encode("utf-8")
+        self.write(readme, b"Reviewed runtime documentation.\n")
+        self.scope_copy["files_sha256"][readme] = digest((self.root / readme).read_bytes())
+        self.scope_copy["files_sha256"][path] = digest(pointer)
+        self.scope_copy["source_symlinks"] = {
+            path: {"target": target, "mode": "120777", "sha256": digest(pointer)},
+        }
+        self.set_scope()
+        destination = self.root / path
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        if native:
+            try:
+                os.symlink(target, destination)
+            except OSError as error:
+                if os.name == "nt" and (
+                    getattr(error, "winerror", None) in (50, 1314)
+                    or error.errno in (1, 13, 38)
+                ):
+                    self.skipTest(
+                        "Windows runner cannot create native symlinks; "
+                        "the pointer-file and ZIP-mode cases still run: " + str(error)
+                    )
+                raise
+        else:
+            destination.write_bytes(pointer)
+        return path, target, readme
+
     def source_zip(self, entries=None, duplicate=None):
         path = self.base / "dependency-input.zip"
         with warnings.catch_warnings():
@@ -185,6 +216,36 @@ class ReleasePackagingTest(unittest.TestCase):
         self.assertEqual(b"", run_git(self.root, "status", "--porcelain=v1", "--untracked-files=all"))
         with self.assertRaisesRegex(ValueError, "Working bytes differ"):
             PACKAGER.application(self.root)
+
+    def test_git_replacement_cannot_mix_commit_identity_and_source(self):
+        original = run_git(self.root, "rev-parse", "HEAD").decode().strip()
+        replacement_readme = b"Replacement commit source must not use the original identity.\n"
+        self.write("README.md", replacement_readme)
+        run_git(self.root, "add", "README.md")
+        run_git(self.root, "commit", "--quiet", "-m", "Replacement source fixture")
+        replacement = run_git(self.root, "rev-parse", "HEAD").decode().strip()
+        run_git(self.root, "reset", "--soft", original)
+        run_git(self.root, "replace", original, replacement)
+
+        # Ordinary Git now reports identity A with tree/index/worktree B as clean.
+        self.assertEqual(original, run_git(self.root, "rev-parse", "HEAD").decode().strip())
+        self.assertEqual(replacement_readme, run_git(self.root, "show", "HEAD:README.md"))
+        self.assertEqual(b"", run_git(self.root, "status", "--porcelain=v1", "--untracked-files=all"))
+        output = self.base / "replacement-output"
+        with self.assertRaisesRegex(ValueError, "clean committed checkout"):
+            PACKAGER.package(self.root, output)
+        self.assertFalse(output.exists())
+
+        # Restoring the actual A tree must package A bytes, despite the local ref.
+        run_git(self.root, "--no-replace-objects", "reset", "--hard", original)
+        self.assertEqual(replacement_readme, run_git(self.root, "show", "HEAD:README.md"))
+        manifest = PACKAGER.package(self.root, output)
+        self.assertEqual(original, manifest["commit"])
+        with zipfile.ZipFile(output / "shabbat-3.0.0.zip") as archive:
+            self.assertEqual(self.app["README.md"], archive.read("README.md"))
+            metadata = json.loads(archive.read("build-info.json"))
+            self.assertEqual(original, metadata["commit"])
+            self.assertEqual(manifest["application_source_sha256"], metadata["application_source_sha256"])
 
     def test_ignored_source_input_is_rejected(self):
         self.write("src/ignored.php", b"<?php // ignored source\n")
@@ -337,6 +398,62 @@ class ReleasePackagingTest(unittest.TestCase):
         self.assertNotIn(path, payload)
         self.write(path, b"changed example")
         with self.assertRaisesRegex(ValueError, "Changed public example key"):
+            PACKAGER.dependencies(self.root, self.app)
+
+    def test_source_symlink_approved_native_preserves_pointer_bytes(self):
+        path, target, readme = self.source_symlink_fixture(native=True)
+        self.assertTrue((self.root / path).is_symlink())
+        scope, payload = PACKAGER.dependencies(self.root, self.app)
+        self.assertEqual(target.encode("utf-8"), payload[path])
+        self.assertNotEqual(payload[readme], payload[path])
+        self.assertEqual("120777", scope["source_symlinks"][path]["mode"])
+
+    def test_source_symlink_pointer_fallback_preserves_zip_type_and_target(self):
+        path, target, readme = self.source_symlink_fixture()
+        self.assertFalse((self.root / path).is_symlink())
+        _, payload = PACKAGER.dependencies(self.root, self.app)
+        self.assertEqual(target.encode("utf-8"), payload[path])
+        self.write("resources/release/source-manifest.json", self.app["resources/release/source-manifest.json"])
+        run_git(self.root, "add", "resources/release/source-manifest.json")
+        run_git(self.root, "commit", "--quiet", "-m", "Approve fixture source symlink")
+        output = self.base / "symlink-output"
+        PACKAGER.package(self.root, output)
+        with zipfile.ZipFile(output / "shabbat-3.0.0-corresponding-source.zip") as archive:
+            self.assertEqual(3, archive.getinfo(path).create_system)
+            self.assertEqual(0o120777, archive.getinfo(path).external_attr >> 16)
+            self.assertEqual(target.encode("utf-8"), archive.read(path))
+            self.assertEqual((self.root / readme).read_bytes(), archive.read(readme))
+            scope = json.loads(archive.read("source-scope.json"))
+            self.assertEqual(scope["files_sha256"][path], digest(archive.read(path)))
+        with zipfile.ZipFile(output / "shabbat-3.0.0.zip") as archive:
+            self.assertNotIn(path, archive.namelist())
+
+    def test_source_symlink_unapproved_native_is_rejected(self):
+        self.source_symlink_fixture(native=True)
+        self.scope_copy.pop("source_symlinks")
+        self.set_scope()
+        with self.assertRaisesRegex(ValueError, "Unapproved symlink"):
+            PACKAGER.dependencies(self.root, self.app)
+
+    def test_source_symlink_outside_package_and_absolute_targets_are_rejected(self):
+        path, _, _ = self.source_symlink_fixture()
+        for target in ("../../outside.php", "/outside.php", "C:/outside.php", "..\\outside.php"):
+            with self.subTest(target=target):
+                pointer = target.encode("utf-8")
+                self.scope_copy["files_sha256"][path] = digest(pointer)
+                self.scope_copy["source_symlinks"][path] = {
+                    "target": target, "mode": "120777", "sha256": digest(pointer),
+                }
+                self.write(path, pointer)
+                self.set_scope()
+                with self.assertRaisesRegex(ValueError, "Unsafe source symlink|Source symlink escapes"):
+                    PACKAGER.dependencies(self.root, self.app)
+
+    def test_source_symlink_changed_native_target_is_rejected(self):
+        path, _, _ = self.source_symlink_fixture(native=True)
+        (self.root / path).unlink()
+        os.symlink("../LICENSE", self.root / path)
+        with self.assertRaisesRegex(ValueError, "Unapproved dependency source bytes"):
             PACKAGER.dependencies(self.root, self.app)
 
     def test_duplicate_input_zip_entry_is_rejected(self):
