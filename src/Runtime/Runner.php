@@ -229,7 +229,7 @@ final class Runner
                 self::$handler = null;
                 self::$quiesce = null;
                 try {
-                    // Public @internal SDK method: pinned 8.7.0 contract is tested.
+                    // Public @internal SDK method: locked 8.11.10 contract is tested.
                     self::finalizeSession($lock, \danog\MadelineProto\API::finalize(...));
                 } catch (\Throwable $error) {
                     fwrite(STDERR, 'Session finalization failed: ' . get_class($error) . "\n");

@@ -258,7 +258,7 @@ final class Ast implements BuildMode
                 // aka the source_constructor will always be of the same type, it should have all
                 // needed flags, and the behavior will be consistent.
                 if ($action['_'] === 'getMessageOp') {
-                    foreach (['from_scheduled', 'quick_reply_shortcut_id'] as $k) {
+                    foreach (['quick_reply_shortcut_id'] as $k) {
                         if (!isset($existingAction[$k]) && isset($action[$k])) {
                             $existingAction[$k] = $action[$k];
                         } elseif (isset($existingAction[$k]) && !isset($action[$k])) {
@@ -291,18 +291,40 @@ final class Ast implements BuildMode
                 ];
             }
 
+            $needsNotParents = [];
+            if ($action['_'] === 'getMessageOp') {
+                $needsNotParents = [
+                    [
+                        '_' => 'predicate',
+                        'predicate' => 'messages.getScheduledMessages',
+                        'is_constructor' => false,
+                    ],
+                    [
+                        '_' => 'predicate',
+                        'predicate' => 'updateNewScheduledMessage',
+                        'is_constructor' => true,
+                    ],
+                ];
+            }
+
             $out = [
                 '_' => 'source',
-                'predicate' => $ctx->position,
-                'is_constructor' => $ctx->isConstructor,
+                'predicate' => [
+                    '_' => 'predicate',
+                    'predicate' => $ctx->position,
+                    'is_constructor' => $ctx->isConstructor,
+                ],
                 'stored_constructor' => $constructor,
                 'stored_params' => array_column($this->stored, 'extractor'),
                 'skipped_flags' => $skipped,
-                'parent_is_constructor' => false,
+                'needs_not_parents' => $needsNotParents,
             ];
             if ($this->needsParent !== null) {
-                $out['needs_parent'] = $this->needsParent;
-                $out['parent_is_constructor'] = $ctx->tl->isConstructor($this->needsParent);
+                $out['needs_parent'] = [
+                    '_' => 'predicate',
+                    'predicate' => $this->needsParent,
+                    'is_constructor' => $ctx->tl->isConstructor($this->needsParent),
+                ];
                 $this->needsParentList[$this->needsParent] = true;
             }
             $this->output[$ctx->position][] = $out;
@@ -315,8 +337,11 @@ final class Ast implements BuildMode
             $this->skipped[] = [
                 '_' => 'skippedSource',
                 'why' => $why,
-                'predicate' => $ctx->position,
-                'is_constructor' => $ctx->isConstructor,
+                'predicate' => [
+                    '_' => 'predicate',
+                    'predicate' => $ctx->position,
+                    'is_constructor' => $ctx->isConstructor,
+                ],
             ];
             Assert::null($action);
             Assert::isEmpty($this->stored);

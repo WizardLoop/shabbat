@@ -5,7 +5,6 @@ declare(strict_types=1);
 // SPDX-License-Identifier: AGPL-3.0-only
 require_once dirname(__DIR__) . '/src/Runtime/RuntimePaths.php';
 require_once dirname(__DIR__) . '/src/Runtime/SingleInstance.php';
-require_once dirname(__DIR__) . '/src/Runtime/AddedFilePatchManager.php';
 require_once dirname(__DIR__) . '/src/Runtime/PatchManager.php';
 require_once dirname(__DIR__) . '/src/Runtime/PatchSet.php';
 

@@ -64,7 +64,7 @@ final class PatchGitBytesTest extends TestCase
     {
         $root = dirname(__DIR__);
         $files = ['LICENSES/CC-BY-4.0.txt', 'LICENSES/CC-BY-SA-4.0.txt'];
-        foreach (['madelineproto', 'madelineproto-geopoint', 'madelineproto-formatted-date', 'madelineproto-fresh-peer', 'broadcastmanager'] as $library) {
+        foreach (['madelineproto-fresh-peer', 'broadcastmanager'] as $library) {
             $manifest = json_decode((string) file_get_contents($root . '/patches/' . $library . '/manifest.json'), true, flags: JSON_THROW_ON_ERROR);
             $entry = $manifest['approved'][0];
             foreach (['baseline' => 'original_sha256', 'patch' => 'patch_sha256'] as $kind => $hashField) {
@@ -73,23 +73,6 @@ final class PatchGitBytesTest extends TestCase
                 $files[] = $relative;
             }
         }
-        $date = json_decode((string) file_get_contents($root . '/patches/madelineproto-formatted-date/manifest.json'), true, flags: JSON_THROW_ON_ERROR)['approved'][0];
-        $additional = [[$date['reviewed_output'], $date['patched_sha256']]];
-        foreach ($date['added_files'] as $file) {
-            $additional[] = [$file['reviewed_output'], $file['patched_sha256']];
-        }
-        foreach ($date['prerequisites'] as $file) {
-            $additional[] = [$file['baseline'], $file['sha256']];
-        }
-        foreach ($date['license_files'] as $file) {
-            $additional[] = [$file['file'], $file['sha256']];
-        }
-        foreach ($additional as [$file, $sha256]) {
-            $relative = 'patches/madelineproto-formatted-date/' . $file;
-            self::assertSame($sha256, hash_file('sha256', $root . '/' . $relative));
-            $files[] = $relative;
-        }
-
         $broadcast = json_decode((string) file_get_contents($root . '/patches/broadcastmanager/manifest.json'), true, flags: JSON_THROW_ON_ERROR)['approved'][0];
         $broadcastSources = [[$broadcast['reviewed_output'], $broadcast['patched_sha256']]];
         foreach ($broadcast['intermediates'] ?? [] as $intermediate) {

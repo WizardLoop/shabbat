@@ -119,7 +119,8 @@ final class Application
                 } elseif (isset($button['copy_text'])) {
                     $normalized['copy_text'] = $button['copy_text'];
                 } else {
-                    throw new \InvalidArgumentException('Unsupported custom button.');
+                    // Current typed and other recognized native actions retain all fields.
+                    $normalized = $button;
                 }
                 if (isset($button['style'])) {
                     $normalized['style'] = $button['style'];

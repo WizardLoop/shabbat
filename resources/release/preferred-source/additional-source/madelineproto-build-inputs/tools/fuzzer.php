@@ -9,7 +9,6 @@ use danog\MadelineProto\Magic;
 use danog\MadelineProto\PTSException;
 use danog\MadelineProto\RPCError\BusinessConnectionNotAllowedError;
 use danog\MadelineProto\RPCErrorException;
-use danog\MadelineProto\Settings;
 use danog\MadelineProto\Settings\Logger as SettingsLogger;
 use danog\MadelineProto\Settings\TLSchema;
 use danog\MadelineProto\TL\TL;
@@ -35,6 +34,33 @@ require 'vendor/autoload.php';
 $logger = new Logger(new SettingsLogger);
 
 set_error_handler(['\danog\MadelineProto\Exception', 'ExceptionErrorHandler']);
+
+$classes = [];
+foreach (new RecursiveIteratorIterator(
+    new RecursiveDirectoryIterator(
+        __DIR__.'/../src/',
+        FilesystemIterator::CURRENT_AS_PATHNAME|FilesystemIterator::SKIP_DOTS,
+    ),
+    RecursiveIteratorIterator::LEAVES_ONLY,
+) as $f
+) {
+    $f = realpath($f);
+    $f = substr($f, strlen(realpath(__DIR__.'/../src/'))+1);
+    if (str_ends_with($f, '.php')) {
+        if ($f === 'polyfill.php' || basename($f) === 'entry.php' || $f === 'polyfill_phpseclib3.php') {
+            continue;
+        }
+        $f = str_replace(['/', '.php', 'src\\'], ['\\', '', ''], $f);
+        $f = "danog\\MadelineProto\\$f";
+        $classes[$f] = true;
+    }
+}
+
+foreach ($classes as $class => $_) {
+    if (!class_exists($class) && !interface_exists($class) && !trait_exists($class)) {
+        throw new \RuntimeException("Class $class does not exist");
+    }
+}
 
 /**
  * @internal
@@ -101,20 +127,24 @@ if ($auth) {
     echo "No TELERPC_AUTH_TOKEN set, not setting layer number".PHP_EOL;
 }
 
-$settings = new Settings;
-$settings->setSchema($schema);
-$settings->getLogger()->setLevel(Logger::ULTRA_VERBOSE);
+// Only the settings to change, not a whole Settings object: merging it would also reset the others to their
+// defaults, the test mode of the sessions (on the test servers) included.
+$loggerSettings = (new SettingsLogger)->setLevel(Logger::ULTRA_VERBOSE);
+$updateSettings = static function (API $API) use ($schema, $loggerSettings): void {
+    $API->updateSettings($schema);
+    $API->updateSettings($loggerSettings);
+};
 
 echo "Unauthed:".PHP_EOL;
 $unauthed = new \danog\MadelineProto\API('fuzz_unauth.madeline');
-$unauthed->updateSettings($settings);
+$updateSettings($unauthed);
 Assert::false($unauthed->getSelf(), "fuzz_unauth.madeline is authed!");
 $unauthed->restart();
 
 echo "Bot login:".PHP_EOL;
 $bot = new \danog\MadelineProto\API('fuzz_bot.madeline');
 $bot->start();
-$bot->updateSettings($settings);
+$updateSettings($bot);
 Assert::true($bot->isSelfBot(), "fuzz_bot.madeline is not a bot!");
 $u = $bot->getSelf()['username'];
 Assert::true($bot->getSelf()['bot_business'], "fuzz_bot.madeline ($u) is not a business bot, enable business mode in botfather!");
@@ -123,7 +153,7 @@ $bot->restart();
 echo "User login:".PHP_EOL;
 $user = new \danog\MadelineProto\API('fuzz_user.madeline');
 $user->start();
-$user->updateSettings($settings);
+$updateSettings($user);
 Assert::true($user->isSelfUser(), "fuzz_user.madeline is not a user!");
 $user->restart();
 
@@ -132,12 +162,13 @@ $bot->getSelf();
 
 $cId = null;
 
-$toggleBusiness = static function (bool $enable) use ($user, $bot, &$cId): void {
+$toggleBusiness = static function (bool $enable) use ($user, $bot, $layer, &$cId): void {
     $bot->getUpdates();
 
     Logger::log($enable ? "Initializing business connection..." : "Deinitializing business connection...");
     $rights = ['_' => 'businessBotRights'];
-    foreach ($user->getTL()->getConstructors()->findByPredicate('businessBotRights')['params'] as $param) {
+    // Use the local schema: fetching the TL object over IPC would serialize the entire remote session.
+    foreach ($layer['constructors']->findByPredicate('businessBotRights')['params'] as $param) {
         if ($param['type'] === 'true') {
             $rights[$param['name']] = true;
         }
@@ -195,32 +226,18 @@ function getCancellationReason(CancelledException $e): string
 
 $methods = [];
 
-$wait = static function (bool $force = false) use (&$methods): void {
-    if (count($methods) >= 10 || $force) {
-        Logger::log("Processing ".implode(", ", array_keys($methods)));
-        await($methods);
-        Logger::log("Done!");
-        Assert::isEmpty($methods, "Some methods were not processed!");
-    }
-};
-
+$unauthedNames = [];
 foreach ($layer['methods']->by_id as $constructor) {
     $name = $constructor['method'];
     if (strtolower($name) === 'account.deleteaccount'
         || !str_contains($name, '.')) {
         continue;
     }
-    $methods["unauthed $name"]= async(static function () use ($unauthed, $name, &$methods): void {
-        try {
-            call($unauthed, $name);
-        } catch (CancelledException $e) {
-            throw new \RuntimeException("Got cancellation for unauthed $name: ".getCancellationReason($e), previous: $e);
-        } catch (RPCErrorException|PTSException) {
-        }
-        unset($methods["unauthed $name"]);
-    });
-    $wait();
+    $unauthedNames []= $name;
 }
+
+// On the test servers, where the sessions of the CI are.
+$testMode = $user->getSettings()->getConnection()->getTestMode();
 
 $names = [];
 foreach ($layer['methods']->by_id as $constructor) {
@@ -235,37 +252,89 @@ foreach ($layer['methods']->by_id as $constructor) {
         || $name === 'photos.updateProfilePhoto'
         || $name === 'photos.uploadProfilePhoto'
         || $name === 'payments.resolveStarGiftOffer' // tmp
+        || ($testMode && $name === 'contacts.getContactIDs') // Never answered on the test servers
         || !str_contains($name, '.')) {
         continue;
     }
     $names []= $constructor['method'];
 }
 
+// unauthed + (bot, user, business, business invalid) + bot disconnected
+$total = count($unauthedNames) + (count($names) * 5);
+$done = 0;
+$started = hrtime(true);
+
+$progress = static function () use (&$done, $total, $started): void {
+    $percent = $total ? ($done * 100) / $total : 100.0;
+    $elapsed = (hrtime(true) - $started) / 1e9;
+    $eta = $done ? ($elapsed / $done) * ($total - $done) : 0.0;
+    fprintf(
+        STDERR,
+        "Progress: %6.2f%% (%d/%d), elapsed %s, ETA %s\n",
+        $percent,
+        $done,
+        $total,
+        gmdate('H:i:s', (int) $elapsed),
+        gmdate('H:i:s', (int) $eta),
+    );
+};
+
+$wait = static function (bool $force = false) use (&$methods, $progress): void {
+    if (count($methods) >= 10 || $force) {
+        Logger::log("Processing ".implode(", ", array_keys($methods)));
+        await($methods);
+        Logger::log("Done!");
+        Assert::isEmpty($methods, "Some methods were not processed!");
+        $progress();
+    }
+};
+
+/**
+ * Spawn a fuzzing task, tracking completion for the progress indicator.
+ *
+ * @param string  $key  Unique task name
+ * @param Closure $task Task to run, must throw RuntimeException on cancellation
+ */
+$spawn = static function (string $key, Closure $task) use (&$methods, &$done): void {
+    $methods[$key] = async(static function () use ($key, $task, &$methods, &$done): void {
+        try {
+            $task();
+        } catch (CancelledException $e) {
+            throw new \RuntimeException("Got cancellation for $key: ".getCancellationReason($e), previous: $e);
+        } finally {
+            unset($methods[$key]);
+            $done++;
+        }
+    });
+};
+
+foreach ($unauthedNames as $name) {
+    $spawn("unauthed $name", static function () use ($unauthed, $name): void {
+        try {
+            call($unauthed, $name);
+        } catch (RPCErrorException|PTSException) {
+        }
+    });
+    $wait();
+}
+
 foreach ($names as $name) {
-    $methods["bot $name"]= async(static function () use ($bot, $name, &$methods): void {
+    $spawn("bot $name", static function () use ($bot, $name): void {
         try {
             call($bot, $name);
-        } catch (CancelledException $e) {
-            throw new \RuntimeException("Got cancellation for bot $name: ".getCancellationReason($e), previous: $e);
         } catch (RPCErrorException|PTSException) {
         }
-        unset($methods["bot $name"]);
     });
-    $methods["user $name"] = async(static function () use ($user, $name, &$methods): void {
+    $spawn("user $name", static function () use ($user, $name): void {
         try {
             call($user, $name);
-        } catch (CancelledException $e) {
-            throw new \RuntimeException("Got cancellation for user $name: ".getCancellationReason($e), previous: $e);
         } catch (RPCErrorException|PTSException) {
         }
-        unset($methods["user $name"]);
     });
-    $methods["business $name"] = async(static function () use ($bot, $name, $cId, $client, $auth, &$methods): void {
+    $spawn("business $name", static function () use ($bot, $name, $cId, $client, $auth): void {
         $ok = true;
         try {
             call($bot, $name, ['businessConnectionId' => $cId]);
-        } catch (CancelledException $e) {
-            throw new \RuntimeException("Got cancellation for business $name: ".getCancellationReason($e), previous: $e);
         } catch (PTSException|BusinessConnectionNotAllowedError) {
             $ok = false;
         } catch (RPCErrorException $e) {
@@ -281,16 +350,12 @@ foreach ($names as $name) {
                 true,
             );
         }
-        unset($methods["business $name"]);
     });
-    $methods["business invalid $name"] = async(static function () use ($bot, $name, &$methods): void {
+    $spawn("business invalid $name", static function () use ($bot, $name): void {
         try {
             call($bot, $name, ['businessConnectionId' => '']);
-        } catch (CancelledException $e) {
-            throw new \RuntimeException("Got cancellation for business invalid $name: ".getCancellationReason($e), previous: $e);
         } catch (RPCErrorException|PTSException) {
         }
-        unset($methods["business invalid $name"]);
     });
 
     $wait();
@@ -301,14 +366,11 @@ $wait(true);
 $toggleBusiness(false);
 
 foreach ($names as $name) {
-    $methods["bot disconnected $name"]= async(static function () use ($bot, $name, &$methods): void {
+    $spawn("bot disconnected $name", static function () use ($bot, $name): void {
         try {
             call($bot, $name);
-        } catch (CancelledException $e) {
-            throw new \RuntimeException("Got cancellation for bot disconnected $name: ".getCancellationReason($e), previous: $e);
         } catch (RPCErrorException|PTSException) {
         }
-        unset($methods["bot disconnected $name"]);
     });
 
     $wait();
@@ -316,7 +378,10 @@ foreach ($names as $name) {
 
 $wait(true);
 
-unset($bot, $user, $unauthed, $wait, $toggleBusiness);
+Assert::eq($done, $total, "Expected $total tasks, ran $done!");
+echo "Fuzzing complete!".PHP_EOL;
+
+unset($bot, $user, $unauthed, $wait, $spawn, $progress, $toggleBusiness);
 
 // Give time for error reporting routine to finish
 EventLoop::run();

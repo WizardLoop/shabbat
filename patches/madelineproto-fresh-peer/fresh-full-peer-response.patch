@@ -1,56 +1,34 @@
 --- a/src/MTProtoTools/PeerHandler.php
 +++ b/src/MTProtoTools/PeerHandler.php
-@@ -651,25 +651,33 @@
--    public function getFullInfo(mixed $id): array
--    {
--        $partial = $this->getInfo($id);
--        if (DialogId::isSecretChat($partial['bot_api_id'])) {
--            return $partial;
--        }
--        $full = $this->peerDatabase->getFull($partial['bot_api_id']);
+@@ -707,26 +707,34 @@
+             return $partial;
+         }
+         $full = $this->peerDatabase->getFull($partial['bot_api_id']);
 -        if (time() - ($full['inserted'] ?? 0) < $this->getSettings()->getPeer()->getFullInfoCacheTime()) {
--            return array_merge($partial, $full);
--        }
--        switch ($partial['type']) {
--            case 'user':
--            case 'bot':
--                $this->methodCallAsyncRead('users.getFullUser', ['id' => $partial['bot_api_id']]);
--                break;
--            case 'chat':
--                $this->methodCallAsyncRead('messages.getFullChat', $partial);
--                break;
--            case 'channel':
--            case 'supergroup':
--                $this->methodCallAsyncRead('channels.getFullChannel', ['channel' => $partial['bot_api_id']]);
--                break;
--        }
--        return array_merge($partial, $this->peerDatabase->getFull($partial['bot_api_id']));
--    }
-+    public function getFullInfo(mixed $id): array
-+    {
-+        $partial = $this->getInfo($id);
-+        if (DialogId::isSecretChat($partial['bot_api_id'])) {
-+            return $partial;
-+        }
-+        $full = $this->peerDatabase->getFull($partial['bot_api_id']);
 +        $cacheTime = $this->getSettings()->getPeer()->getFullInfoCacheTime();
 +        if ($cacheTime > 0 && time() - ($full['inserted'] ?? 0) < $cacheTime) {
-+            return array_merge($partial, $full);
-+        }
+             return array_merge($partial, $full);
+         }
 +        $freshReply = null;
-+        switch ($partial['type']) {
-+            case 'user':
-+            case 'bot':
-+                $this->methodCallAsyncRead('users.getFullUser', ['id' => $partial['bot_api_id']]);
-+                break;
-+            case 'chat':
+         switch ($partial['type']) {
+             case 'user':
+             case 'bot':
+                 $this->methodCallAsyncRead('users.getFullUser', ['id' => $partial['bot_api_id']]);
+                 break;
+             case 'chat':
+-                $this->methodCallAsyncRead('messages.getFullChat', $partial);
 +                $freshReply = $this->methodCallAsyncRead('messages.getFullChat', $partial);
-+                break;
-+            case 'channel':
-+            case 'supergroup':
+                 break;
+             case 'channel':
+             case 'community':
+             case 'supergroup':
+-                $this->methodCallAsyncRead('channels.getFullChannel', ['channel' => $partial['bot_api_id']]);
 +                $freshReply = $this->methodCallAsyncRead('channels.getFullChannel', ['channel' => $partial['bot_api_id']]);
-+                break;
-+        }
+                 break;
+             default:
+                 throw new Exception('Invalid peer type '.$partial['type']);
+         }
+-        return array_merge($partial, $this->peerDatabase->getFull($partial['bot_api_id']));
 +        $result = array_merge($partial, $this->peerDatabase->getFull($partial['bot_api_id']));
 +        // Shabbat local compatibility patch: never persist this per-call RPC evidence.
 +        // Keep the public helper signature and ordinary cache semantics unchanged.
@@ -58,4 +36,6 @@
 +            $result['_shabbat_fresh_full_peer_v1'] = $freshReply;
 +        }
 +        return $result;
-+    }
+     }
+     /**
+      * Get full info about peer (including full list of channel members), returns a Chat object.

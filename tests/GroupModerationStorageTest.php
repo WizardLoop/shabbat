@@ -36,11 +36,11 @@ final class GroupModerationStorageTest extends TestCase
     }
     public function testRestrictionCatalogExactlyMatchesLockedNativeSchema(): void
     {
-        $tl = file_get_contents(dirname(__DIR__) . '/vendor/danog/madelineproto/src/TL_telegram_v225.tl');
+        $tl = file_get_contents((new \danog\MadelineProto\Settings\TLSchema())->getAPISchema());
         self::assertSame(1, preg_match('/^chatBannedRights#[^\n]+/m', $tl, $line));
         preg_match_all('/([a-z_]+):flags\.\d+\?true/', $line[0], $matches);
         self::assertSame($matches[1], Permissions::FLAGS);
-        self::assertCount(22, Permissions::FLAGS);
+        self::assertCount(23, Permissions::FLAGS);
         self::assertCount(21, Permissions::DEFAULT_BLOCK_FLAGS);
         self::assertNotContains('view_messages', Permissions::DEFAULT_BLOCK_FLAGS);
         self::assertSame(Permissions::DEFAULT_BLOCK_FLAGS, $this->settings->getGroup('-1')['lock_block_flags']);

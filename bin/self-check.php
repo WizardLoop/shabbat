@@ -37,7 +37,7 @@ try {
 }
 try {
     $patches = \Shabbat\Runtime\PatchSet::process($root, false);
-    $patch = $patches['madelineproto'];
+    $patch = $patches['madelineproto-fresh-peer'];
 } catch (Throwable $error) {
     $patch = 'FAILED';
     $failures[] = $error->getMessage();

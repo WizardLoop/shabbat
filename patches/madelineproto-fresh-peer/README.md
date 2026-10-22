@@ -1,22 +1,22 @@
-# MadelineProto 8.7.0 fresh full-peer response compatibility patch
+# MadelineProto 8.11.10 fresh full-peer response compatibility patch
 
-Reviewed: 2026-10-16. This is a new local WizardLoop Shabbat compatibility change, not a recovered historical patch or an upstream release. Package: `danog/madelineproto` 8.7.0, commit `7b99dd0f2d964a492c377912ffce9f5ce61aa9ed`.
+Reviewed: 2026-10-22. The local WizardLoop Shabbat compatibility change is verified against the exact new upstream source, which is byte-identical to the previously reviewed 8.11.1 baseline; it is not an upstream release. Package: `danog/madelineproto` 8.11.10, commit `49d3d8460257c7bfb1a7e12708e1bfdd59e898c1`.
 
 ## Source and reason
 
-The immutable [upstream PeerHandler.php](https://github.com/danog/MadelineProto/blob/7b99dd0f2d964a492c377912ffce9f5ce61aa9ed/src/MTProtoTools/PeerHandler.php) was compared byte-for-byte with the installed locked source. Its SHA256 is `3e1af3624f2256f53264fe4256475d0a5f353af8761cc9716133b7f0412538d2`. Baseline and reviewed output are retained in this directory; the manifest binds the unified diff and both hashes.
+The immutable [upstream PeerHandler.php](https://github.com/danog/MadelineProto/blob/49d3d8460257c7bfb1a7e12708e1bfdd59e898c1/src/MTProtoTools/PeerHandler.php) was compared byte-for-byte with the installed locked source. Its SHA256 is `6caa058975e7122eeb84409142a7c8241a2da5c63ca4c63e1ec2392c7b3f7314`. Baseline and reviewed output are retained in this directory; the manifest binds the unified diff and both hashes.
 
-Upstream `getFullInfo` refreshes the full information but combines it with an earlier Chat object. Re-reading through `getInfo` is insufficient: the pinned minimal-peer branch can return its older local record after refreshing the peer cache. The bot must establish that the default permissions being saved came from the request it just completed.
+Upstream `getFullInfo` refreshes the full information but combines it with an earlier Chat object. Upstream 8.11.10 fixes the earlier minimal-peer re-read defect in `getInfo`, but `getFullInfo` still combines the partial record captured before the full RPC with cached full data. It provides no immediate full-reply provenance to the application. The bot must establish that the default permissions being saved came from the request it just completed.
 
 Direct `channels.getFullChannel` and `messages.getFullChat` namespace calls are blacklisted by the pinned SDK. This patch keeps the public `getFullInfo(mixed $id)` signature and uses its existing internal calls. It does not bypass that API boundary or change dependency versions.
 
 ## Change
 
-When the full-info cache lifetime is zero, bypass cached full information even if its timestamp is in the future. Keep the immediate full-peer RPC response in a namespaced `_shabbat_fresh_full_peer_v1` return field for this call only. Do not persist that field in the peer cache. Other helper fields and normal positive-cache-lifetime behavior remain intact.
+When the full-info cache lifetime is zero, bypass cached full information even if its timestamp is in the future. Keep the immediate full-peer RPC response in a namespaced `_shabbat_fresh_full_peer_v1` return field for this call only. Do not persist that field in the peer cache. Other helper fields and normal positive-cache-lifetime behavior remain intact. The new official `community` peer branch and invalid-peer exception are preserved. Upstream 8.11.10 still discards the raw group RPC reply, so it does not provide equivalent permission evidence.
 
 The application reader validates the returned native constructor, matching signed peer ID, matching ChatFull object and complete non-minimal Chat. Cached records cannot replace the raw Chat, including when fresh complete data legitimately omits optional default restrictions. Malformed, forbidden, migrated, ambiguous and mismatched responses fail before a permission write. Individual restriction bits, including `manage_topics`, are not silently discarded.
 
-This fixes the reproduced reading defects. It does not prove which historical server event produced the user's broadly permissive dev.6 snapshot. Existing unverified snapshots require explicit administrator resolution; see [the dev.8 investigation](../../docs/DEV8_PERMISSIONS.md).
+This fixes the reproduced reading defects. It does not prove which historical server event produced the user's broadly permissive dev.6 snapshot. Existing unverified snapshots require explicit administrator resolution; see [permission recovery](../../docs/PERMISSION_RECOVERY.md).
 
 ## Installation and source offer
 

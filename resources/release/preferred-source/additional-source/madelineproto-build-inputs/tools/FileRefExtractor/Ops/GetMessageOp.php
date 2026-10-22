@@ -28,7 +28,6 @@ final readonly class GetMessageOp implements ActionOp
     public function __construct(
         private readonly TypedOp $peer,
         private readonly TypedOp $id,
-        private readonly ?TypedOp $fromScheduled,
         private readonly ?TypedOp $quickReplyShortcutId,
         private readonly string $stored_constructor
     ) {
@@ -43,16 +42,12 @@ final readonly class GetMessageOp implements ActionOp
         if ($id === null) {
             return null;
         }
-        $fromScheduled = $this->fromScheduled?->normalize($stack, $current, $ignoreFlag);
-        if ($fromScheduled === null && $this->fromScheduled !== null) {
-            return null;
-        }
         $quickReplyShortcutId = $this->quickReplyShortcutId?->normalize($stack, $current, $ignoreFlag);
         if ($quickReplyShortcutId === null && $this->quickReplyShortcutId !== null) {
             return null;
         }
-        if ($peer !== $this->peer || $id !== $this->id || $fromScheduled !== $this->fromScheduled || $quickReplyShortcutId !== $this->quickReplyShortcutId) {
-            return new self($peer, $id, $fromScheduled, $quickReplyShortcutId, $this->stored_constructor);
+        if ($peer !== $this->peer || $id !== $this->id || $quickReplyShortcutId !== $this->quickReplyShortcutId) {
+            return new self($peer, $id, $quickReplyShortcutId, $this->stored_constructor);
         }
         return $this;
     }
@@ -65,16 +60,10 @@ final readonly class GetMessageOp implements ActionOp
     {
         Assert::eq($this->peer->getType($tl), 'InputPeer');
         Assert::eq($this->id->getType($tl), 'int');
-        if ($this->fromScheduled !== null) {
-            Assert::eq($this->fromScheduled->getType($tl), 'true');
-        }
         if ($this->quickReplyShortcutId !== null) {
             Assert::eq($this->quickReplyShortcutId->getType($tl), 'int');
         }
         $extra = [];
-        if ($this->fromScheduled !== null) {
-            $extra['from_scheduled'] = $tl->build($this->fromScheduled, 'from_scheduled');
-        }
         if ($this->quickReplyShortcutId !== null) {
             $extra['quick_reply_shortcut_id'] = $tl->build($this->quickReplyShortcutId, 'quick_reply_shortcut_id');
         }

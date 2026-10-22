@@ -292,7 +292,7 @@ final class TemplateEditor
                 $current['buttons_mode'] = 'custom';
             } elseif ($m[1] === 'buttons') {
                 try {
-                    $current['buttons'] = json_decode($m[3], true, 32, JSON_THROW_ON_ERROR);
+                    $current['buttons'] = \Shabbat\Storage\TemplateRepository::buttonRows(json_decode($m[3], true, 32, JSON_THROW_ON_ERROR));
                 } catch (\JsonException) {
                     $current['buttons'] = $this->app->parseCustomButtons($m[3]);
                 }

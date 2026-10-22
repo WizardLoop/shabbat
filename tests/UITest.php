@@ -476,8 +476,8 @@ final class UITest extends TestCase
                 }
             }
         }
-        self::assertCount(21, $flagButtons);
-        self::assertCount(22, \Shabbat\Scheduling\Permissions::FLAGS, 'All native fields remain available for exact snapshots.');
+        self::assertCount(22, $flagButtons);
+        self::assertCount(23, \Shabbat\Scheduling\Permissions::FLAGS, 'All native fields remain available for exact snapshots.');
         self::assertSame(\Shabbat\Scheduling\Permissions::DEFAULT_BLOCK_FLAGS, $this->settings->getGroup('-1001')['lock_block_flags']);
         $reaction = null;
         foreach ($flagButtons as $button) {
@@ -793,7 +793,7 @@ final class UITest extends TestCase
     }
     public function testInlineArticlesUseInputConstructorsFromThePinnedTelegramSchema(): void
     {
-        $schema = file_get_contents(dirname(__DIR__) . '/vendor/danog/madelineproto/src/TL_telegram_v225.tl');
+        $schema = file_get_contents((new \danog\MadelineProto\Settings\TLSchema())->getAPISchema());
         self::assertIsString($schema);
         foreach (Lang::CODES as $language) {
             $user = $this->settings->getUser('1');

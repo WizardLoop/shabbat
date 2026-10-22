@@ -11,6 +11,8 @@ class MTProto
     public object $loginState;
     public int $calls = 0;
     public int $reports = 0;
+    public bool $stopped = false;
+    public int $callsAfterStop = 0;
     public ?\Closure $onCall = null;
     public function __construct(public string $scenario)
     {
@@ -59,9 +61,15 @@ class MTProto
     }
     public function methodCallAsyncRead(string $method, array $args, ?int $dc = null): array
     {
+        if ($this->stopped) {
+            $this->callsAfterStop++;
+        }
         $this->calls++;
         if ($this->calls === 1) {
             $this->onCall?->__invoke();
+            if (str_ends_with($this->scenario, 'server-timeout')) {
+                throw (new \ReflectionClass(\danog\MadelineProto\RPCError\TimeoutError::class))->newInstanceWithoutConstructor();
+            }
             if ($this->scenario === 'direct' || $this->scenario === 'shutdown-direct') {
                 throw new \Amp\TimeoutException('fixture direct timeout');
             }

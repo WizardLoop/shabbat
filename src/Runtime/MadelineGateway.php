@@ -31,6 +31,7 @@ final class MadelineGateway implements TelegramGateway, \Shabbat\Telegram\Guarde
         if (Runner::isStopping() && in_array($method, ['messages.sendMessage','messages.sendMedia','messages.sendMultiMedia','messages.editMessage','messages.setInlineBotResults'], true)) {
             throw new CancelledException(new \RuntimeException('Shutdown has stopped new Telegram message operations.'));
         }
+        $parameters = \Shabbat\Telegram\KeyboardMarkup::parameters($parameters, $this->customEmojiEnabled);
         $plainParameters = self::stripPresentationMetadata(self::plainEmojiParameters($parameters));
         $parameters = self::stripPresentationMetadata($parameters);
         try {
@@ -358,83 +359,9 @@ final class MadelineGateway implements TelegramGateway, \Shabbat\Telegram\Guarde
 
     public static function normalizeMarkup(array $markup, bool $customEmojiEnabled = true): array
     {
-        if ($markup === []) {
-            return [];
-        }
-        if (($markup['_'] ?? '') === 'replyInlineMarkup') {
-            foreach ($markup['rows'] ?? [] as $rowIndex => $row) {
-                foreach ($row['buttons'] ?? [] as $buttonIndex => $button) {
-                    $button = Presentation::button($button, $customEmojiEnabled, null, true);
-                    $markup['rows'][$rowIndex]['buttons'][$buttonIndex] = $button;
-                    if (isset($button['style'])) {
-                        $markup['rows'][$rowIndex]['buttons'][$buttonIndex]['style'] = self::normalizeStyle($button['style']);
-                    }
-                }
-            }
-            return $markup;
-        }
-        if (!isset($markup['inline_keyboard']) || !is_array($markup['inline_keyboard'])) {
-            throw new \InvalidArgumentException('Unsupported message keyboard.');
-        }
-        $rows = [];
-        foreach ($markup['inline_keyboard'] as $row) {
-            if (!is_array($row)) {
-                throw new \InvalidArgumentException('Invalid keyboard row.');
-            }
-            $buttons = [];
-            foreach ($row as $button) {
-                if (!is_array($button) || !is_string($button['text'] ?? null) || $button['text'] === '') {
-                    throw new \InvalidArgumentException('Keyboard button needs text.');
-                }
-                $button = Presentation::button($button, $customEmojiEnabled, null, true);
-                $native = $button; // Preserve existing button metadata/style.
-                if (isset($button['style'])) {
-                    $native['style'] = self::normalizeStyle($button['style']);
-                }
-                if (isset($button['callback_data'])) {
-                    if (!is_string($button['callback_data']) || strlen($button['callback_data']) > 64) {
-                        throw new \InvalidArgumentException('Invalid callback data.');
-                    }
-                    $native['_'] = 'keyboardButtonCallback';
-                    $native['data'] = $button['callback_data'];
-                    unset($native['callback_data']);
-                } elseif (isset($button['url'])) {
-                    if (!is_string($button['url']) || !preg_match('~^(?:https://|tg://)~i', $button['url'])) {
-                        throw new \InvalidArgumentException('Button URL must use HTTPS or Telegram.');
-                    }
-                    $native['_'] = 'keyboardButtonUrl';
-                } elseif (isset($button['switch_inline_query_current_chat']) || isset($button['switch_inline_query'])) {
-                    $native['_'] = 'keyboardButtonSwitchInline';
-                    $native['same_peer'] = isset($button['switch_inline_query_current_chat']);
-                    $native['query'] = $button['switch_inline_query_current_chat'] ?? $button['switch_inline_query'];
-                    unset($native['switch_inline_query_current_chat'], $native['switch_inline_query']);
-                } elseif (isset($button['copy_text'])) {
-                    $copy = is_array($button['copy_text']) ? ($button['copy_text']['text'] ?? null) : $button['copy_text'];
-                    if (!is_string($copy) || $copy === '' || mb_strlen($copy) > 256) {
-                        throw new \InvalidArgumentException('Invalid copy-text button.');
-                    }
-                    $native['_'] = 'keyboardButtonCopy';
-                    $native['copy_text'] = $copy;
-                } elseif (!str_starts_with((string) ($button['_'] ?? ''), 'keyboardButton')) {
-                    throw new \InvalidArgumentException('Unsupported keyboard button action.');
-                }
-                $buttons[] = $native;
-            }
-            $rows[] = ['_' => 'keyboardButtonRow', 'buttons' => $buttons];
-        }
-        return ['_' => 'replyInlineMarkup', 'rows' => $rows];
+        return \Shabbat\Telegram\KeyboardMarkup::normalize($markup, $customEmojiEnabled);
     }
 
-    private static function normalizeStyle(mixed $style): array
-    {
-        $native = \Shabbat\Content\TemplateRenderer::nativeStyle($style);
-        if (isset($native['icon'])) {
-            $native['icon'] = TelegramInt64::fromDecimal($native['icon']);
-        }
-        return $native;
-    }
-
-    /** Acknowledged identity binds all subsequent diagnostic input to this exact panel. */
     public function sendDiagnosticPanel(string $user, string $text, array $markup): int
     {
         if (!preg_match('/^[1-9][0-9]{0,19}$/D', $user)) {

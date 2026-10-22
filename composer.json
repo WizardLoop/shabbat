@@ -13,7 +13,7 @@
     "ext-pdo": "*",
     "ext-pdo_sqlite": "*",
     "ext-mbstring": "*",
-    "danog/madelineproto": "8.7.0",
+    "danog/madelineproto": "^8.11.10",
     "wizardloop/broadcastmanager": "~3.2.2",
     "amphp/amp": "^3.1.1",
     "amphp/file": "^3.2",

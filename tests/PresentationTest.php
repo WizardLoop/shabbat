@@ -83,15 +83,16 @@ final class PresentationTest extends TestCase
         $markup = ['inline_keyboard' => [[['text' => 'Other', 'url' => 'https://example.org', 'icon_custom_emoji_id' => Presentation::ICONS['support'], 'style' => 'danger']]]];
         $native = MadelineGateway::normalizeMarkup($markup);
         $button = $native['rows'][0]['buttons'][0];
-        self::assertSame('keyboardButtonUrl', $button['_']);
-        self::assertSame('https://example.org', $button['url']);
+        self::assertSame('keyboardInlineButton', $button['_']);
+        self::assertSame('inlineButtonTypeUrl', $button['type']['_']);
+        self::assertSame('https://example.org', $button['type']['url']);
         self::assertTrue($button['style']['bg_danger']);
         self::assertSame(5945186253308699040, $button['style']['icon']);
         self::assertArrayNotHasKey('icon_custom_emoji_id', $button);
         $plain = MadelineGateway::normalizeMarkup($native, false)['rows'][0]['buttons'][0];
         self::assertArrayNotHasKey('icon', $plain['style']);
         self::assertSame('Other', $plain['text']);
-        self::assertSame($button['url'], $plain['url']);
+        self::assertSame($button['type']['url'], $plain['type']['url']);
         self::assertTrue($plain['style']['bg_danger']);
     }
 

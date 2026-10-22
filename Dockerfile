@@ -18,7 +18,6 @@ WORKDIR /app
 COPY composer.json composer.lock ./
 COPY patches ./patches
 COPY scripts ./scripts
-COPY src/Runtime/AddedFilePatchManager.php ./src/Runtime/AddedFilePatchManager.php
 COPY src/Runtime/PatchManager.php ./src/Runtime/PatchManager.php
 COPY src/Runtime/PatchSet.php ./src/Runtime/PatchSet.php
 COPY src/Runtime/SingleInstance.php ./src/Runtime/SingleInstance.php

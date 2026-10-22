@@ -13,14 +13,14 @@ final class AdminRightsTest extends TestCase
 {
     public function testDiagnosticCatalogExactlyMatchesTheLockedNativeConstructor(): void
     {
-        $schema = file_get_contents(dirname(__DIR__) . '/vendor/danog/madelineproto/src/TL_telegram_v225.tl');
+        $schema = file_get_contents((new \danog\MadelineProto\Settings\TLSchema())->getAPISchema());
         self::assertSame(1, preg_match('/^chatAdminRights#[^\r\n]+/m', $schema, $match));
         preg_match_all('/\b([a-z_]+):flags\.\d+\?true/', $match[0], $flags);
         self::assertSame($flags[1], AdminRights::FLAGS);
         foreach (AdminRights::FLAGS as $flag) {
             $normalized = AdminRights::normalize(['_' => 'chatAdminRights', $flag => true]);
             self::assertTrue($normalized[$flag]);
-            self::assertCount(17, $normalized);
+            self::assertCount(19, $normalized);
         }
     }
 

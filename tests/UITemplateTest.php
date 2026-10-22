@@ -209,11 +209,11 @@ final class UITemplateTest extends TestCase
         $this->click('tpl:preview:' . $token);
         $payload = end($this->gateway->payloads)['payload'];
         $buttons = array_merge(...array_column($payload['reply_markup']['rows'], 'buttons'));
-        $counter = array_values(array_filter($buttons, static fn(array $b): bool=>str_starts_with($b['data'] ?? '', 'tpl:ack_preview:')));
+        $counter = array_values(array_filter($buttons, static fn(array $b): bool=>str_starts_with($b['type']['data'] ?? $b['data'] ?? '', 'tpl:ack_preview:')));
         self::assertCount(1, $counter);
         self::assertSame('הנחתי (0)', $counter[0]['text']);
         self::assertTrue($counter[0]['style']['bg_primary']);
-        $this->click($counter[0]['data'], '2', false);
+        $this->click($counter[0]['type']['data'] ?? $counter[0]['data'], '2', false);
         self::assertSame(0, (int)$this->app->db->pdo()->query('SELECT COUNT(*) FROM tefillin_ack_votes')->fetchColumn());
         $this->click('tpl:test:' . $token);
         $this->click($this->last()['markup']['rows'][0]['buttons'][0]['data']);

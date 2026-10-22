@@ -1,26 +1,27 @@
 {
     "schema_version": 1,
-    "reviewed_at": "2026-10-16",
+    "reviewed_at": "2026-10-22",
     "package": "danog/madelineproto",
     "target": "src/MTProtoTools/PeerHandler.php",
     "provenance": {
-        "kind": "new-local-authoritative-full-peer-response",
-        "source_url": "https://github.com/danog/MadelineProto/blob/7b99dd0f2d964a492c377912ffce9f5ce61aa9ed/src/MTProtoTools/PeerHandler.php",
+        "kind": "ported-local-authoritative-full-peer-response",
+        "source_url": "https://github.com/danog/MadelineProto/blob/49d3d8460257c7bfb1a7e12708e1bfdd59e898c1/src/MTProtoTools/PeerHandler.php",
         "source_verified_against_locked_installed_file": true,
         "source_verified_against_pinned_remote_bytes": true,
-        "source_verified_sha256": "3e1af3624f2256f53264fe4256475d0a5f353af8761cc9716133b7f0412538d2"
+        "source_verified_sha256": "6caa058975e7122eeb84409142a7c8241a2da5c63ca4c63e1ec2392c7b3f7314",
+        "note": "Reviewed against official 8.11.10. PeerHandler is byte-identical to the reviewed 8.11.1 baseline. Upstream getFullInfo still discards the raw group RPC reply and can merge cached partial data; no equivalent authoritative evidence accessor was found."
     },
     "approved": [
         {
-            "version": "8.7.0",
-            "commit": "7b99dd0f2d964a492c377912ffce9f5ce61aa9ed",
+            "version": "8.11.10",
+            "commit": "49d3d8460257c7bfb1a7e12708e1bfdd59e898c1",
             "mode": "patch",
             "baseline": "baseline/PeerHandler.php",
             "reviewed_output": "reviewed/PeerHandler.php",
-            "original_sha256": "3e1af3624f2256f53264fe4256475d0a5f353af8761cc9716133b7f0412538d2",
-            "patched_sha256": "8188777fc376f2b3cca39963d79f85239fc84141f978128ea2bb591f03891928",
+            "original_sha256": "6caa058975e7122eeb84409142a7c8241a2da5c63ca4c63e1ec2392c7b3f7314",
+            "patched_sha256": "78187d7216c069d47d1c05d8128834603b958b55bc8478576850bce9e86489df",
             "patch": "fresh-full-peer-response.patch",
-            "patch_sha256": "db3099e7bf83550b7a4a4f54da451bc45a1078b8bd9bffc57f26bf52ab2d82e3"
+            "patch_sha256": "0b7c828c49de1e56cf93169560a5d4ba23ec8a1749f676569b6a83592577ed4d"
         }
     ],
     "official_versions": []
