@@ -1,6 +1,6 @@
 {
     "name": "wizardloop/shabbat",
-    "version": "dev-main",
+    "version": "dev-main 2604d1e",
     "license": [
         "AGPL-3.0-only"
     ],
@@ -161,8 +161,14 @@
                 "BSD-2-Clause"
             ]
         },
+        "brick/math": {
+            "version": "1.0.0",
+            "license": [
+                "MIT"
+            ]
+        },
         "danog/async-orm": {
-            "version": "1.1.4",
+            "version": "1.1.6",
             "license": [
                 "Apache-2.0"
             ]
@@ -180,7 +186,7 @@
             ]
         },
         "danog/ipc": {
-            "version": "1.0.1",
+            "version": "1.1.0",
             "license": [
                 "MIT"
             ]
@@ -198,9 +204,123 @@
             ]
         },
         "danog/madelineproto": {
-            "version": "8.7.0",
+            "version": "8.11.10",
             "license": [
                 "AGPL-3.0-only"
+            ]
+        },
+        "danog/php-rtc-av": {
+            "version": "1.1.11",
+            "license": [
+                "MIT"
+            ]
+        },
+        "danog/php-rtc-codecs": {
+            "version": "1.1.19",
+            "license": [
+                "BSD-3-Clause"
+            ]
+        },
+        "danog/php-rtc-datachannel": {
+            "version": "1.1.10",
+            "license": [
+                "BSD-3-Clause"
+            ]
+        },
+        "danog/php-rtc-dtls": {
+            "version": "2.0.20",
+            "license": [
+                "BSD-3-Clause"
+            ]
+        },
+        "danog/php-rtc-exception": {
+            "version": "1.1.10",
+            "license": [
+                "BSD-3-Clause"
+            ]
+        },
+        "danog/php-rtc-ice": {
+            "version": "2.0.18",
+            "license": [
+                "BSD-3-Clause"
+            ]
+        },
+        "danog/php-rtc-mdns": {
+            "version": "1.1.12",
+            "license": [
+                "BSD-3-Clause"
+            ]
+        },
+        "danog/php-rtc-mixin": {
+            "version": "2.0.9",
+            "license": [
+                "BSD-3-Clause"
+            ]
+        },
+        "danog/php-rtc-ntp": {
+            "version": "1.1.15",
+            "license": [
+                "BSD-3-Clause"
+            ]
+        },
+        "danog/php-rtc-rtcp": {
+            "version": "1.1.11",
+            "license": [
+                "BSD-3-Clause"
+            ]
+        },
+        "danog/php-rtc-rtp": {
+            "version": "2.0.23",
+            "license": [
+                "BSD-3-Clause"
+            ]
+        },
+        "danog/php-rtc-rtp-parameter": {
+            "version": "1.1.8",
+            "license": [
+                "BSD-3-Clause"
+            ]
+        },
+        "danog/php-rtc-sctp": {
+            "version": "2.0.14",
+            "license": [
+                "BSD-3-Clause"
+            ]
+        },
+        "danog/php-rtc-sdp": {
+            "version": "1.1.12",
+            "license": [
+                "BSD-3-Clause"
+            ]
+        },
+        "danog/php-rtc-srtp": {
+            "version": "1.1.16",
+            "license": [
+                "BSD-3-Clause"
+            ]
+        },
+        "danog/php-rtc-stats": {
+            "version": "1.1.7",
+            "license": [
+                "BSD-3-Clause"
+            ]
+        },
+        "danog/php-rtc-stun": {
+            "version": "2.0.18",
+            "license": [
+                "BSD-3-Clause"
+            ]
+        },
+        "danog/php-rtc-turn": {
+            "version": "2.0.9",
+            "license": [
+                "BSD-3-Clause"
+            ]
+        },
+        "danog/php-rtc-webrtc": {
+            "version": "2.0.20",
+            "license": [
+                "BSD-3-Clause"
             ]
         },
         "danog/primemodule": {
@@ -210,7 +330,7 @@
             ]
         },
         "danog/telegram-entities": {
-            "version": "1.0.5",
+            "version": "1.1.0",
             "license": [
                 "Apache-2.0"
             ]
@@ -287,12 +407,6 @@
                 "MIT"
             ]
         },
-        "paragonie/random_compat": {
-            "version": "v9.99.100",
-            "license": [
-                "MIT"
-            ]
-        },
         "phar-io/manifest": {
             "version": "2.0.4",
             "license": [
@@ -306,7 +420,7 @@
             ]
         },
         "phpseclib/phpseclib": {
-            "version": "3.0.57",
+            "version": "4.0.2",
             "license": [
                 "MIT"
             ]
@@ -373,6 +487,18 @@
         },
         "psr/log": {
             "version": "3.0.2",
+            "license": [
+                "MIT"
+            ]
+        },
+        "ramsey/collection": {
+            "version": "2.1.1",
+            "license": [
+                "MIT"
+            ]
+        },
+        "ramsey/uuid": {
+            "version": "4.9.4",
             "license": [
                 "MIT"
             ]
@@ -473,13 +599,43 @@
                 "MIT"
             ]
         },
+        "symfony/polyfill-iconv": {
+            "version": "v1.43.0",
+            "license": [
+                "MIT"
+            ]
+        },
         "symfony/polyfill-mbstring": {
             "version": "v1.43.0",
             "license": [
                 "MIT"
             ]
         },
+        "symfony/polyfill-php82": {
+            "version": "v1.43.0",
+            "license": [
+                "MIT"
+            ]
+        },
         "symfony/polyfill-php83": {
+            "version": "v1.43.0",
+            "license": [
+                "MIT"
+            ]
+        },
+        "symfony/polyfill-php84": {
+            "version": "v1.43.0",
+            "license": [
+                "MIT"
+            ]
+        },
+        "symfony/polyfill-php85": {
+            "version": "v1.43.0",
+            "license": [
+                "MIT"
+            ]
+        },
+        "symfony/polyfill-php86": {
             "version": "v1.43.0",
             "license": [
                 "MIT"
@@ -492,7 +648,7 @@
             ]
         },
         "webmozart/assert": {
-            "version": "1.12.1",
+            "version": "2.5.0",
             "license": [
                 "MIT"
             ]

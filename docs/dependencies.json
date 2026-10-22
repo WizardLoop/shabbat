@@ -1,6 +1,6 @@
 {
     "schema_version": 1,
-    "lock_sha256": "a6a66ad9af4ccd6ef0fa7e62f7a7e28a1ae73cf07e8545552710bc9b8477e9bf",
+    "lock_sha256": "c86f54854a177e458a01cc3943eb6d9eeeb06e29bd670a66a02d9b12bd4ca288",
     "packages": [
         {
             "name": "amphp/amp",
@@ -549,16 +549,37 @@
             "findings": []
         },
         {
+            "name": "brick/math",
+            "version": "1.0.0",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/brick/math.git",
+            "source_commit": "2effe05d2177c451b86c6a073196a4034c02f211",
+            "source_permalink": "https://github.com/brick/math/tree/2effe05d2177c451b86c6a073196a4034c02f211",
+            "license_files": [
+                {
+                    "file": "vendor/brick/math/LICENSE",
+                    "sha256": "d2625cc652e6ffa9f16827f1dba2d83ac12b050dc8150a38720420dbb810cae3"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
             "name": "danog/async-orm",
-            "version": "1.1.4",
+            "version": "1.1.6",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "Apache-2.0"
             ],
             "source_url": "https://github.com/danog/AsyncOrm.git",
-            "source_commit": "495f335d8ddb9dae8b773025911191f31c45e9ea",
-            "source_permalink": "https://github.com/danog/AsyncOrm/tree/495f335d8ddb9dae8b773025911191f31c45e9ea",
+            "source_commit": "4a2a7a54c5002bef6cdf80b338085e9e131bf719",
+            "source_permalink": "https://github.com/danog/AsyncOrm/tree/4a2a7a54c5002bef6cdf80b338085e9e131bf719",
             "license_files": [
                 {
                     "file": "vendor/danog/async-orm/LICENSE",
@@ -621,15 +642,15 @@
         },
         {
             "name": "danog/ipc",
-            "version": "1.0.1",
+            "version": "1.1.0",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/danog/ipc.git",
-            "source_commit": "505e672b76af6ec623f7ef78efb2416f62ef8e29",
-            "source_permalink": "https://github.com/danog/ipc/tree/505e672b76af6ec623f7ef78efb2416f62ef8e29",
+            "source_commit": "eea6de6a57273f32a4f90a652ae1409786be18a0",
+            "source_permalink": "https://github.com/danog/ipc/tree/eea6de6a57273f32a4f90a652ae1409786be18a0",
             "license_files": [
                 {
                     "file": "vendor/danog/ipc/LICENSE",
@@ -684,15 +705,15 @@
         },
         {
             "name": "danog/madelineproto",
-            "version": "8.7.0",
+            "version": "8.11.10",
             "direct": true,
             "scope": "runtime",
             "spdx": [
                 "AGPL-3.0-only"
             ],
             "source_url": "https://github.com/danog/MadelineProto.git",
-            "source_commit": "7b99dd0f2d964a492c377912ffce9f5ce61aa9ed",
-            "source_permalink": "https://github.com/danog/MadelineProto/tree/7b99dd0f2d964a492c377912ffce9f5ce61aa9ed",
+            "source_commit": "49d3d8460257c7bfb1a7e12708e1bfdd59e898c1",
+            "source_permalink": "https://github.com/danog/MadelineProto/tree/49d3d8460257c7bfb1a7e12708e1bfdd59e898c1",
             "license_files": [
                 {
                     "file": "vendor/danog/madelineproto/LICENSE",
@@ -704,6 +725,408 @@
             "findings": [
                 "Metadata says AGPL-3.0-only; source headers grant version 3 or later. Preserve upstream grant and report mismatch; application license remains AGPL-3.0-only."
             ]
+        },
+        {
+            "name": "danog/php-rtc-av",
+            "version": "1.1.11",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/danog/php-rtc-av.git",
+            "source_commit": "f328e6b5682d7e885dcfab425839921312162008",
+            "source_permalink": "https://github.com/danog/php-rtc-av/tree/f328e6b5682d7e885dcfab425839921312162008",
+            "license_files": [
+                {
+                    "file": "vendor/danog/php-rtc-av/LICENSE",
+                    "sha256": "c855e00eed64bc882f5ff86daa56c03e76495f47e4b4b192b20bb46e924ba0f8"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "NOT VERIFIED",
+            "findings": [
+                "NOT VERIFIED: declared SPDX not confirmed against a distributed root license text; release review required.",
+                "Metadata declares MIT, but distributed LICENSE and PHP source headers state BSD-3-Clause. Preserve both upstream texts; the MIT declaration is not confirmed by the distributed license."
+            ]
+        },
+        {
+            "name": "danog/php-rtc-codecs",
+            "version": "1.1.19",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/danog/php-rtc-codecs.git",
+            "source_commit": "00836382276949099077e19659ff6648b823284f",
+            "source_permalink": "https://github.com/danog/php-rtc-codecs/tree/00836382276949099077e19659ff6648b823284f",
+            "license_files": [
+                {
+                    "file": "vendor/danog/php-rtc-codecs/LICENSE",
+                    "sha256": "6e8861d416353fe52e937995140b8d09ff1fa6d8d700b0a1bbcde145dc478690"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/php-rtc-datachannel",
+            "version": "1.1.10",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/danog/php-rtc-datachannel.git",
+            "source_commit": "3a5ad6f76326514f41a9e1847b41d503e157c459",
+            "source_permalink": "https://github.com/danog/php-rtc-datachannel/tree/3a5ad6f76326514f41a9e1847b41d503e157c459",
+            "license_files": [
+                {
+                    "file": "vendor/danog/php-rtc-datachannel/LICENSE",
+                    "sha256": "6e8861d416353fe52e937995140b8d09ff1fa6d8d700b0a1bbcde145dc478690"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/php-rtc-dtls",
+            "version": "2.0.20",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/danog/php-rtc-dtls.git",
+            "source_commit": "794180b0c3cf54842df44b7bcb44f8fb50f199c8",
+            "source_permalink": "https://github.com/danog/php-rtc-dtls/tree/794180b0c3cf54842df44b7bcb44f8fb50f199c8",
+            "license_files": [
+                {
+                    "file": "vendor/danog/php-rtc-dtls/LICENSE",
+                    "sha256": "6e8861d416353fe52e937995140b8d09ff1fa6d8d700b0a1bbcde145dc478690"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/php-rtc-exception",
+            "version": "1.1.10",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/danog/php-rtc-exception.git",
+            "source_commit": "f9347a5376bb6b7b2fb008e06a8fd9fb6d9febd7",
+            "source_permalink": "https://github.com/danog/php-rtc-exception/tree/f9347a5376bb6b7b2fb008e06a8fd9fb6d9febd7",
+            "license_files": [
+                {
+                    "file": "vendor/danog/php-rtc-exception/LICENSE",
+                    "sha256": "c855e00eed64bc882f5ff86daa56c03e76495f47e4b4b192b20bb46e924ba0f8"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/php-rtc-ice",
+            "version": "2.0.18",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/danog/php-rtc-ice.git",
+            "source_commit": "91c53e982f334cf3bfe64a9e298d874bba51a3f1",
+            "source_permalink": "https://github.com/danog/php-rtc-ice/tree/91c53e982f334cf3bfe64a9e298d874bba51a3f1",
+            "license_files": [
+                {
+                    "file": "vendor/danog/php-rtc-ice/LICENSE",
+                    "sha256": "6e8861d416353fe52e937995140b8d09ff1fa6d8d700b0a1bbcde145dc478690"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/php-rtc-mdns",
+            "version": "1.1.12",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/danog/php-rtc-mdns.git",
+            "source_commit": "ff3f4315339ddcdd4d71bd4e02156903261ef57a",
+            "source_permalink": "https://github.com/danog/php-rtc-mdns/tree/ff3f4315339ddcdd4d71bd4e02156903261ef57a",
+            "license_files": [
+                {
+                    "file": "vendor/danog/php-rtc-mdns/LICENSE",
+                    "sha256": "6e8861d416353fe52e937995140b8d09ff1fa6d8d700b0a1bbcde145dc478690"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/php-rtc-mixin",
+            "version": "2.0.9",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/danog/php-rtc-mixin.git",
+            "source_commit": "e7a086a7fe01875f52e1f08301195db05e7ff9a5",
+            "source_permalink": "https://github.com/danog/php-rtc-mixin/tree/e7a086a7fe01875f52e1f08301195db05e7ff9a5",
+            "license_files": [
+                {
+                    "file": "vendor/danog/php-rtc-mixin/LICENSE",
+                    "sha256": "c855e00eed64bc882f5ff86daa56c03e76495f47e4b4b192b20bb46e924ba0f8"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/php-rtc-ntp",
+            "version": "1.1.15",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/danog/php-rtc-ntp.git",
+            "source_commit": "d70dc01410dba146cb808b9c2bf3c28ed1199d20",
+            "source_permalink": "https://github.com/danog/php-rtc-ntp/tree/d70dc01410dba146cb808b9c2bf3c28ed1199d20",
+            "license_files": [
+                {
+                    "file": "vendor/danog/php-rtc-ntp/LICENSE",
+                    "sha256": "6e8861d416353fe52e937995140b8d09ff1fa6d8d700b0a1bbcde145dc478690"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/php-rtc-rtcp",
+            "version": "1.1.11",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/danog/php-rtc-rtcp.git",
+            "source_commit": "f2e7c76d040fb0c4b2e4b62a611d13c6352af145",
+            "source_permalink": "https://github.com/danog/php-rtc-rtcp/tree/f2e7c76d040fb0c4b2e4b62a611d13c6352af145",
+            "license_files": [
+                {
+                    "file": "vendor/danog/php-rtc-rtcp/LICENSE",
+                    "sha256": "6e8861d416353fe52e937995140b8d09ff1fa6d8d700b0a1bbcde145dc478690"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/php-rtc-rtp",
+            "version": "2.0.23",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/danog/php-rtc-rtp.git",
+            "source_commit": "e9bee7a5aae91f6abec1fe9a599eefbce219d967",
+            "source_permalink": "https://github.com/danog/php-rtc-rtp/tree/e9bee7a5aae91f6abec1fe9a599eefbce219d967",
+            "license_files": [
+                {
+                    "file": "vendor/danog/php-rtc-rtp/LICENSE",
+                    "sha256": "6e8861d416353fe52e937995140b8d09ff1fa6d8d700b0a1bbcde145dc478690"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/php-rtc-rtp-parameter",
+            "version": "1.1.8",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/danog/php-rtc-rtp-parameter.git",
+            "source_commit": "cd1e34df768ddae43fc50c1306c2332cf99f07eb",
+            "source_permalink": "https://github.com/danog/php-rtc-rtp-parameter/tree/cd1e34df768ddae43fc50c1306c2332cf99f07eb",
+            "license_files": [
+                {
+                    "file": "vendor/danog/php-rtc-rtp-parameter/LICENSE",
+                    "sha256": "6e8861d416353fe52e937995140b8d09ff1fa6d8d700b0a1bbcde145dc478690"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/php-rtc-sctp",
+            "version": "2.0.14",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/danog/php-rtc-sctp.git",
+            "source_commit": "741697e355abd7eb8e8134b115fab775bb5ccd06",
+            "source_permalink": "https://github.com/danog/php-rtc-sctp/tree/741697e355abd7eb8e8134b115fab775bb5ccd06",
+            "license_files": [
+                {
+                    "file": "vendor/danog/php-rtc-sctp/LICENSE",
+                    "sha256": "6e8861d416353fe52e937995140b8d09ff1fa6d8d700b0a1bbcde145dc478690"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/php-rtc-sdp",
+            "version": "1.1.12",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/danog/php-rtc-sdp.git",
+            "source_commit": "315b9cbaff71625351864c292de0b6ac3b3a39fc",
+            "source_permalink": "https://github.com/danog/php-rtc-sdp/tree/315b9cbaff71625351864c292de0b6ac3b3a39fc",
+            "license_files": [
+                {
+                    "file": "vendor/danog/php-rtc-sdp/LICENSE",
+                    "sha256": "6e8861d416353fe52e937995140b8d09ff1fa6d8d700b0a1bbcde145dc478690"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/php-rtc-srtp",
+            "version": "1.1.16",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/danog/php-rtc-srtp.git",
+            "source_commit": "b19959292663d8933a0a48cd1fda05788fb5c542",
+            "source_permalink": "https://github.com/danog/php-rtc-srtp/tree/b19959292663d8933a0a48cd1fda05788fb5c542",
+            "license_files": [
+                {
+                    "file": "vendor/danog/php-rtc-srtp/LICENSE",
+                    "sha256": "6e8861d416353fe52e937995140b8d09ff1fa6d8d700b0a1bbcde145dc478690"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/php-rtc-stats",
+            "version": "1.1.7",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/danog/php-rtc-stats.git",
+            "source_commit": "137934d7d57e97184d5b6b2fb58e571e0d3f9fbd",
+            "source_permalink": "https://github.com/danog/php-rtc-stats/tree/137934d7d57e97184d5b6b2fb58e571e0d3f9fbd",
+            "license_files": [
+                {
+                    "file": "vendor/danog/php-rtc-stats/LICENSE",
+                    "sha256": "6e8861d416353fe52e937995140b8d09ff1fa6d8d700b0a1bbcde145dc478690"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/php-rtc-stun",
+            "version": "2.0.18",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/danog/php-rtc-stun.git",
+            "source_commit": "7f1b48a736e6d7a9ad174e7dc58b794168befed4",
+            "source_permalink": "https://github.com/danog/php-rtc-stun/tree/7f1b48a736e6d7a9ad174e7dc58b794168befed4",
+            "license_files": [
+                {
+                    "file": "vendor/danog/php-rtc-stun/LICENSE",
+                    "sha256": "6e8861d416353fe52e937995140b8d09ff1fa6d8d700b0a1bbcde145dc478690"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/php-rtc-turn",
+            "version": "2.0.9",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/danog/php-rtc-turn.git",
+            "source_commit": "5789c0d4b23c6097c72812fa8f9e9930ac288bc6",
+            "source_permalink": "https://github.com/danog/php-rtc-turn/tree/5789c0d4b23c6097c72812fa8f9e9930ac288bc6",
+            "license_files": [
+                {
+                    "file": "vendor/danog/php-rtc-turn/LICENSE",
+                    "sha256": "6e8861d416353fe52e937995140b8d09ff1fa6d8d700b0a1bbcde145dc478690"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "danog/php-rtc-webrtc",
+            "version": "2.0.20",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "BSD-3-Clause"
+            ],
+            "source_url": "https://github.com/danog/php-rtc-webrtc.git",
+            "source_commit": "58f8a24180cd1e137127214f9bfba3b0a7eff97b",
+            "source_permalink": "https://github.com/danog/php-rtc-webrtc/tree/58f8a24180cd1e137127214f9bfba3b0a7eff97b",
+            "license_files": [
+                {
+                    "file": "vendor/danog/php-rtc-webrtc/LICENSE",
+                    "sha256": "6e8861d416353fe52e937995140b8d09ff1fa6d8d700b0a1bbcde145dc478690"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
         },
         {
             "name": "danog/primemodule",
@@ -728,15 +1151,15 @@
         },
         {
             "name": "danog/telegram-entities",
-            "version": "1.0.5",
+            "version": "1.1.0",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "Apache-2.0"
             ],
             "source_url": "https://github.com/danog/telegram-entities.git",
-            "source_commit": "19ab8a48bc4b9519c4493e2c62eb171fba8b58b4",
-            "source_permalink": "https://github.com/danog/telegram-entities/tree/19ab8a48bc4b9519c4493e2c62eb171fba8b58b4",
+            "source_commit": "92ca7621594b7a6c4a820c3b557e66ee1d439273",
+            "source_permalink": "https://github.com/danog/telegram-entities/tree/92ca7621594b7a6c4a820c3b557e66ee1d439273",
             "license_files": [
                 {
                     "file": "vendor/danog/telegram-entities/LICENSE",
@@ -987,37 +1410,16 @@
             "findings": []
         },
         {
-            "name": "paragonie/random_compat",
-            "version": "v9.99.100",
-            "direct": false,
-            "scope": "runtime",
-            "spdx": [
-                "MIT"
-            ],
-            "source_url": "https://github.com/paragonie/random_compat.git",
-            "source_commit": "996434e5492cb4c3edcb9168db6fbb1359ef965a",
-            "source_permalink": "https://github.com/paragonie/random_compat/tree/996434e5492cb4c3edcb9168db6fbb1359ef965a",
-            "license_files": [
-                {
-                    "file": "vendor/paragonie/random_compat/LICENSE",
-                    "sha256": "e79a4c7d03c72850c60b2d5c41c2f92d33448ed2b243bd4686cfa7674e15e3ba"
-                }
-            ],
-            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
-            "status": "LICENSE_TEXT_PRESENT",
-            "findings": []
-        },
-        {
             "name": "phpseclib/phpseclib",
-            "version": "3.0.57",
+            "version": "4.0.2",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/phpseclib/phpseclib.git",
-            "source_commit": "d17e0ddaeaf6f22f7e007cbb437d78792fe2a0e4",
-            "source_permalink": "https://github.com/phpseclib/phpseclib/tree/d17e0ddaeaf6f22f7e007cbb437d78792fe2a0e4",
+            "source_commit": "1fe20b9acb08ce810cec24d8a9d02e7c13426e4c",
+            "source_permalink": "https://github.com/phpseclib/phpseclib/tree/1fe20b9acb08ce810cec24d8a9d02e7c13426e4c",
             "license_files": [
                 {
                     "file": "vendor/phpseclib/phpseclib/LICENSE",
@@ -1113,6 +1515,48 @@
             "findings": []
         },
         {
+            "name": "ramsey/collection",
+            "version": "2.1.1",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/ramsey/collection.git",
+            "source_commit": "344572933ad0181accbf4ba763e85a0306a8c5e2",
+            "source_permalink": "https://github.com/ramsey/collection/tree/344572933ad0181accbf4ba763e85a0306a8c5e2",
+            "license_files": [
+                {
+                    "file": "vendor/ramsey/collection/LICENSE",
+                    "sha256": "aa1e787bd6d05172d2962fa865a592af00ec474984d6b5bcb9a0df91abe8717d"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "ramsey/uuid",
+            "version": "4.9.4",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/ramsey/uuid.git",
+            "source_commit": "75d73f48d02797c2c285a7e9f348fadc0102ffe2",
+            "source_permalink": "https://github.com/ramsey/uuid/tree/75d73f48d02797c2c285a7e9f348fadc0102ffe2",
+            "license_files": [
+                {
+                    "file": "vendor/ramsey/uuid/LICENSE",
+                    "sha256": "9e8bf008e16a9ee5cc2d3bfe60701ec2351a2ddf29e9092275f71441a6d5a167"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
             "name": "revolt/event-loop",
             "version": "v1.0.9",
             "direct": true,
@@ -1127,6 +1571,27 @@
                 {
                     "file": "vendor/revolt/event-loop/LICENSE",
                     "sha256": "54e35a998b20dce201850275dd1c66c1685489972ecee9410600b8186e630853"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "symfony/polyfill-iconv",
+            "version": "v1.43.0",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/symfony/polyfill-iconv.git",
+            "source_commit": "254724d95fe01b679cd97d88786e9623ee00bfb7",
+            "source_permalink": "https://github.com/symfony/polyfill-iconv/tree/254724d95fe01b679cd97d88786e9623ee00bfb7",
+            "license_files": [
+                {
+                    "file": "vendor/symfony/polyfill-iconv/LICENSE",
+                    "sha256": "eaa5d6e59ff1d5322ae36d3ab9124460df72d2d0c8af60a99222e8a90dcbdf31"
                 }
             ],
             "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
@@ -1155,6 +1620,27 @@
             "findings": []
         },
         {
+            "name": "symfony/polyfill-php82",
+            "version": "v1.43.0",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/symfony/polyfill-php82.git",
+            "source_commit": "843bbe8b2a7934307b749751eede0f111f5d1cfc",
+            "source_permalink": "https://github.com/symfony/polyfill-php82/tree/843bbe8b2a7934307b749751eede0f111f5d1cfc",
+            "license_files": [
+                {
+                    "file": "vendor/symfony/polyfill-php82/LICENSE",
+                    "sha256": "6439cc1bba78b7de0c1905b0643679a5a7768ba020a090370d7742030303c6b2"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
             "name": "symfony/polyfill-php83",
             "version": "v1.43.0",
             "direct": false,
@@ -1176,16 +1662,79 @@
             "findings": []
         },
         {
+            "name": "symfony/polyfill-php84",
+            "version": "v1.43.0",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/symfony/polyfill-php84.git",
+            "source_commit": "22c6548499cbe5c5bb072fc0c42312dff062a015",
+            "source_permalink": "https://github.com/symfony/polyfill-php84/tree/22c6548499cbe5c5bb072fc0c42312dff062a015",
+            "license_files": [
+                {
+                    "file": "vendor/symfony/polyfill-php84/LICENSE",
+                    "sha256": "db54a3771e71cada8e5a5dd11e5533e985117354057fc268129898ef415683b1"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "symfony/polyfill-php85",
+            "version": "v1.43.0",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/symfony/polyfill-php85.git",
+            "source_commit": "86a42cbcc07adc331481a5ab310a4024bfc227f6",
+            "source_permalink": "https://github.com/symfony/polyfill-php85/tree/86a42cbcc07adc331481a5ab310a4024bfc227f6",
+            "license_files": [
+                {
+                    "file": "vendor/symfony/polyfill-php85/LICENSE",
+                    "sha256": "56e762e45c7d6d7873c19a5dac018ca43f5f9a881f8cd9100d1d08d0182b9544"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
+            "name": "symfony/polyfill-php86",
+            "version": "v1.43.0",
+            "direct": false,
+            "scope": "runtime",
+            "spdx": [
+                "MIT"
+            ],
+            "source_url": "https://github.com/symfony/polyfill-php86.git",
+            "source_commit": "8840df45b24f33a49dc419fa18dc0057231ae1d8",
+            "source_permalink": "https://github.com/symfony/polyfill-php86/tree/8840df45b24f33a49dc419fa18dc0057231ae1d8",
+            "license_files": [
+                {
+                    "file": "vendor/symfony/polyfill-php86/LICENSE",
+                    "sha256": "56e762e45c7d6d7873c19a5dac018ca43f5f9a881f8cd9100d1d08d0182b9544"
+                }
+            ],
+            "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
+            "status": "LICENSE_TEXT_PRESENT",
+            "findings": []
+        },
+        {
             "name": "webmozart/assert",
-            "version": "1.12.1",
+            "version": "2.5.0",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/webmozarts/assert.git",
-            "source_commit": "9be6926d8b485f55b9229203f962b51ed377ba68",
-            "source_permalink": "https://github.com/webmozarts/assert/tree/9be6926d8b485f55b9229203f962b51ed377ba68",
+            "source_commit": "8a163706bbcac613733dba03f51e13b5eb1bb819",
+            "source_permalink": "https://github.com/webmozarts/assert/tree/8a163706bbcac613733dba03f51e13b5eb1bb819",
             "license_files": [
                 {
                     "file": "vendor/webmozart/assert/LICENSE",
@@ -1855,105 +2404,21 @@
     ],
     "local_patches": [
         {
-            "manifest": "patches/madelineproto/manifest.json",
-            "sha256": "a2dc6507d5f7dc8d80ec2dd0b5cfdb267ae71d83d3a7131b1023898c626274fd",
-            "package": "danog/madelineproto",
-            "target": "src/Loop/Update/UpdateLoop.php",
-            "approved": [
-                {
-                    "version": "8.7.0",
-                    "commit": "7b99dd0f2d964a492c377912ffce9f5ce61aa9ed",
-                    "mode": "patch",
-                    "baseline": "baseline/UpdateLoop.php",
-                    "source_url": "https://github.com/danog/MadelineProto/blob/7b99dd0f2d964a492c377912ffce9f5ce61aa9ed/src/Loop/Update/UpdateLoop.php",
-                    "original_sha256": "2fbcbb73822258102837f53f4a231b87526d66809be7acd6339156ea778a8c2f",
-                    "patched_sha256": "8f6cb1a483c879024bddea289e90d4bf2d71dd15716102bc83a1f34a243782e4",
-                    "patch": "update-loop-timeout-cancellation.patch",
-                    "patch_sha256": "2f5c34d5e2749d3575ef9de1ec80bff60a9ced1240ca61ef8727583ee939f592"
-                }
-            ],
-            "notes": "Locally modified library source and its immutable baseline/diff ship in the corresponding-source archive; preserve upstream notices."
-        },
-        {
-            "manifest": "patches/madelineproto-geopoint/manifest.json",
-            "sha256": "30b517d219f0cf7156b59c4e34cd9f0be262fc57bbb5cedb5108e62953900d48",
-            "package": "danog/madelineproto",
-            "target": "src/EventHandler/Media/GeoPoint.php",
-            "approved": [
-                {
-                    "version": "8.7.0",
-                    "commit": "7b99dd0f2d964a492c377912ffce9f5ce61aa9ed",
-                    "mode": "patch",
-                    "baseline": "baseline/GeoPoint.php",
-                    "reviewed_output": "reviewed/GeoPoint.php",
-                    "original_sha256": "9ed8054caade6abc96420b0f5b120bec029ee2bc7b7b6aacca56fb7ddc61a27b",
-                    "patched_sha256": "5633cc441e541e5e919dfa8156192587a68e578e49a496acac91172be5f2549d",
-                    "patch": "geopoint-double-coordinates.patch",
-                    "patch_sha256": "b1b830953dce74978ddc64198a958d0ac13d5205d8929daa58a31e86c0541556"
-                }
-            ],
-            "notes": "Locally modified library source and its immutable baseline/diff ship in the corresponding-source archive; preserve upstream notices."
-        },
-        {
-            "manifest": "patches/madelineproto-formatted-date/manifest.json",
-            "sha256": "77376a8eef3743583f481d1bd83cb1b1e5384ccf7ce004b5922a3e792a41f807",
-            "package": "danog/madelineproto",
-            "target": "src/EventHandler/Message/Entities/MessageEntity.php",
-            "approved": [
-                {
-                    "version": "8.7.0",
-                    "commit": "7b99dd0f2d964a492c377912ffce9f5ce61aa9ed",
-                    "mode": "patch",
-                    "baseline": "baseline/MessageEntity.php",
-                    "original_sha256": "06a9d438cc198f56cfb745a2a3808932269033671146cf82f84ae88e8d6eae60",
-                    "reviewed_output": "reviewed/MessageEntity.php",
-                    "patched_sha256": "b265ed707326e1d71c7a8bdf8291f0b8c94a153b98a2c4c45c776fec3b374005",
-                    "patch": "formatted-date-entity.patch",
-                    "patch_sha256": "5c726acbc73ef6b4994d1c970f74952af007c2eee3c92773cf593e73e834b3d3",
-                    "source_url": "https://github.com/danog/MadelineProto/blob/7b99dd0f2d964a492c377912ffce9f5ce61aa9ed/src/EventHandler/Message/Entities/MessageEntity.php",
-                    "license_files": [
-                        {
-                            "file": "upstream-LICENSE",
-                            "sha256": "57c8ff33c9c0cfc3ef00e650a1cc910d7ee479a8bc509f6c9209a7c2a11399d6"
-                        }
-                    ],
-                    "added_files": [
-                        {
-                            "target": "src/EventHandler/Message/Entities/FormattedDate.php",
-                            "original_state": "absent",
-                            "reviewed_output": "reviewed/FormattedDate.php",
-                            "patched_sha256": "ffe03d0d78215bc42968cd836c25b1f8a602f161fb55eba189b4102d9b99d5e5",
-                            "license": "AGPL-3.0-or-later"
-                        }
-                    ],
-                    "prerequisites": [
-                        {
-                            "target": "src/TL_telegram_v225.tl",
-                            "baseline": "baseline/TL_telegram_v225.tl",
-                            "sha256": "539272f5ad8992ee97b61bd134fcf3a28a41ce720e806d0e7dc0e2e408c581f9",
-                            "source_url": "https://github.com/danog/MadelineProto/blob/7b99dd0f2d964a492c377912ffce9f5ce61aa9ed/src/TL_telegram_v225.tl"
-                        }
-                    ]
-                }
-            ],
-            "notes": "Locally modified library source and its immutable baseline/diff ship in the corresponding-source archive; preserve upstream notices."
-        },
-        {
             "manifest": "patches/madelineproto-fresh-peer/manifest.json",
-            "sha256": "40d39192dfcb91c64de98daf2eac5910c76e2203a306c656fc4b5b3bc8a5fd3e",
+            "sha256": "e274407689d5d6cad6638fca6edff5429540a99624265882aa7bc374de181119",
             "package": "danog/madelineproto",
             "target": "src/MTProtoTools/PeerHandler.php",
             "approved": [
                 {
-                    "version": "8.7.0",
-                    "commit": "7b99dd0f2d964a492c377912ffce9f5ce61aa9ed",
+                    "version": "8.11.10",
+                    "commit": "49d3d8460257c7bfb1a7e12708e1bfdd59e898c1",
                     "mode": "patch",
                     "baseline": "baseline/PeerHandler.php",
                     "reviewed_output": "reviewed/PeerHandler.php",
-                    "original_sha256": "3e1af3624f2256f53264fe4256475d0a5f353af8761cc9716133b7f0412538d2",
-                    "patched_sha256": "8188777fc376f2b3cca39963d79f85239fc84141f978128ea2bb591f03891928",
+                    "original_sha256": "6caa058975e7122eeb84409142a7c8241a2da5c63ca4c63e1ec2392c7b3f7314",
+                    "patched_sha256": "78187d7216c069d47d1c05d8128834603b958b55bc8478576850bce9e86489df",
                     "patch": "fresh-full-peer-response.patch",
-                    "patch_sha256": "db3099e7bf83550b7a4a4f54da451bc45a1078b8bd9bffc57f26bf52ab2d82e3"
+                    "patch_sha256": "0b7c828c49de1e56cf93169560a5d4ba23ec8a1749f676569b6a83592577ed4d"
                 }
             ],
             "notes": "Locally modified library source and its immutable baseline/diff ship in the corresponding-source archive; preserve upstream notices."

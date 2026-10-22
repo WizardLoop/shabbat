@@ -74,7 +74,7 @@ Broadcast drafts show their content, recipient audience, pin, scheduled time, au
 
 Public /stats provides only aggregate group/reminder information. Administrative statistics use audience, activity, group and delivery sections, each with refresh and return controls. A statistics-only manager can read those sections without access to subscriber identities.
 
-The auxiliary MadelineProto broadcast client is shared per event handler. Owner-only /restart has a bounded acknowledgement, stops application work and completes the pinned SDK loop. Docker's restart policy starts the process again. The integration also waits for the pinned SDK's pending API finalizers while the application writer lock remains held; this uses an internal public method of exact version8.7.0 and must be reviewed before any dependency upgrade. It is covered offline and still requires the separate test bot's server acceptance.
+The auxiliary MadelineProto broadcast client is shared per event handler. Owner-only /restart acknowledges the request and stops new application work before the reviewed SDK restart path. Shutdown preserves the writer lock while managed work and SDK finalizers drain. This lifecycle must be revalidated when upgrading MadelineProto; offline regression does not replace a restart test with the separate staging bot.
 
 ## Paged calendar diagnostics
 

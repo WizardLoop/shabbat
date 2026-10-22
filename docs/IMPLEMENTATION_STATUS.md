@@ -1,6 +1,8 @@
 # Implementation and acceptance status
 
-Version: **3.0.0**, stable. This document distinguishes implemented behavior from the evidence actually available. The application remains MadelineProto 8.7.0, PHP and SQLite. The stable release retains the dev.9 runtime behavior, approved patches, dependency lock and 16 migrations. It updates release identity, source packaging and deployment documentation.
+**Release policy: publication requires successful mandatory checks on the exact final commit. Use the matching GitHub Actions run and release manifest to verify the tested source and artifacts.**
+
+Version: **3.1.0**, targeting the locked official MadelineProto 8.11.10 / TL layer 232 release. Existing PHP/SQLite bot capabilities and migration bytes are retained. This page distinguishes implemented behavior, previous acceptance and checks still required on the final new tree.
 
 ## Implemented paths and limits
 
@@ -26,11 +28,13 @@ Version: **3.0.0**, stable. This document distinguishes implemented behavior fro
 
 On 2026-10-16 the project owner reported successful live dev.9 tests of group locking, unlocking, restoration of the original permissions and restart. This is operator-reported evidence for those paths. It does not establish a real Shabbat/Yom Tov transition, a full holiday sequence, sustained load capacity, a long wall-clock soak, every client/language, payment flow or the legacy production migration.
 
-The stable version does not add a runtime feature or schema migration to dev.9. Keep the above acceptance tied to its actual tested behavior; the stable release's exact source, package checks and CI results are recorded separately.
+That confirmation belongs to the earlier implementation. It is not live acceptance of MadelineProto 8.11.10, the new keyboard boundary or the 3.1.0 import procedure. No new 3.1.0 Telegram acceptance is claimed.
 
 ## Automated verification and host limits
 
-The suites exercise fake transports, provider fixtures, controlled clocks, isolated databases, migration/restore, patch lifecycle and simulated load. Run them against the final reviewed stable commit and its locked installation. The dev.9 merged baseline passed its hosted checks, but that result is not a replacement for the stable commit's own checks. Release manifests, SHA-256 sums and the matching Actions run identify the tested source/artifacts. Local checks directories are external evidence, not runtime source.
+Shutdown coverage exercises official SDK loop recovery/stop behavior and real disconnect/finalize methods with an in-memory transport and modeled delayed flush. The lock barrier must retain writer ownership until finalization completes. Loop `stop()` prevents rescheduling after the current body returns; it does not promise immediate cancellation of that body. These fixtures do not serialize a real session or exercise Telegram, an IPC daemon or Linux signals. Platform-specific worker checks must be evaluated on the relevant operating system.
+
+The suites exercise fake transports, provider fixtures, controlled clocks, isolated databases, migration/restore, patch lifecycle and simulated load. Run them against the final reviewed 3.1.0 commit and locked installation. Earlier 3.0.0 hosted results do not replace this version's mandatory clean-install, regression, analysis, image and artifact checks. Publication requires those gates to pass on the exact final commit. Release manifests, SHA-256 sums and the matching GitHub Actions run identify the tested source/artifacts. Local checks directories are external evidence, not runtime source.
 
 Local Windows limitations include unavailable Docker and POSIX-only/symlink-dependent coverage. The local PHP-loaded SQLite 3.45.2 is deliberately rejected by the release gate; the Docker target pins SQLite 3.51.3 and must pass that gate. Do not describe an unexecuted image build, CI run or Telegram operation as successful. See [publication status](PUBLICATION_STATUS.md) for source scope and [release preparation](RELEASE.md) for gates.
 
@@ -38,8 +42,8 @@ Local Windows limitations include unavailable Docker and POSIX-only/symlink-depe
 
 On a separate bot and disposable groups, verify the feature paths your installation uses: conflicts/recovery, automatic protected-period transitions, interrupted work/shutdown, inline/GPS/client rendering, source offer, command menus, rich messages and payment flow where enabled. Exercise forum and non-forum groups if used. Observe a real scheduled close/open cycle and monitor queue/heartbeat behavior under your traffic; synthetic load is not a Telegram capacity guarantee.
 
-The `/root/shabat` legacy import still needs a stopped full backup, exact group-ID/settings comparison, permission review, restore rehearsal and monitored cutover. Test-bot data is never substituted for production data. Follow [the production upgrade guide](PRODUCTION_UPGRADE.md). Publishing the source/tag/release does not perform these server actions or restart the active bot.
+The actual production path must first be verified: /root/shabbat is requested, while older instructions named /root/shabat. Legacy import needs a stopped full backup, exact group-ID/settings comparison, permission review, restore rehearsal and monitored cutover. Test-bot data is never substituted for production data. Follow [the production upgrade guide](PRODUCTION_UPGRADE.md). Publishing the source/tag/release does not perform these server actions or restart the active bot.
 
 ## Documentation map
 
-[English README](../README.md) · [עברית](../readme-he.md) · [Installation](INSTALLATION.md) · [Configuration](CONFIGURATION.md) · [Group settings](GROUP_SETTINGS.md) · [Calendar methods](ZMANIM_METHODS.md) · [User experience](USER_EXPERIENCE.md) · [Administration](ADMIN_PANEL.md) · [Migration](MIGRATION.md) · [Backup/restore](BACKUP_RESTORE.md) · [Delivery safety](DEV9_DELIVERY_SAFETY.md) · [Permission recovery](PERMISSION_RECOVERY.md) · [Diagnostics](DIAGNOSTICS.md) · [Licensing](LICENSING.md) · [Release preparation](RELEASE.md)
+[English README](../README.md) · [עברית](../readme-he.md) · [Installation](INSTALLATION.md) · [Configuration](CONFIGURATION.md) · [Group settings](GROUP_SETTINGS.md) · [Calendar methods](ZMANIM_METHODS.md) · [User experience](USER_EXPERIENCE.md) · [Administration](ADMIN_PANEL.md) · [Migration](MIGRATION.md) · [Backup/restore](BACKUP_RESTORE.md) · [Delivery safety](DELIVERY_SAFETY.md) · [Permission recovery](PERMISSION_RECOVERY.md) · [Diagnostics](DIAGNOSTICS.md) · [Licensing](LICENSING.md) · [Release preparation](RELEASE.md)

@@ -14,4 +14,4 @@ Dev.7 adds migration 014 for expiring diagnostic snapshots and interaction/expor
 
 Transport uses the locked MadelineProto implementation of [messages.sendMedia](https://docs.madelineproto.xyz/API_docs/methods/messages.sendMedia.html) with an in-memory JSON upload. Offline tests verify native payload construction and actual callback/message routes; they do not claim a real Telegram upload or flood-limit acceptance test.
 
-Dev.8 adds snapshot-verification status to the selected group's permissions section and JSON export. The indicator checks the original bytes and capture provenance; a legacy snapshot or checksum failure is not displayed as verified. See [the affected-group procedure](DEV8_PERMISSIONS.md).
+Dev.8 adds snapshot-verification status to the selected group's permissions section and JSON export. The indicator checks the original bytes and capture provenance; a legacy snapshot or checksum failure is not displayed as verified. See [the affected-group procedure](PERMISSION_RECOVERY.md).

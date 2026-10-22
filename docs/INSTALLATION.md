@@ -2,13 +2,13 @@
 
 [English overview](../README.md) | [עברית](../readme-he.md) | [Configuration](CONFIGURATION.md) | [Migration](MIGRATION.md)
 
-This documents stable `3.0.0`. Install the matching release deployment ZIP or exact tagged checkout. The owner confirmed dev.9 live locking, unlocking, original-permission restoration and restart; acceptance on your host and remaining feature-specific tests are separate. See [publication status](PUBLICATION_STATUS.md).
+This documents version 3.1.0; check [acceptance status](IMPLEMENTATION_STATUS.md) before deployment. Install the matching release deployment ZIP or exact tagged checkout. The owner confirmed dev.9 live locking, unlocking, original-permission restoration and restart; acceptance on your host and remaining feature-specific tests are separate. See [publication status](PUBLICATION_STATUS.md).
 
 ## Requirements and command context
 
 Run the following commands in the unpacked project root on Linux. Docker commands require access to the Docker daemon and Compose v2; that access is privileged. PHP maintenance commands run as the image's non-root user. The only Compose service is `shabbat`; there is no `composer` service.
 
-The Dockerfile pins PHP 8.4.19 and Composer 2.10.3 images by digest and builds checksum-verified SQLite 3.51.3. It installs dependencies from `composer.lock`, applies and verifies the five local patch sets before startup, and runs without root as UID/GID 10001. Image building uses network access but no bot credentials. CI uses the same Composer version, including the upstream [GitHub Actions token-validation and disclosure fix](https://github.com/composer/composer/security/advisories/GHSA-f9f8-rm49-7jv2); authentication and all validation gates remain enabled. Runtime requires a separate configured bot, Telegram access and calendar provider access.
+The Dockerfile pins PHP 8.4.26 and Composer 2.10.3 images by digest and builds checksum-verified SQLite 3.51.3. It installs dependencies from `composer.lock`, applies and verifies the two active local patch sets before startup, and runs without root as UID/GID 10001. Image building uses network access but no bot credentials. CI uses the same Composer version, including the upstream [GitHub Actions token-validation and disclosure fix](https://github.com/composer/composer/security/advisories/GHSA-f9f8-rm49-7jv2); authentication and all validation gates remain enabled. Runtime requires a separate configured bot, Telegram access and calendar provider access.
 
 Manual installation requires 64-bit PHP 8.3, 8.4 or 8.5, Composer 2, the extensions required by `composer check-platform-reqs`, and a patched PHP-loaded SQLite version accepted by `php bin/self-check.php --release`. That gate accepts SQLite >=3.51.3 or the explicitly reviewed 3.44.6/3.50.7 backports. A newer standalone `sqlite3` executable does not change the library loaded by PHP PDO. The image is the documented deployment baseline; native process supervision is operator-managed.
 
@@ -71,6 +71,7 @@ docker compose -p shabbat-test up -d --force-recreate shabbat
 
 Migration verifies a backup before changing an existing database and rejects modified migration checksums. Startup validates the schema; it never silently migrates it. Keep independent private backups of the session and third-party runtime state as described in [backup and restore](BACKUP_RESTORE.md). Never remove named volumes as an upgrade step.
 
+<a id="manual-installation"></a>
 ## Manual installation and no-scripts mode
 
 Run as an unprivileged application owner in a separate checkout with writable private data/session directories. Use the supported PHP runtime, not a running bot's dependency tree.

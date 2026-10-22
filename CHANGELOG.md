@@ -2,6 +2,15 @@
 
 PHP 8.3 compatibility: module-delivery bookkeeping now uses the database-owned `BEGIN IMMEDIATE` transaction state and exact connection identity; native callback/message fixtures initialize inherited readonly properties from their declaring class. Regression tests cover rejected foreign/outside transactions, rollback and state reset.
 
+## 3.1.0
+
+- Upgrade the official MadelineProto dependency to the reviewed stable 8.11.10 / TL layer 232 line, with reproducible Composer locking and a stable compatible version range.
+- Retire the upstreamed UpdateLoop/cancellation, GeoPoint and formatted-date patch sets. Re-review the Fresh Peer and BroadcastManager patches against the updated dependency source.
+- Update the central keyboard compatibility boundary for the new native inline constructors while preserving saved templates, callback identifiers, styles and reply-keyboard separation.
+- Make legacy import reviewable with equivalent preview/apply parsing, duplicate and directory-only group reporting, bound comparison reports and post-import verification. Existing settings and unverified permission snapshots remain protected.
+- Shorten the parallel English/Hebrew READMEs, consolidate historical development reports into current references, and provide a Hebrew staged upgrade/import/rollback guide that verifies the actual production path.
+- Required clean-install, regression, static-analysis, Docker and archive checks must pass before a stable tag/release. Earlier 3.0.0 live acceptance is not new 3.1.0 acceptance. No production deployment is performed by this upgrade work.
+
 ## 3.0.0 - stable
 
 - Promote the reviewed dev.9 implementation to stable 3.0.0 while retaining MadelineProto 8.7.0, SQLite, the Composer lock, all five approved patch sets and migrations 001–016. No new runtime feature or migration is introduced by this promotion.
@@ -50,7 +59,7 @@ PHP 8.3 compatibility: module-delivery bookkeeping now uses the database-owned `
 ## 3.0.0-dev.6 - permission equivalence and callback integration
 
 - Correct the public statistics callback allowlist at the actual SDK update-handler boundary, including callbacks emitted by the home menu and statistics tabs. Unavailable original panels return a localized callback response without new-message flooding.
-- Compare reviewed Telegram-equivalent default permission representations consistently for manual and automatic transitions, retaining original snapshots and genuine-conflict protection. See the dev.6 feedback report for evidence and limits.
+- Compare reviewed Telegram-equivalent default permission representations consistently for manual and automatic transitions, retaining original snapshots and genuine-conflict protection. Historical evidence and limits are preserved in the 3.0.0 Git history.
 - Shabbat messages across public, inline and scheduled defaults show the nearest Shabbat-containing period and current/upcoming holidays, including verified entrance/final-exit times for weekday Yom Tov before Shabbat, without later Shabbat summaries, numeric UTC suffixes or visible source/update footers. Actual configured methods and validated source provenance remain intact.
 - Recognize both captured provider spellings of Chol Hamoed for reminder policy, while retaining its non-Yom-Tov classification. Keep a verified active festival visible when its final exit is after civil midnight.
 - Direct test-folder upload is documented; deployment ZIP/checksum files are excluded from Docker context. No dependency, patch or migration update is required.
@@ -68,7 +77,7 @@ PHP 8.3 compatibility: module-delivery bookkeeping now uses the database-owned `
 - `source` combines repository, license and build identity. Legacy `license`/`version` commands remain aliases; the project repository is always linked separately from the deployment's exact source offer.
 - Expanded help and all changes are translated into Hebrew, English, Russian, French, Spanish and Brazilian Portuguese.
 
-Migrations 001-012, Composer lock and all four library patch sets are unchanged from dev.4. No new schema migration is needed for dev.5, but the stopped-writer backup/migrate command remains part of the update procedure. See [the 11-item verification map](docs/DEV5_TEST_FEEDBACK.md) and [Docker test deployment](docs/SERVER_TEST_DEPLOYMENT.md). The supplied log proves repeated auxiliary IPC churn, not a completed reproduction of a live Telegram restart hang or the original permission error. No Docker or real Telegram acceptance is claimed.
+Migrations 001-012, Composer lock and all four library patch sets are unchanged from dev.4. No new schema migration is needed for dev.5, but the stopped-writer backup/migrate command remains part of the update procedure. See [Docker test deployment](docs/SERVER_TEST_DEPLOYMENT.md). The supplied log proves repeated auxiliary IPC churn, not a completed reproduction of a live Telegram restart hang or the original permission error. No Docker or real Telegram acceptance is claimed.
 
 ## 3.0.0-dev.4 - unpublished local development snapshot
 
@@ -157,7 +166,7 @@ Dependencies, four reviewed library patches and eight migration files remain unc
 * Exact 8.5-degree nightfall and explicit minute choices are retained without integer truncation or arbitrary minute adjustments.
 * Native integer peer IDs are handled in private GPS and payment updates; bot-owned GPS reply tokens remain scoped to their user/group.
 * A separate exact-source MadelineProto GeoPoint correction preserves fractional coordinates before inline dispatch.
-* A new reviewed formatted-date correction completes the locked entity factory and adds a typed native/Bot API wrapper. It preserves timestamps, UTF-16 offsets and valid flags, with strict two-file/schema guards; historical reference code with unresolved grants is not redistributed. See [review](docs/MADELINE_FORMATTED_DATE.md).
+* A new reviewed formatted-date correction completes the locked entity factory and adds a typed native/Bot API wrapper. It preserves timestamps, UTF-16 offsets and valid flags, with strict two-file/schema guards; historical reference code with unresolved grants is not redistributed. See [historical source and license findings](docs/THIRD_PARTY_DETAILS.md).
 * Permission FLOOD_WAIT deadlines survive restart, stale/expired owners cannot confirm mutations, and desired state is refreshed before RPCs.
 * Content waits for bot-owned permission recovery; Omer waits its configured gap after the actual restore. Eligibility deferrals do not exhaust transport retries.
 * Explicit group rejoining preserves settings, while startup list import cannot reactivate removed groups. Startup schema validation rejects missing or changed migrations without writing.

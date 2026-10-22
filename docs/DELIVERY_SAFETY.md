@@ -1,6 +1,6 @@
-# dev.9 delivery and scheduler safety
+# Delivery and scheduler safety
 
-This is an unpublished test build. It fixes the timing, backlog and scheduler isolation defects reproduced in the dev.8 read-only audit. MadelineProto remains exactly 8.7.0 at `7b99dd0f2d964a492c377912ffce9f5ce61aa9ed`; the Composer lock is unchanged. Migration 016 is additive; migrations 001-015 and all four MadelineProto patch sets retain their bytes. The separate BroadcastManager patch gains reviewed lifecycle hooks; its previous approved source is preserved.
+Current runtime rules for scheduled notifications, permission reconciliation and broadcasts. For executed checks and their limits, see [implementation status](IMPLEMENTATION_STATUS.md).
 
 ## Delivery rules and exceptions
 
@@ -18,7 +18,7 @@ Persisted due Tefillin reminders that were never dispatched are coalesced to the
 
 Quiet hours are rechecked at delivery time for ordinary modules, including Omer, not only when planning. A delayed job may defer until quiet hours end if still valid. Overnight hours and both occurrences of repeated DST times are supported; missing wall-clock times are not guessed. Tefillin also checks current weekday, pause date, Chol Hamoed/Tisha B'Av policy, daylight window and sunset safety. Omer checks the actual restoration gap again at the final send fence.
 
-Migration 016 conservatively marks old attempt/delivery evidence. An unknown old attempt is not silently treated as never dispatched. This can intentionally suppress or defer an uncertain reminder; it cannot infer whether Telegram accepted an old request. The unchanged permission-provenance rules from dev.8 still apply to unresolved older group snapshots.
+Migration 016 conservatively marks old attempt/delivery evidence. An unknown old attempt is not silently treated as never dispatched. This can intentionally suppress or defer an uncertain reminder; it cannot infer whether Telegram accepted an old request. The permission-provenance rules still apply to unresolved older group snapshots.
 
 ## Independent scheduling and failure isolation
 
@@ -42,6 +42,4 @@ At most once per minute, bounded maintenance selects up to 200 eligible terminal
 
 Regression tests cover slow provider/topic/emoji/media work crossing entry, direct and fallback sends, actual quiet hours, Omer restoration changes, persisted backlog, daily caps/spacing, uncertainty across restart, migration, fair traversal, bounded concurrency and shutdown. Queue tests simulate 1,000 groups with 3,000 due reminders and 180 virtual days with 7,200 deliveries. Application and broadcast load tests use isolated databases, controlled clocks and fake transports; they do not send messages or measure real Telegram capacity.
 
-The original dev.9 validation is historical development evidence. Exact results for this publication copy are recorded separately in the delivered checks report; see [publication status](PUBLICATION_STATUS.md). These simulations are not months of wall-clock soak or proof of unlimited group count. Docker is unavailable on the local Windows host; the pinned Linux image and live disposable-group acceptance must still pass on the test server. The local older SQLite must continue to fail the release-platform gate rather than bypass it.
-
-See [test deployment](SERVER_TEST_DEPLOYMENT.md), [permission recovery](PERMISSION_RECOVERY.md), [database](DATABASE.md), and [BroadcastManager patch provenance](../patches/broadcastmanager/README.md).
+These simulations do not establish real Telegram capacity, holy-day acceptance or a wall-clock soak. Keep target-host acceptance separate from offline regression results.

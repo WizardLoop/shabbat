@@ -40,6 +40,8 @@ Daily times and Daf expose today, tomorrow, selected date and sharing. Share fro
 
 ## Permissions, stale actions and recovery
 
+The current Telegram layer supports the `manage_linked_peers` restriction to the selectable mask. It is opt-in through its individual control or an explicit **All** selection; the existing 21-field default and saved masks are unchanged. Administrator-rights diagnostics recognize all 19 current fields, including `manage_linked_peers` and `manage_welcome_messages`, without granting those rights.
+
 The bot rechecks current administrator permission for every sensitive callback and final save. Flow tokens carry settings revision; an older panel, expired token, other user, replay or forwarded button cannot change settings. Concurrent editors do not overwrite a newer revision. State is scoped to user/group/action; no shared mutable `groupid` is used for new settings.
 
 Permission snapshots are saved durably before restriction, preserved while bot-owned restriction remains active, and restored exactly. A missing/corrupt snapshot or conflicting manual permission edit is a visible issue. Routine notification replanning never deletes an unresolved permission-restoration job. The scheduler reconciles desired state on restart, including an opening missed by more than the former six-minute window.
@@ -70,7 +72,7 @@ Next action: [calculated local datetime]
 🛠 Status and issues
 ```
 
-This is a simulation, not a production chat capture. Automated fixture evidence is linked from [FEATURE_PARITY.md](FEATURE_PARITY.md). Telegram administration checks, inline client behavior, permission RPCs, topics, actual payments and broadcasts still require opt-in staging validation.
+This is a simulation, not a production chat capture. Automated fixture evidence is linked from [implementation status](IMPLEMENTATION_STATUS.md). Telegram administration checks, inline client behavior, permission RPCs, topics, actual payments and broadcasts still require opt-in staging validation.
 ## Original button input compatibility
 
 Open **Messages and design**, choose the message, then **Buttons**. The simple link-button path asks for a label and URL separately. Advanced input includes concrete examples for the existing plaintext parser and JSON rows. Type the body directly into the active private question. Candidate content is previewed before explicit save, and cancellation preserves the stored design.
@@ -93,7 +95,7 @@ Offline evidence is in `UIOperatorTest`: all six frames and stable callbacks, se
 
 ## Group restrictions and message cleanup
 
-The **Group restrictions and cleanup** screen is group-only. A checked restriction means that action is blocked while the bot owns an active closure. The 21 global restriction fields from the locked Telegram layer are selectable. The full 22-field native snapshot is retained for validation and restoration. Telegram explicitly forbids `view_messages` in global default permissions ([official rights documentation](https://core.telegram.org/api/rights)); it is therefore excluded from selection and rejected before any RPC:
+The **Group restrictions and cleanup** screen is group-only. A checked restriction means that action is blocked while the bot owns an active closure. The 22 global restriction fields from the locked Telegram layer are selectable. The full 23-field native snapshot is retained for validation and restoration. Telegram explicitly forbids `view_messages` in global default permissions ([official rights documentation](https://core.telegram.org/api/rights)); it is therefore excluded from selection and rejected before any RPC:
 
 | Native field | Member action |
 |---|---|
@@ -118,12 +120,13 @@ The **Group restrictions and cleanup** screen is group-only. A checked restricti
 | send_plain | Send plain text |
 | edit_rank | Edit the member's own custom tag (rank) |
 | send_reactions | Send reactions |
+| manage_linked_peers | Manage linked chats; opt-in restriction |
 
-Default selection blocks all 21 actions except viewing messages. **All**, **None** and **Default** create previews requiring final one-use confirmation. All and Default both exclude the unsupported `view_messages` flag. An older stored mask containing that flag must be reset using Default, All or None before it can be applied; it is never silently discarded. A selection never clears an existing manual restriction or replaces the original restoration snapshot. Changes and resets are isolated to the current group. The Shabbat module reset restores the default mask and switches both holy-period cleanup options off.
+**Default** retains the original 21-action mask. The additional `manage_linked_peers` restriction is selected individually or through **All**, which selects all 22 supported actions. **All**, **None** and **Default** create previews requiring final one-use confirmation. All and Default both exclude the unsupported `view_messages` flag. An older stored mask containing that flag must be reset using Default, All or None before it can be applied; it is never silently discarded. A selection never clears an existing manual restriction or replaces the original restoration snapshot. Changes and resets are isolated to the current group. The Shabbat module reset restores the default mask and switches both holy-period cleanup options off.
 
 Default permission readback is compared by meaning within narrow, verified rules: `until_date=0` and `2147483647` both mean permanent restrictions; arbitrary finite expiries stay distinct. Legacy `send_media` and `send_messages` aggregate bits are redundant only when every corresponding granular send restriction is explicitly blocked on both sides. An individual flag change, including `send_reactions` or `edit_rank`, is still a conflict. Selecting an aggregate for a new lock explicitly includes its granular restrictions. Original native snapshots and their checksums are never rewritten by this comparison.
 
-These rules follow the [official TDLib permanent-default-rights reader](https://github.com/tdlib/td/blob/ad2178896533ff92831accdf56ea7edd8393f2ca/td/telegram/DialogParticipant.cpp#L220-L228) and [granular-rights serializer](https://github.com/tdlib/td/blob/ad2178896533ff92831accdf56ea7edd8393f2ca/td/telegram/DialogParticipant.cpp#L306-L314). The pinned MadelineProto 8.7.0 adapter refreshes full peer information with a zero cache lifetime and reads the updated peer again after the response. Both basic-group and supergroup refresh paths have offline tests using the actual pinned SDK method.
+These rules follow the [official TDLib permanent-default-rights reader](https://github.com/tdlib/td/blob/ad2178896533ff92831accdf56ea7edd8393f2ca/td/telegram/DialogParticipant.cpp#L220-L228) and [granular-rights serializer](https://github.com/tdlib/td/blob/ad2178896533ff92831accdf56ea7edd8393f2ca/td/telegram/DialogParticipant.cpp#L306-L314). The version-matched MadelineProto adapter validates permissions from the exact matching full-peer response returned by the reviewed Fresh Peer helper. Cached, minimal, mismatched or incomplete data cannot authorize capture or readback. Both basic-group and supergroup paths need regression coverage against the installed locked SDK.
 
 After upgrading from dev.5, a retained prepared/error/conflict/restoring state can recover on the next manual operation or scheduled reconciliation only if fresh current rights match the original snapshot or a known bot-owned mask under those narrow rules. No database reset or new snapshot is needed for that case. Missing/corrupt snapshots, unmatched finite expiries, unknown restrictions and meaningful administrator changes remain protected. A genuine mismatch stops automatic changes and shows a bounded list of differing permission names; it does not establish who changed them. Normalization does not authorize the bot to overwrite that mismatch. A legacy aggregate-only snapshot without explicit granular rights stays strict because its equivalence cannot be proved.
 
@@ -175,3 +178,7 @@ The main group panel and Shabbat/permission categories include **Resolve permiss
 Automatic recovery preserves only verified known results, proven never-dispatched first attempts and additional restrictions on known fields untouched by the bot. Original snapshot bytes remain available. Ambiguous bot-controlled, relaxed, unknown or expiry differences retain administrator review; a new week alone cannot reset them.
 
 Current default Shabbat/holiday output uses local `Y-m-d H:i` without a numeric UTC suffix or source/update footer, as described in [calendar presentation](CALENDAR_PRESENTATION.md). This supersedes older presentation notes above; internal timezone/freshness metadata remains available in diagnostics.
+
+## Keyboard format compatibility
+
+Saved Bot API and earlier native keyboards are normalized by the central current-layer compatibility boundary. Inline and reply keyboards stay distinct; old stored templates are not rewritten solely for this upgrade. See [keyboard compatibility](KEYBOARD_COMPATIBILITY.md) for supported actions, styles, icon fallback and verification limits.
