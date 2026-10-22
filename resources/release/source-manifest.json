@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "description": "Reviewed application Composer runtime source inputs for 3.1.0; exact locked dist bytes plus two manifest-approved local patches and pinned preferred-source supplements.",
-  "composer_lock_sha256": "c86f54854a177e458a01cc3943eb6d9eeeb06e29bd670a66a02d9b12bd4ca288",
+  "composer_lock_sha256": "2b5d70795b5a6000769ea87b6f340667d9d743152ac5fefde8f7ae2ff9aecb14",
   "origin": {
     "review_date": "2026-10-22",
     "method": "Exact Composer cache ZIP identified by SHA-1 of locked dist URL and pinned Git-root reference; all runtime files matched original dist bytes except the two approved patch outputs. Supplemental downloads matched pinned upstream Git blobs.",

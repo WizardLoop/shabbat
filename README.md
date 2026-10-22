@@ -42,7 +42,7 @@ docker --version
 docker compose version
 ~~~
 
-Docker supplies PHP, Composer, SQLite and the locked dependencies. A supported [manual installation](docs/INSTALLATION.md#manual-installation) is also documented.
+Docker supplies PHP 8.4.27, Composer, SQLite and the locked dependencies. Manual installations require 64-bit PHP **8.3.36+, 8.4.27+ or 8.5.12+**, within those supported branches. See the [22 October 2026 security baseline](docs/INSTALLATION.md#php-security-baseline) and [manual installation](docs/INSTALLATION.md#manual-installation).
 
 <a id="install"></a>
 ## 1. Extract a fresh installation

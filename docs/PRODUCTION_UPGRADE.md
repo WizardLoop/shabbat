@@ -6,6 +6,8 @@ This is a manual runbook, not an executed deployment. Use the released, verified
 
 Commands cover the legacy whole-project bind mount or standard 3.0 Docker data/session volumes. The 3.0 path probe only reads configuration; it opens no API/session. A custom session name or lock-only remnants stop this procedure. Custom mounts, external storage, symlinks to private data or another writer need a tailored backup first. Run server blocks in one **root Bash session** with Docker/Compose, unzip, GNU coreutils and sufficient storage. Keep backups outside source/build directories. Only the final start connects the new bot to Telegram.
 
+The new image uses PHP **8.4.27**. Manual runtimes require **8.3.36+, 8.4.27+ or 8.5.12+** within those branches; see the [22 October 2026 security baseline](INSTALLATION.md#php-security-baseline). Preserve the old image for rollback, but do not treat an older interpreter as meeting the new baseline.
+
 ## 1. Upload from your computer
 
 Download the deployment ZIP and SHA256SUMS from the matching GitHub release. In the computer's terminal, replace SERVER with your SSH hostname/IP. SFTP can upload the same files to the same protected destination.

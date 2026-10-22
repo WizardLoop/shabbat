@@ -13,6 +13,11 @@ The matching GitHub Actions run and release manifest identify the tested source
 and artifacts. Historical results from another version do not replace those
 checks; a stable tag or release must not bypass a failed mandatory gate.
 
+The runtime baseline requires PHP **8.3.36+, 8.4.27+ or 8.5.12+** within those
+branches; Docker pins **8.4.27**. The [dated security baseline](INSTALLATION.md#php-security-baseline)
+records the upstream fixes reviewed on 22 October 2026. Earlier checks on an older
+interpreter are compatibility evidence, not approval of that deployment runtime.
+
 Shutdown coverage combines the official loop contract with application-owned
 writer exclusion through SDK disconnect/finalization. Loop `stop()` prevents
 rescheduling after the current body returns. Offline fixtures use an in-memory

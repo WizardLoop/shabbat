@@ -6,6 +6,7 @@ Automated release checks and deployment acceptance have separate scopes. See [re
 
 ## Changes
 
+- Raise the supported PHP patch floors to **8.3.36 / 8.4.27 / 8.5.12** and the Docker baseline to **8.4.27**, following the [22 October 2026 security baseline](INSTALLATION.md#php-security-baseline).
 - Update MadelineProto to official stable 8.11.10 / TL layer 232 with a compatible stable Composer range and exact lock.
 - Retire upstreamed UpdateLoop/cancellation, GeoPoint and formatted-date patches; retain the reviewed version-matched Fresh Peer and BroadcastManager changes where still required.
 - Update the keyboard compatibility boundary for new inline constructors while preserving saved templates, callback IDs, styles/icons and distinct reply keyboards.

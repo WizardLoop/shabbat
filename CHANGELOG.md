@@ -4,6 +4,7 @@ PHP 8.3 compatibility: module-delivery bookkeeping now uses the database-owned `
 
 ## 3.1.0
 
+- Require PHP 8.3.36, 8.4.27 or 8.5.12 and later patches on those branches, incorporating the upstream security fixes published on 22 October 2026. Pin the Docker image to verified PHP 8.4.27 bytes and verify exact patched runtimes in CI and release packaging.
 - Upgrade the official MadelineProto dependency to the reviewed stable 8.11.10 / TL layer 232 line, with reproducible Composer locking and a stable compatible version range.
 - Retire the upstreamed UpdateLoop/cancellation, GeoPoint and formatted-date patch sets. Re-review the Fresh Peer and BroadcastManager patches against the updated dependency source.
 - Update the central keyboard compatibility boundary for the new native inline constructors while preserving saved templates, callback identifiers, styles and reply-keyboard separation.

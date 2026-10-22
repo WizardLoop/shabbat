@@ -10,7 +10,7 @@ The release provides `shabbat-3.1.0.zip`, `shabbat-3.1.0-corresponding-source.zi
 
 ## Reproduce quality checks
 
-Run at the root of a disposable checkout, as its nonroot owner with write access, with the supported PHP/Composer runtime. The locked installation writes only this checkout's dependencies and applies the approved patches. Never install or patch dependencies inside an active bot tree.
+Run at the root of a disposable checkout, as its nonroot owner with write access, with the supported [patched PHP/Composer runtime](INSTALLATION.md#php-security-baseline): 64-bit PHP 8.3.36+, 8.4.27+ or 8.5.12+ within those branches, and Composer 2.10.3. The locked installation writes only this checkout's dependencies and applies the approved patches. Never install or patch dependencies inside an active bot tree.
 
 ```sh
 composer validate --strict --no-check-all

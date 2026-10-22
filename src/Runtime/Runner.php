@@ -151,6 +151,12 @@ final class Runner
     /** @param class-string<\danog\MadelineProto\EventHandler> $handlerClass */
     public static function run(string $handlerClass, ?string $root = null): int
     {
+        try {
+            PhpRuntime::assertSupported();
+        } catch (\RuntimeException $error) {
+            fwrite(STDERR, $error->getMessage() . "\n");
+            return 1;
+        }
         $root ??= dirname(__DIR__, 2);
         $lock = null;
         $signals = [];
