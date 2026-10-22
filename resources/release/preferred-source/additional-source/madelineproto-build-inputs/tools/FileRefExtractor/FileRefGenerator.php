@@ -67,11 +67,28 @@ final class FileRefGenerator
             $locations[$constructor][] = new GetMessageOp(
                 new GetInputPeerOp(new Path([[$constructor, 'peer_id']])),
                 new CopyOp([[$constructor, 'id']]),
-                $constructor === 'message' ? new CopyOp([[$constructor, 'from_scheduled', Path::FLAG_PASSTHROUGH]]) : null,
                 $constructor === 'message' ? new CopyOp([[$constructor, 'quick_reply_shortcut_id', Path::FLAG_PASSTHROUGH]]) : null,
                 'fileSourceMessage',
             );
         }
+
+        $locations['message'][] = new CallOp(
+            'messages.getScheduledMessages',
+            [
+                'peer' => new GetInputPeerOp(new Path([['messages.getScheduledMessages', 'peer']], true)),
+                'id' => new ArrayOp(new CopyOp([['message', 'id']])),
+            ],
+            'fileSourceScheduledMessage'
+        );
+
+        $locations['message'][] = new CallOp(
+            'messages.getScheduledMessages',
+            [
+                'peer' => new GetInputPeerOp(new Path([['updateNewScheduledMessage', 'message'], ['message', 'peer_id']], true)),
+                'id' => new ArrayOp(new CopyOp([['message', 'id']])),
+            ],
+            'fileSourceScheduledMessage'
+        );
 
         $storyMethods = [];
         foreach (['stories.Stories'] as $t) {
@@ -216,6 +233,13 @@ final class FileRefGenerator
             ],
             'fileSourceChannelFull'
         );
+        $locations['communityFull'][] = new CallOp(
+            'channels.getFullChannel',
+            [
+                'channel' => new GetInputChannelOp(new Path([['communityFull', 'id']])),
+            ],
+            'fileSourceCommunityFull'
+        );
         $locations['help.getPremiumPromo'][] = new CopyMethodCallOp('help.getPremiumPromo', 'fileSourcePremiumPromo');
 
         $locations['help.getAppUpdate'][] = new Noop("Don't handle file references from ephemeral app update info");
@@ -316,6 +340,7 @@ final class FileRefGenerator
             $locations[$c][] = new CallOp('account.getSavedRingtones', ['hash' => new PrimitiveLiteralOp('long', 0)], 'fileSourceSavedRingtones');
         }
 
+        $locations['draftMessage'][] = new Noop('Do not store references from drafts');
         $locations['recentMeUrlChatInvite'][] = new Noop('Do not store references based on chat invite links');
         $locations['messages.checkChatInvite'][] = new Noop('Do not store references based on chat invite links');
 
@@ -333,7 +358,6 @@ final class FileRefGenerator
         $locations['updateMessagePoll'][] = new GetMessageOp(
             new GetInputPeerOp(new Path([['updateMessagePoll', 'peer', Path::FLAG_IF_ABSENT_ABORT]])),
             new CopyOp([['updateMessagePoll', 'msg_id', Path::FLAG_IF_ABSENT_ABORT]]),
-            null,
             null,
             'fileSourceMessage',
         );
@@ -438,6 +462,15 @@ final class FileRefGenerator
             'fileSourceSavedMusic'
         );
 
+        $locations['ephemeral.getWelcomeMessages'][] = new CallOp(
+            'ephemeral.getWelcomeMessages',
+            [
+                'peer' => new GetInputPeerOp(new Path([['ephemeral.getWelcomeMessages', 'peer']])),
+                'hash' => new PrimitiveLiteralOp('long', 0),
+            ],
+            'fileSourceWelcomeMessages'
+        );
+
         // Ignore these for now
         foreach (['payments.ResaleStarGifts', 'payments.StarGiftUpgradePreview', 'StarGift', 'StarGiftCollection', 'payments.StarGiftCollections', 'payments.StarGiftUpgradeAttributes'] as $type) {
             foreach ($TL->getConstructorsOfType($type) as $constructor => $_) {
@@ -448,6 +481,16 @@ final class FileRefGenerator
             }
         }
 
+        $locations['updateEditEphemeralMessage'][] = new Noop('Do not store file references from ephemeral messages');
+        $locations['updateEphemeralBotCallbackQuery'][] = new Noop('Do not store file references from ephemeral messages');
+        $locations['updateNewEphemeralMessage'][] = new Noop('Do not store file references from ephemeral messages');
+
+        $locations['messages.translatedRichMessage'][] = new Noop('Do not store file references from translated rich messages');
+        $locations['messages.composedRichMessageWithAI'][] = new Noop('Do not store file references from composed rich messages');
+
+        foreach (['updateChatUserTyping', 'updateChannelUserTyping', 'updateUserTyping'] as $type) {
+            $locations[$type][] = new Noop('Documents encountered in rich text message live drafts are ephemeral');
+        }
         $locations['messages.getCustomEmojiDocuments'][] = new Noop("Do not store file references in this context");
 
         $locations['account.uploadTheme'][] = new Noop('A freshly uploaded theme file will obtain a context only once it is created via account.createTheme');
@@ -534,8 +577,7 @@ final class FileRefGenerator
         $pre = [
             'fileSourceMessage' => [
                 'flags' => '#',
-                'from_scheduled' => 'flags.0?true',
-                'quick_reply_shortcut_id' => 'flags.1?int',
+                'quick_reply_shortcut_id' => 'flags.0?int',
                 'peer' => 'long',
                 'id' => 'int',
             ],
@@ -702,7 +744,7 @@ final class FileRefGenerator
                             // The above are covered by the GetInputStickerSet document context
 
                             || $top === 'updateMessagePoll'
-                            // Tmp
+                            // It's okay
                         ) {
                             return;
                         }

@@ -8,7 +8,7 @@ namespace Shabbat\Runtime;
 
 final class PatchSet
 {
-    private const LIBRARIES = ['madelineproto', 'madelineproto-geopoint', 'madelineproto-formatted-date', 'madelineproto-fresh-peer', 'broadcastmanager'];
+    private const LIBRARIES = ['madelineproto-fresh-peer', 'broadcastmanager'];
 
     /** @return array<string,string> */
     public static function process(string $root, bool $apply, ?string $vendor = null): array

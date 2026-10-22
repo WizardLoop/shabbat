@@ -89,6 +89,7 @@ final class TemplateRenderer
             ) {
                 throw new \InvalidArgumentException('Entity lies outside template text.');
             }
+            $entity = DateEntity::normalize($entity);
             $start = self::mapPosition($entity['offset'], $replacements, false);
             $end = self::mapPosition($entity['offset'] + $entity['length'], $replacements, true);
             if ($end > $start) {
@@ -164,39 +165,8 @@ final class TemplateRenderer
         if (!array_is_list($rows) || count($rows) > 20) {
             throw new \InvalidArgumentException('Invalid keyboard rows.');
         }
-        $total = 0;
-        foreach ($rows as $row) {
-            if (!is_array($row) || !array_is_list($row) || count($row) > 8) {
-                throw new \InvalidArgumentException('Invalid keyboard row.');
-            }
-            foreach ($row as $button) {
-                if (++$total > 100 || !is_array($button) || !is_string($button['text'] ?? null) || trim($button['text']) === '' || mb_strlen($button['text']) > 128) {
-                    throw new \InvalidArgumentException('Invalid button.');
-                }
-                $actions = 0;
-                foreach (['url','callback_data','data','copy_text','switch_inline_query','switch_inline_query_current_chat','query'] as $action) {
-                    if (array_key_exists($action, $button)) {
-                        $actions++;
-                    }
-                }
-                if ($actions !== 1) {
-                    throw new \InvalidArgumentException('A button needs exactly one supported action.');
-                }
-                if (
-                    isset($button['url']) && (!is_string($button['url']) || !in_array(parse_url($button['url'], PHP_URL_SCHEME), ['https','tg'], true)
-                    || preg_match('/[\r\n\x00]/', $button['url']))
-                ) {
-                    throw new \InvalidArgumentException('Invalid button URL.');
-                }
-                foreach (['callback_data','data'] as $field) {
-                    if (isset($button[$field]) && (!is_string($button[$field]) || strlen($button[$field]) < 1 || strlen($button[$field]) > 64)) {
-                        throw new \InvalidArgumentException('Callback must be 1..64 bytes.');
-                    }
-                }
-                if (isset($button['style'])) {
-                    self::nativeStyle($button['style']);
-                }
-            }
-        }
+        // Validation uses the same action/context contract as the native transport.
+        // The caller retains its exact persisted representation and rich metadata.
+        \Shabbat\Telegram\KeyboardMarkup::normalize(['inline_keyboard' => $rows]);
     }
 }

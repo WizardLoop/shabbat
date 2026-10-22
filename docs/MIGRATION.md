@@ -1,12 +1,8 @@
-For the running legacy installation at `/root/shabat`, follow the complete [production upgrade procedure](PRODUCTION_UPGRADE.md), including stopped backups, exact group verification and permission recovery.
+# Database upgrade and legacy import
 
-# Dev.8 to dev.9
+Use the [production runbook](PRODUCTION_UPGRADE.md) ([עברית](PRODUCTION_UPGRADE_HE.md)) to verify whether the real installation is at /root/shabbat or /root/shabat, back up stopped state and preserve the session. Existing 3.0 SQLite deployments keep their data and run the migration/schema gate; they do not run legacy import again. Version 3.1.0 adds no SQL migration and retains migrations 001–016 unchanged.
 
-Stop all writers and use the verified backup/migrate sequence in [test deployment](SERVER_TEST_DEPLOYMENT.md). Migration 016 adds dispatch timestamps and indexes without changing prior migration files, permission snapshots or job payload/random IDs. Existing attempts that might have reached Telegram are conservatively marked uncertain. This can suppress additional Tefillin messages on the upgrade day rather than duplicate an unknown old delivery. Existing older unverified permission snapshots retain the dev.8 administrator-review requirement.
-
-Rebuild the image for the reviewed BroadcastManager lifecycle patch. Do not modify a live vendor tree or remove data/session volumes. See [runtime changes and retention](DEV9_DELIVERY_SAFETY.md). Historical migration notes follow.
-
-# Migration from the file-based bot
+## File-based legacy import
 
 Keep the old bot stopped during explicit import and cutover. Do not run old and new writers together or delete the old MadelineProto session. These commands are operator instructions; development tests use isolated fixtures only.
 
@@ -14,8 +10,22 @@ Keep the old bot stopped during explicit import and cutover. Do not run old and 
 2. Initialize a new application database: `php bin/migrate.php --db=/path/to/shabbat.sqlite --writers-stopped`. For an existing application DB supply an existing `--backup-dir=/path/to/backups`; it is backed up and verified before any migration.
 3. Inspect: `php bin/import-legacy.php --db=/path/to/shabbat.sqlite --legacy=/path/to/old-bot --dry-run`. The source can be the bot root or its `data` directory. With no destination DB, dry-run uses an in-memory database and does not create application records.
 4. Compare report counts, templates, original rights, invalid JSON and recovery warnings with sampled legacy records.
-5. Apply: `php bin/import-legacy.php --db=/path/to/shabbat.sqlite --legacy=/path/to/old-bot --apply --writers-stopped --backup-dir=/path/to/backups`.
-6. Run health checks, test backup/restore on a separate path and verify a staging group before starting the new bot.
+5. Save and review the private dry-run JSON, then apply with `php bin/import-legacy.php --db=/path/to/shabbat.sqlite --legacy=/path/to/old-bot --apply --writers-stopped --backup-dir=/path/to/backups --expect-report=/private/path/import-preview.json`.
+6. Check schema/integrity, compare the import result and rehearse restore on a separate path before startup. Live health additionally requires recent scheduler heartbeats; run it after authorized startup.
+
+
+## Preview, comparison and repeatability
+
+Dry-run and apply parse the same group and personal templates. Reports are private: they contain group/user identifiers and source-derived preferences.
+
+- `report_version: 1` identifies the schema; a reviewed preview has `dry_run: true`.
+- `source_sha256`, `destination_sha256` and `plan_sha256` bind the source, affected destination records and planned import. `--expect-report=PATH` refuses a changed source/target/plan before application records are written.
+- `duplicates` records canonical group/audience duplicates. `orphan_group_directories` lists directories not present in the subscription list; they are reported for review, never silently re-subscribed. `group_list_present` distinguishes a missing subscription list.
+- Group comparisons include `source_settings` and `different_settings`. Template/draft comparisons include source/destination value hashes and `matches_source`. Existing destination rows are preserved even when they differ.
+- Successful apply returns `verification.status = passed`, checked/inserted/preserved record counts, integrity and foreign-key results. The CLI also reports the verified `pre_import_backup` path, SHA-256 and integrity.
+- The import is additive but not one all-or-nothing transaction. On failure keep every writer stopped, retain the report and state, inspect or restore the verified pre-import backup, then create a fresh preview before retrying.
+
+To include a genuinely active directory-only group, reconcile it against the operator's subscription evidence in a separate reviewed import copy. Preserve the original snapshot and regenerate the preview; appending every old directory would also reactivate stale groups. Unsupported/malformed files and local extensions require explicit review.
 
 The startup compatibility bridge reads only `data/DBgroups.txt` from `LEGACY_DATA_PATH` and adds missing subscribed group records. Existing groups therefore use `/settings` without re-registering using `/add`. It does not migrate schema, overwrite edited preferences, remove groups or restore permissions. Explicit maintenance import is still required to review templates, drafts, snapshots and old lock state.
 
@@ -41,10 +51,8 @@ Migration 005 creates `known_broadcast_peers` independently of Shabbat subscript
 
 Run the numbered migration only during stopped-writer maintenance. It adds group-only lock_block_flags (default21, including send_reactions/edit_rank), two holy-message cleanup switches and tefillin_delete_previous, all cleanup switches defaultfalse. It preserves original lock snapshots while keeping an in-flight previous applied mask, and adds durable deletion work plus confirmed tefillin message pointers. Existing group zmanim rich designs are copied once into independent times_alert templates while their original rows/IDs remain. Sent reminders receive separate replayable bookkeeping; no previously sent job is returned to pending to trigger deletion. The earlier seven migration checksums remain immutable. SQLite backups include these tables; restore the full schema/data together.
 
-## Dev.6 to dev.7
+## Older database and permission state
 
-Stop every writer and run the documented verified backup/migration command before starting dev.7. It adds **013_permission_recovery.sql** and **014_diagnostic_panels.sql** while preserving the exact checksums of migrations 001-012, group settings, original permission snapshots, pending conflicts and Telegram session data. The migration does not itself change Telegram permissions or resolve a conflict. Recovery happens only through the reviewed runtime rules or an authorized group-admin confirmation. See [test deployment](SERVER_TEST_DEPLOYMENT.md) and [permission recovery](PERMISSION_RECOVERY.md).
+Migrations 013–015 add recovery evidence, diagnostics and snapshot provenance without changing the earlier migration bytes. Older unresolved snapshots remain unverified and require the [administrator recovery procedure](PERMISSION_RECOVERY.md); a matching checksum alone cannot authorize restoration.
 
-## Dev.6/dev.7 to dev.8
-
-Dev.8 adds migration 015 for snapshot provenance. The first 14 migration files remain unchanged; upgrading dev.6 applies 013-015, while dev.7 applies 015. Stop all writers, preserve the same database/session volumes and run the verified backup/migration command before startup. Migration does not send Telegram requests or alter saved rights. An unresolved older snapshot requires explicit administrator resolution and cannot be automatically restored, even if its checksum is correct. Completed cycles can capture a fresh verified baseline. See the [affected-group procedure](DEV8_PERMISSIONS.md) and [current deployment commands](SERVER_TEST_DEPLOYMENT.md).
+Migration 016 adds dispatch timestamps/indexes and conservatively marks older delivery attempts that might have reached Telegram as uncertain. This can suppress an additional reminder rather than duplicate an unknown old delivery. The independent scheduler and retention behavior are described in [delivery safety](DELIVERY_SAFETY.md). Never delete unresolved recovery or delivery evidence to bypass an upgrade check.

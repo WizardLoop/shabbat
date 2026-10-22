@@ -9,12 +9,13 @@ final class Permissions
 {
     /** All boolean fields of chatBannedRights in the locked Telegram layer. */
     public const FLAGS = ['view_messages','send_messages','send_media','send_stickers','send_gifs','send_games','send_inline','embed_links','send_polls',
-        'change_info','invite_users','pin_messages','manage_topics','send_photos','send_videos','send_roundvideos','send_audios','send_voices','send_docs','send_plain','edit_rank','send_reactions'];
+        'change_info','invite_users','pin_messages','manage_topics','send_photos','send_videos','send_roundvideos','send_audios','send_voices','send_docs','send_plain','edit_rank','send_reactions','manage_linked_peers'];
     public const DEFAULT_BLOCK_FLAGS = ['send_messages','send_media','send_stickers','send_gifs','send_games','send_inline','embed_links','send_polls',
         'change_info','invite_users','pin_messages','manage_topics','send_photos','send_videos','send_roundvideos','send_audios','send_voices','send_docs','send_plain','edit_rank','send_reactions'];
     public const BLOCK = self::DEFAULT_BLOCK_FLAGS;
     /** Telegram rejects view_messages for global default permissions. */
-    public const BLOCK_FLAGS = self::DEFAULT_BLOCK_FLAGS;
+    // New layer capabilities are opt-in; existing/default masks retain their exact meaning.
+    public const BLOCK_FLAGS = [...self::DEFAULT_BLOCK_FLAGS, 'manage_linked_peers'];
     /** Legacy aggregate bits are redundant only when every granular bit is explicit. */
     private const MEDIA_FLAGS = ['send_photos','send_videos','send_roundvideos','send_audios','send_voices','send_docs'];
     private const MESSAGE_FLAGS = [...self::MEDIA_FLAGS,'send_plain','send_stickers','send_gifs','send_games','send_inline','embed_links','send_polls'];

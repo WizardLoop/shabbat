@@ -28,16 +28,16 @@ final class PatchInstallTest extends TestCase
     {
         $this->root = dirname(__DIR__);
         $this->fixture = sys_get_temp_dir() . '/shabbat-patch-' . bin2hex(random_bytes(8));
-        $this->target = $this->fixture . '/danog/madelineproto/src/Loop/Update/UpdateLoop.php';
+        $this->target = $this->fixture . '/danog/madelineproto/src/MTProtoTools/PeerHandler.php';
         mkdir(dirname($this->target), 0700, true);
         mkdir($this->fixture . '/composer');
-        copy($this->root . '/patches/madelineproto/baseline/UpdateLoop.php', $this->target);
-        $this->installed('8.7.0');
+        copy($this->root . '/patches/madelineproto-fresh-peer/baseline/PeerHandler.php', $this->target);
+        $this->installed('8.11.10');
     }
 
     private function installed(string $version): void
     {
-        file_put_contents($this->fixture . '/composer/installed.json', json_encode(['packages' => [['name' => 'danog/madelineproto', 'version' => $version, 'source' => ['reference' => '7b99dd0f2d964a492c377912ffce9f5ce61aa9ed']]]], JSON_THROW_ON_ERROR));
+        file_put_contents($this->fixture . '/composer/installed.json', json_encode(['packages' => [['name' => 'danog/madelineproto', 'version' => $version, 'source' => ['reference' => '49d3d8460257c7bfb1a7e12708e1bfdd59e898c1']]]], JSON_THROW_ON_ERROR));
     }
 
     protected function tearDown(): void
@@ -59,7 +59,7 @@ final class PatchInstallTest extends TestCase
 
     public function testUnknownManifestModeIsRejected(): void
     {
-        $data = json_decode((string) file_get_contents($this->root . '/patches/madelineproto/manifest.json'), true, flags: JSON_THROW_ON_ERROR);
+        $data = json_decode((string) file_get_contents($this->root . '/patches/madelineproto-fresh-peer/manifest.json'), true, flags: JSON_THROW_ON_ERROR);
         $data['approved'][0]['mode'] = 'unreviewed-mode';
         $manifest = $this->fixture . '/test-manifest.json';
         file_put_contents($manifest, json_encode($data, JSON_THROW_ON_ERROR));
@@ -70,9 +70,9 @@ final class PatchInstallTest extends TestCase
 
     public function testTamperedCorrespondingSourceBaselinePreventsVendorMutation(): void
     {
-        $data = json_decode((string) file_get_contents($this->root . '/patches/madelineproto/manifest.json'), true, flags: JSON_THROW_ON_ERROR);
+        $data = json_decode((string) file_get_contents($this->root . '/patches/madelineproto-fresh-peer/manifest.json'), true, flags: JSON_THROW_ON_ERROR);
         mkdir($this->fixture . '/baseline');
-        file_put_contents($this->fixture . '/baseline/UpdateLoop.php', (string) file_get_contents($this->target) . "\n");
+        file_put_contents($this->fixture . '/baseline/PeerHandler.php', (string) file_get_contents($this->target) . "\n");
         $manifest = $this->fixture . '/test-manifest.json';
         file_put_contents($manifest, json_encode($data, JSON_THROW_ON_ERROR));
         $before = file_get_contents($this->target);
@@ -126,7 +126,7 @@ final class PatchInstallTest extends TestCase
     {
         $manager = $this->manager();
         $manager->process(true);
-        file_put_contents($this->target, str_replace('use Amp\\CancelledException;' . "\n", '', (string) file_get_contents($this->target)));
+        file_put_contents($this->target, str_replace('_shabbat_fresh_full_peer_v1', '_partial', (string) file_get_contents($this->target)));
         $this->expectException(RuntimeException::class);
         $manager->process(true);
     }
@@ -173,10 +173,10 @@ final class PatchInstallTest extends TestCase
     public function testReviewedOfficialModeIsNoOp(): void
     {
         $manifest = $this->fixture . '/test-manifest.json';
-        file_put_contents($manifest, json_encode(['approved' => [['version' => '8.7.0', 'commit' => '7b99dd0f2d964a492c377912ffce9f5ce61aa9ed', 'mode' => 'official', 'sha256' => hash_file('sha256', $this->target)]]], JSON_THROW_ON_ERROR));
+        file_put_contents($manifest, json_encode(['approved' => [['version' => '8.11.10', 'commit' => '49d3d8460257c7bfb1a7e12708e1bfdd59e898c1', 'mode' => 'official', 'sha256' => hash_file('sha256', $this->target)]]], JSON_THROW_ON_ERROR));
         $before = file_get_contents($this->target);
         self::assertSame('official-verified', ($this->manager($manifest))->process(true));
         self::assertSame($before, file_get_contents($this->target));
-        // Fixture exercises the future manifest path. Current release is not official-fixed.
+        // Fixture exercises the future manifest path. Active fresh-peer compatibility still requires the reviewed patch.
     }
 }

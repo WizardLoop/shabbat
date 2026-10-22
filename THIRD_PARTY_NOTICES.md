@@ -1,21 +1,22 @@
 # Third-party notices
 
-WizardLoop Shabbat **3.0.0** is distributed as an **AGPL-3.0-only** application. Dependency, historical-source and data licenses retain their own scope. The full application license is in [LICENSE](LICENSE); the [licensing guide](docs/LICENSING.md) explains the source offer. Exact locked versions, sources, license paths and findings are recorded in the [dependency inventory](docs/dependencies.json).
+WizardLoop Shabbat **3.1.0** uses **AGPL-3.0-only** for the combined application. Dependencies, historical source and data retain their own grants and notices. The complete application license is in [LICENSE](LICENSE); exact versions, source revisions, license files and findings are in the [dependency inventory](docs/dependencies.json).
 
 ## Code and tools
 
-| Component | Source and license | Attribution and local changes |
+| Component | Source and license evidence | Attribution and local changes |
 |---|---|---|
-| Original WizardLoop Shabbat | [WizardLoop/shabbat](https://github.com/WizardLoop/shabbat), historical MIT | Copyright (c) 2024 WizardLoop. The complete original grant is retained in [SHABBAT-LEGACY-MIT.txt](LICENSES/SHABBAT-LEGACY-MIT.txt); earlier grants remain effective. |
-| MadelineProto 8.7.0 | [Pinned source](https://github.com/danog/MadelineProto/tree/7b99dd0f2d964a492c377912ffce9f5ce61aa9ed), package metadata AGPL-3.0-only | Preserve its distributed license and copyright headers. Four local compatibility patches cover update-loop cancellation, fractional coordinates, formatted-date entities and fresh full-peer response evidence. |
-| WizardLoop BroadcastManager 3.2.2 | [Pinned source](https://github.com/WizardLoop/BroadcastManager/tree/f2792a383416b66bb68e55f09414563e540538d6), AGPL-3.0-only | Preserve WizardLoop notices. The local patch adds presentation, message-transport, authorization, cancellation and joined-worker lifecycle hooks. |
-| Amp and Revolt | [Amp](https://github.com/amphp) and [Revolt](https://github.com/revoltphp/event-loop), MIT | Distributed author/copyright notices remain in their packages. Exact direct and transitive versions are in the inventory. |
-| Development tools | PHPUnit and PHP_CodeSniffer: BSD-3-Clause; PHPStan: MIT | Locked tool and transitive-package notices are inventoried separately from runtime dependencies. The runtime corresponding-source archive does not bundle the development tools. |
-| SQLite | [SQLite public-domain dedication](https://sqlite.org/copyright.html) | External PHP-loaded runtime library. The Dockerfile identifies the reviewed source version and checksum; SQLite is not relicensed as application code. |
+| Original WizardLoop Shabbat | [WizardLoop/shabbat](https://github.com/WizardLoop/shabbat), historical MIT | Copyright (c) 2024 WizardLoop. The original [MIT grant](LICENSES/SHABBAT-LEGACY-MIT.txt) remains effective. |
+| MadelineProto 8.11.10 | [Pinned source](https://github.com/danog/MadelineProto/tree/49d3d8460257c7bfb1a7e12708e1bfdd59e898c1), metadata AGPL-3.0-only; source headers version 3 or later | Preserve original notices. One local PeerHandler patch exposes fresh full-peer response evidence. Official UpdateLoop, GeoPoint and FormattedDate source replaces those former local patches. |
+| WizardLoop BroadcastManager 3.2.2 | [Pinned source](https://github.com/WizardLoop/BroadcastManager/tree/f2792a383416b66bb68e55f09414563e540538d6), AGPL-3.0-only | Preserve WizardLoop notices. The local patch supplies presentation, transport, authorization, cancellation and joined-worker lifecycle hooks. |
+| Amp and Revolt | [Amp](https://github.com/amphp), [Revolt](https://github.com/revoltphp/event-loop), MIT | Original package notices remain attached; Windows helper source is supplied separately with its MIT license. |
+| PHP RTC components | [danog repositories](https://github.com/danog), exact pins in the inventory | Most declare BSD-3-Clause. **php-rtc-av declares MIT in metadata but distributes a BSD-3-Clause LICENSE and BSD source headers.** Both are preserved; the MIT declaration is not confirmed by its distributed license. Optional FFmpeg/native libraries are not included. |
+| Development tools | PHPUnit/PHP_CodeSniffer: BSD-3-Clause; PHPStan: MIT | All 26 development packages are inventoried separately and excluded from the runtime source collection. |
+| SQLite | [Public-domain dedication](https://sqlite.org/copyright.html) | External PHP-loaded library. Docker pins its source checksum; it is not relicensed as application code. |
 
-There are **five active patch sets**. Their original sources, approved intermediate sources, diffs, added source and SHA-256 manifests are preserved under [patches/](patches). [Technical provenance](docs/THIRD_PARTY_DETAILS.md) records exact identities and historical changes. Installation verifies them before startup; running vendor trees must not be changed.
+There are **two active patch sets**, with immutable baselines, reviewed outputs, diffs and SHA-256 manifests under [patches](patches). Installation applies and verifies them before startup. Do not modify a running vendor tree. [Technical provenance](docs/THIRD_PARTY_DETAILS.md) records their identities and the retirement of earlier patches. Using official SDK code does not establish that every shutdown regression is resolved.
 
-MadelineProto package metadata says `AGPL-3.0-only`, while retained source headers allow version 3 or later. The new formatted-date wrapper also grants `AGPL-3.0-or-later`. These grants are preserved; the combined application's policy uses version 3. The metadata/header difference remains a recorded finding.
+The source collection contains 83 locked runtime packages and pinned preferred-source supplements. It is not a complete operating-system/container source distribution or a claim of reproducible native binary rebuilding. [Licensing and archive scope](docs/LICENSING.md) records the boundaries and unresolved provenance evidence.
 
 ## Data and text
 
@@ -29,10 +30,10 @@ MadelineProto package metadata says `AGPL-3.0-only`, while retained source heade
 
 The complete [CC-BY-4.0](LICENSES/CC-BY-4.0.txt) and [CC-BY-SA-4.0](LICENSES/CC-BY-SA-4.0.txt) terms are retained unchanged. [Detailed resource provenance](docs/THIRD_PARTY_DETAILS.md#data-provenance) links the exact fixture records and Wikisource revisions. Traditional underlying liturgy is distinguished from the separately attributed transcription/editorial resource; no complete modern siddur is claimed.
 
-## References and unresolved evidence
+## References and historical evidence
 
-[JewishPulse](https://github.com/WizardLoop/JewishPulse/tree/d7b06eb1acb206543dcff35a7c14ebce4760b4e5), AGPL-3.0-only, informed the interface comparison and documentation structure. Its branding and hardcoded bot links are not used. The [feature comparison](docs/FEATURE_PARITY.md) describes the reference relationship.
+[JewishPulse](https://github.com/WizardLoop/JewishPulse/tree/d7b06eb1acb206543dcff35a7c14ebce4760b4e5), AGPL-3.0-only, informed the interface comparison and documentation organization. Its branding and hardcoded bot links are not used; this is a historical reference relationship.
 
 No third-party graphic asset was added. Telegram standard emoji and button metadata are interface features. Provenance of an older remote thumbnail is unestablished; current inline results do not depend on it.
 
-Historical formatted-date reference exports had conflicting project declarations and no recovered standalone grant or Git history. Their hashes and findings are retained in [the provenance review](docs/MADELINE_FORMATTED_DATE.md); those original exports are not redistributed. On 2026-10-16, the project maintainer stated that they authored the retained historical UpdateLoop helper and explicitly authorized distribution under AGPL-3.0-only. The dated, hash-scoped attestation is recorded in [its manifest](patches/madelineproto/manifest.json); the original helper bytes remain unchanged. This records the maintainer's statement, not an independent legal certification.
+The former local UpdateLoop helper, GeoPoint patch and independently authored formatted-date wrapper are no longer shipped in this source tree. Earlier releases retain their historical notices and hash-scoped provenance. The maintainer's 2026-10-16 authorization of the historical UpdateLoop helper is limited to that exact prior helper; it does not change dependency grants. Historical formatted-date exports with conflicting project declarations were never redistributed. [Technical provenance](docs/THIRD_PARTY_DETAILS.md) retains their identifying hashes without treating them as active installation inputs.

@@ -6,14 +6,14 @@ declare(strict_types=1);
 
 namespace Shabbat\Telegram;
 
-/** Read-only diagnostic catalog from the locked Telegram layer 225 constructor. */
+/** Read-only diagnostic catalog from the locked Telegram layer 232 constructor. */
 final class AdminRights
 {
     public const FLAGS = [
         'change_info', 'post_messages', 'edit_messages', 'delete_messages',
         'ban_users', 'invite_users', 'pin_messages', 'add_admins', 'anonymous',
         'manage_call', 'other', 'manage_topics', 'post_stories', 'edit_stories',
-        'delete_stories', 'manage_direct_messages', 'manage_ranks',
+        'delete_stories', 'manage_direct_messages', 'manage_ranks', 'manage_linked_peers', 'manage_welcome_messages',
     ];
 
     public static function normalize(?array $rights): array

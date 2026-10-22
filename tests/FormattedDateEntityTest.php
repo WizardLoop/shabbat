@@ -15,6 +15,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Shabbat\Calendar\CalendarService;
 use Shabbat\Calendar\HebcalProvider;
+use Shabbat\Content\DateEntity;
 use Shabbat\Content\TemplateEditor;
 use Shabbat\Content\TemplateRenderer;
 use Shabbat\Runtime\Application;
@@ -77,10 +78,10 @@ final class FormattedDateEntityTest extends TestCase
         $raw = self::raw($mask);
         $entity = MessageEntity::fromRawEntity($raw);
         self::assertInstanceOf(FormattedDate::class, $entity);
-        self::assertSame($raw, $entity->toMTProto());
+        self::assertEquals($raw, $entity->toMTProto());
         self::assertSame(['type' => 'date_time', 'offset' => 2, 'length' => 8,
             'unix_time' => 1792000000, 'date_time_format' => $format], $entity->toBotAPI());
-        self::assertSame($raw, MessageEntity::fromRawEntity($entity->toBotAPI())->toMTProto());
+        self::assertEquals($raw, MessageEntity::fromRawEntity($entity->toBotAPI())->toMTProto());
         // Genuine locked decoder; schema-assembled wire uses native primitive int encoding.
         // TL::serializeParams needs a real API adapter and is deliberately not claimed here.
         $descriptor = self::$tl->getConstructors()->findByPredicate('messageEntityFormattedDate');
@@ -92,7 +93,7 @@ final class FormattedDateEntityTest extends TestCase
         foreach ($raw as $field => $value) {
             self::assertSame($value, $decoded[$field]);
         }
-        self::assertSame($raw, MessageEntity::fromRawEntity($decoded)->toMTProto());
+        self::assertEquals($raw, MessageEntity::fromRawEntity($decoded)->toMTProto());
     }
 
     public static function invalidMasks(): array
@@ -108,10 +109,15 @@ final class FormattedDateEntityTest extends TestCase
     }
 
     #[DataProvider('invalidMasks')]
-    public function testEveryContradictoryNativeFlagCombinationIsRejected(int $mask): void
+    public function testOfficialNativeFlagPrecedenceIsPreserved(int $mask): void
     {
-        $this->expectException(\InvalidArgumentException::class);
-        MessageEntity::fromRawEntity(self::raw($mask));
+        $raw = DateEntity::normalize(self::raw($mask));
+        $entity = MessageEntity::fromRawEntity($raw);
+        self::assertEquals($raw, $entity->toMTProto());
+        $format = ($mask & 1) !== 0 ? 'r' : (($mask & 32) !== 0 ? 'w' : '')
+            . (($mask & 16) !== 0 ? 'D' : (($mask & 8) !== 0 ? 'd' : ''))
+            . (($mask & 4) !== 0 ? 'T' : (($mask & 2) !== 0 ? 't' : ''));
+        self::assertSame($format, $entity->toBotAPI()['date_time_format']);
     }
 
     public static function invalidNativeFields(): array
@@ -127,14 +133,13 @@ final class FormattedDateEntityTest extends TestCase
         $raw = self::raw(0);
         $raw[$field] = $value;
         $this->expectException(\InvalidArgumentException::class);
-        MessageEntity::fromRawEntity($raw);
+        (new TemplateRenderer())->renderPayload(['text' => '😀12345678', 'entities' => [$raw]], []);
     }
 
     public static function invalidBotApiFields(): array
     {
         return [['unix_time', '1792000000'], ['unix_time', 1792000000.5], ['offset', '2'], ['length', false],
-            ['date_time_format', 'rw'], ['date_time_format', 'td'], ['date_time_format', 'dD'],
-            ['date_time_format', 'tT'], ['date_time_format', 'W'], ['date_time_format', null], ['date_time_format', []]];
+            ['date_time_format', 'rw'], ['date_time_format', 'x'], ['date_time_format', null], ['date_time_format', []]];
     }
 
     #[DataProvider('invalidBotApiFields')]
@@ -143,17 +148,27 @@ final class FormattedDateEntityTest extends TestCase
         $raw = ['type' => 'date_time', 'offset' => 2, 'length' => 8, 'unix_time' => 1792000000, 'date_time_format' => ''];
         $raw[$field] = $value;
         $this->expectException(\InvalidArgumentException::class);
-        MessageEntity::fromRawEntity($raw);
+        (new TemplateRenderer())->renderPayload(['text' => '😀12345678', 'entities' => [$raw]], []);
+    }
+
+    public function testOfficialBotApiDateAliasesNormalizeAtTemplateBoundary(): void
+    {
+        foreach (['R' => 'r', 'W' => 'w', 'td' => 'dt', 'dD' => 'D', 'tT' => 'T'] as $format => $canonical) {
+            $entity = DateEntity::normalize(['type' => 'date_time', 'offset' => 0, 'length' => 4,
+                'unix_time' => 1792000000, 'date_time_format' => $format]);
+            self::assertSame('messageEntityFormattedDate', $entity['_']);
+            self::assertSame($canonical, MessageEntity::fromRawEntity($entity)->toBotAPI()['date_time_format']);
+        }
     }
 
     public function testOmittedFlagsEmptyFormatEpochAndReadonlyUtf16Fields(): void
     {
         $raw = ['_' => 'messageEntityFormattedDate', 'offset' => 2, 'length' => 4, 'date' => 0];
         $entity = MessageEntity::fromRawEntity($raw);
-        self::assertSame(self::raw(0, 2, 4, 0), $entity->toMTProto());
+        self::assertEquals(self::raw(0, 2, 4, 0), $entity->toMTProto());
         self::assertSame('', $entity->toBotAPI()['date_time_format']);
         $bot = ['type' => 'date_time', 'offset' => 2, 'length' => 4, 'unix_time' => 0];
-        self::assertSame(self::raw(0, 2, 4, 0), MessageEntity::fromRawEntity($bot)->toMTProto());
+        self::assertEquals(self::raw(0, 2, 4, 0), MessageEntity::fromRawEntity($bot)->toMTProto());
         $reflection = new \ReflectionObject($entity);
         foreach (['offset', 'length', 'date', 'relative', 'shortTime', 'longTime', 'shortDate', 'longDate', 'dayOfWeek'] as $field) {
             self::assertTrue($reflection->getProperty($field)->isReadOnly());
@@ -161,21 +176,20 @@ final class FormattedDateEntityTest extends TestCase
         self::assertSame(2, $entity->offset);
     }
 
-    public function testActualStrToolsPreservesTextWithoutInventingDateHtmlTags(): void
+    public function testActualStrToolsPreservesOfficialDateHtmlAndText(): void
     {
         foreach ([false, true] as $allowTags) {
-            self::assertSame('😀date&lt;&gt;', StrTools::entitiesToHtml('😀date<>', [self::raw(50, 2, 4)], $allowTags));
-            self::assertSame('😀<b>date</b>&lt;&gt;', StrTools::entitiesToHtml('😀date<>', [
+            self::assertSame($allowTags ? '😀<tg-time unix="1792000000" format="wDt">date</tg-time>&lt;&gt;' : '😀date&lt;&gt;', StrTools::entitiesToHtml('😀date<>', [self::raw(50, 2, 4)], $allowTags));
+            self::assertSame($allowTags ? '😀<tg-time unix="1792000000" format="wDt"><b>date</b></tg-time>&lt;&gt;' : '😀<b>date</b>&lt;&gt;', StrTools::entitiesToHtml('😀date<>', [
                 self::raw(50, 2, 4), ['_' => 'messageEntityBold', 'offset' => 2, 'length' => 4],
             ], $allowTags));
         }
     }
 
-    public function testUnknownNativeEntityStillFailsAtTheOfficialFactory(): void
+    public function testOfficialUnknownNativeEntityPreservesForwardCompatiblePayload(): void
     {
-        $this->expectException(\AssertionError::class);
-        $this->expectExceptionMessage('Unknown entity type: messageEntityDeliberatelyUnknown');
-        MessageEntity::fromRawEntity(['_' => 'messageEntityDeliberatelyUnknown', 'offset' => 0, 'length' => 1]);
+        $raw = ['_' => 'messageEntityDeliberatelyUnknown', 'offset' => 0, 'length' => 1];
+        self::assertSame($raw, MessageEntity::fromRawEntity($raw)->toMTProto());
     }
 
     public function testActualTemplateCaptureStorageUtf16ExpansionAndNativeSendRetainDateFields(): void
@@ -192,11 +206,11 @@ final class FormattedDateEntityTest extends TestCase
         $editor = new TemplateEditor($app);
         self::assertTrue($editor->callback(['user_id' => '1', 'private' => true, 'query_id' => '42', 'message_id' => 900, 'data' => 'v3:templates:-1001']));
         $messages = array_values(array_filter($transport->calls, static fn (array $call): bool => $call[0] === 'messages.editMessage'
-            && isset($call[1]['reply_markup']['rows'][0]['buttons'][0]['data'])));
+            && isset($call[1]['reply_markup']['rows'][0]['buttons'][0]['type']['data'])));
         self::assertNotEmpty($messages);
         self::assertSame('1', $messages[array_key_last($messages)][1]['peer']);
         self::assertSame(900, $messages[array_key_last($messages)][1]['id']);
-        $token = substr($messages[array_key_last($messages)][1]['reply_markup']['rows'][0]['buttons'][0]['data'], 9);
+        $token = substr($messages[array_key_last($messages)][1]['reply_markup']['rows'][0]['buttons'][0]['type']['data'], 9);
         $prefix = '/template ' . $token . "\n";
         $prefixLength = intdiv(strlen(mb_convert_encoding($prefix, 'UTF-16LE', 'UTF-8')), 2);
         $captured = MessageEntity::fromRawEntity(self::raw(50, $prefixLength + 2));
@@ -204,23 +218,23 @@ final class FormattedDateEntityTest extends TestCase
             'text' => $prefix . '😀{{date}}', 'entities' => [$captured->toMTProto()]]));
         $stored = $app->templates->get('-1001', 'close');
         self::assertNotNull($stored);
-        self::assertSame([self::raw(50)], $stored['entities']);
+        self::assertEquals([self::raw(50)], $stored['entities']);
         $rendered = (new TemplateRenderer())->renderPayload($stored, ['date' => '2026-10-14']);
         self::assertSame('😀2026-10-14', $rendered['text']);
-        self::assertSame([self::raw(50, 2, 10)], $rendered['entities']);
+        self::assertEquals([self::raw(50, 2, 10)], $rendered['entities']);
         $before = count($transport->calls);
         $gateway->send('-1001', $rendered, '78901234');
         self::assertCount($before + 1, $transport->calls);
         $sent = $transport->calls[array_key_last($transport->calls)];
         self::assertSame('messages.sendMessage', $sent[0]);
-        self::assertSame([self::raw(50, 2, 10)], $sent[1]['entities']);
+        self::assertEquals([self::raw(50, 2, 10)], $sent[1]['entities']);
         self::assertArrayNotHasKey('parse_mode', $sent[1]);
         self::assertSame(78901234, $sent[1]['random_id']);
         // Reopen the saved template and preview by editing the same private bot panel.
         self::assertTrue($editor->callback(['user_id' => '1', 'private' => true, 'query_id' => '43', 'message_id' => 900, 'data' => 'v3:templates:-1001:close']));
         $panels = array_values(array_filter($transport->calls, static fn(array $call): bool => $call[0] === 'messages.editMessage'
-            && isset($call[1]['reply_markup']['rows'][0]['buttons'][0]['data'])));
-        $previewToken = substr($panels[array_key_last($panels)][1]['reply_markup']['rows'][0]['buttons'][0]['data'], 9);
+            && isset($call[1]['reply_markup']['rows'][0]['buttons'][0]['type']['data'])));
+        $previewToken = substr($panels[array_key_last($panels)][1]['reply_markup']['rows'][0]['buttons'][0]['type']['data'], 9);
         $newSendsBefore = count(array_filter($transport->calls, static fn(array $call): bool => in_array($call[0], ['messages.sendMessage', 'messages.sendMedia'], true)));
         self::assertTrue($editor->callback(['user_id' => '1', 'private' => true, 'query_id' => '44', 'message_id' => 900, 'data' => 'tpl:preview:' . $previewToken]));
         $edits = array_values(array_filter($transport->calls, static fn(array $call): bool => $call[0] === 'messages.editMessage'));
@@ -228,7 +242,7 @@ final class FormattedDateEntityTest extends TestCase
         self::assertSame('1', $preview['peer']);
         self::assertSame(900, $preview['id']);
         self::assertSame('😀2026-10-14', $preview['message']);
-        self::assertSame([self::raw(50, 2, 10)], $preview['entities']);
+        self::assertEquals([self::raw(50, 2, 10)], $preview['entities']);
         self::assertArrayNotHasKey('parse_mode', $preview);
         self::assertArrayNotHasKey('random_id', $preview);
         self::assertSame($newSendsBefore, count(array_filter($transport->calls, static fn(array $call): bool => in_array($call[0], ['messages.sendMessage', 'messages.sendMedia'], true))));

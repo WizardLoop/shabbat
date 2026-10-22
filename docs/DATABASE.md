@@ -1,4 +1,4 @@
-Current dev.9 runtime and migration changes: [delivery safety, independent scheduling, queue retention and verification limits](DEV9_DELIVERY_SAFETY.md). Historical release-specific numbers below apply to their named versions.
+Current runtime and migration rules: [delivery safety, independent scheduling, queue retention and verification limits](DELIVERY_SAFETY.md). Historical release-specific numbers below apply to their named versions.
 
 # Application database
 

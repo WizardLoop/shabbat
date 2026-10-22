@@ -89,7 +89,7 @@ final class CustomEmojiFallbackTest extends TestCase
         $button = $secondBody['reply_markup']['rows'][0]['buttons'][0];
         self::assertArrayNotHasKey('icon', $button['style']);
         self::assertTrue($button['style']['bg_primary']);
-        self::assertSame('https://example.org', $button['url']);
+        self::assertSame('https://example.org', $button['type']['url']);
         self::assertSame($original['text'], $payload['text']);
         self::assertSame($original['entities'], $payload['entities']);
         $this->operation($gateway, $kind);

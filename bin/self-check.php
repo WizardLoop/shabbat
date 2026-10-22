@@ -4,6 +4,13 @@ declare(strict_types=1);
 
 // SPDX-License-Identifier: AGPL-3.0-only
 $root = dirname(__DIR__);
+require_once $root . '/src/Runtime/PhpRuntime.php';
+try {
+    \Shabbat\Runtime\PhpRuntime::assertSupported();
+} catch (\RuntimeException $error) {
+    echo json_encode(['php' => PHP_VERSION, 'secrets_required' => false, 'failures' => [$error->getMessage()]], JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . "\n";
+    exit(1);
+}
 require_once $root . '/vendor/autoload.php';
 require_once $root . '/scripts/apply-patches.php';
 $failures = [];
@@ -12,9 +19,6 @@ foreach (['pdo_sqlite', 'mbstring', 'xml', 'dom', 'fileinfo', 'zlib'] as $extens
     if (!extension_loaded($extension)) {
         $failures[] = 'Missing PHP extension ' . $extension;
     }
-}
-if (PHP_INT_SIZE !== 8 || PHP_VERSION_ID < 80300 || PHP_VERSION_ID >= 80600) {
-    $failures[] = 'Supported platform is 64-bit PHP 8.3, 8.4 or 8.5.';
 }
 try {
     $pdo = new PDO('sqlite::memory:');
@@ -37,7 +41,7 @@ try {
 }
 try {
     $patches = \Shabbat\Runtime\PatchSet::process($root, false);
-    $patch = $patches['madelineproto'];
+    $patch = $patches['madelineproto-fresh-peer'];
 } catch (Throwable $error) {
     $patch = 'FAILED';
     $failures[] = $error->getMessage();

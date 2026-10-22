@@ -151,6 +151,12 @@ final class Runner
     /** @param class-string<\danog\MadelineProto\EventHandler> $handlerClass */
     public static function run(string $handlerClass, ?string $root = null): int
     {
+        try {
+            PhpRuntime::assertSupported();
+        } catch (\RuntimeException $error) {
+            fwrite(STDERR, $error->getMessage() . "\n");
+            return 1;
+        }
         $root ??= dirname(__DIR__, 2);
         $lock = null;
         $signals = [];
@@ -229,7 +235,7 @@ final class Runner
                 self::$handler = null;
                 self::$quiesce = null;
                 try {
-                    // Public @internal SDK method: pinned 8.7.0 contract is tested.
+                    // Public @internal SDK method: locked 8.11.10 contract is tested.
                     self::finalizeSession($lock, \danog\MadelineProto\API::finalize(...));
                 } catch (\Throwable $error) {
                     fwrite(STDERR, 'Session finalization failed: ' . get_class($error) . "\n");

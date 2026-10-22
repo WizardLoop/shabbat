@@ -235,11 +235,20 @@
             "abandoned": false
         },
         {
+            "name": "brick/math",
+            "direct-dependency": false,
+            "homepage": null,
+            "source": "https://github.com/brick/math/tree/1.0.0",
+            "version": "1.0.0",
+            "description": "Arbitrary-precision arithmetic library",
+            "abandoned": false
+        },
+        {
             "name": "danog/async-orm",
             "direct-dependency": false,
             "homepage": null,
-            "source": "https://github.com/danog/AsyncOrm/tree/1.1.4",
-            "version": "1.1.4",
+            "source": "https://github.com/danog/AsyncOrm/tree/1.1.6",
+            "version": "1.1.6",
             "description": "Async ORM based on AMPHP v3 and fibers.",
             "abandoned": false
         },
@@ -265,8 +274,8 @@
             "name": "danog/ipc",
             "direct-dependency": false,
             "homepage": "https://github.com/danog/ipc",
-            "source": "https://github.com/danog/ipc/tree/1.0.1",
-            "version": "1.0.1",
+            "source": "https://github.com/danog/ipc/tree/1.1.0",
+            "version": "1.1.0",
             "description": "IPC component for Amp.",
             "abandoned": false
         },
@@ -292,9 +301,180 @@
             "name": "danog/madelineproto",
             "direct-dependency": true,
             "homepage": "https://docs.madelineproto.xyz",
-            "source": "https://github.com/danog/MadelineProto/tree/8.7.0",
-            "version": "8.7.0",
+            "source": "https://github.com/danog/MadelineProto/tree/8.11.10",
+            "version": "8.11.10",
             "description": "Async PHP client API for the telegram MTProto protocol.",
+            "abandoned": false
+        },
+        {
+            "name": "danog/php-rtc-av",
+            "direct-dependency": false,
+            "homepage": "https://github.com/danog/php-rtc-av",
+            "source": "https://github.com/danog/php-rtc-av/tree/1.1.11",
+            "version": "1.1.11",
+            "description": "FFmpeg/libav FFI bindings for PHP media processing. MadelineProto's PHP 8.2+ fork uses lazy, optional FFI, strict ABI checks, and the modular danog/php-rtc stack.",
+            "abandoned": false
+        },
+        {
+            "name": "danog/php-rtc-codecs",
+            "direct-dependency": false,
+            "homepage": "https://github.com/danog/php-rtc-codecs",
+            "source": "https://github.com/danog/php-rtc-codecs/tree/1.1.19",
+            "version": "1.1.19",
+            "description": "WebRTC audio/video codec and RTP packetization utilities. MadelineProto's PHP 8.2+ fork adds optional transcoding FFI, VP9 packetization, and the modular danog/php-rtc stack.",
+            "abandoned": false
+        },
+        {
+            "name": "danog/php-rtc-datachannel",
+            "direct-dependency": false,
+            "homepage": "https://github.com/danog/php-rtc-datachannel",
+            "source": "https://github.com/danog/php-rtc-datachannel/tree/1.1.10",
+            "version": "1.1.10",
+            "description": "A PHP implementation of WebRTC's RTCDataChannel interface. MadelineProto's PHP 8.2+ fork is a Composer-compatible component of the modular danog/php-rtc stack.",
+            "abandoned": false
+        },
+        {
+            "name": "danog/php-rtc-dtls",
+            "direct-dependency": false,
+            "homepage": "https://github.com/danog/php-rtc-dtls",
+            "source": "https://github.com/danog/php-rtc-dtls/tree/2.0.20",
+            "version": "2.0.20",
+            "description": "Pure-PHP DTLS 1.2 for WebRTC, powered by phpseclib and Amp v3.",
+            "abandoned": false
+        },
+        {
+            "name": "danog/php-rtc-exception",
+            "direct-dependency": false,
+            "homepage": "https://github.com/danog/php-rtc-exception",
+            "source": "https://github.com/danog/php-rtc-exception/tree/1.1.10",
+            "version": "1.1.10",
+            "description": "Lightweight exceptions shared by the WebRTC components. MadelineProto's PHP 8.2+ fork is a Composer-compatible foundation of the modular danog/php-rtc stack.",
+            "abandoned": false
+        },
+        {
+            "name": "danog/php-rtc-ice",
+            "direct-dependency": false,
+            "homepage": "https://github.com/danog/php-rtc-ice",
+            "source": "https://github.com/danog/php-rtc-ice/tree/2.0.18",
+            "version": "2.0.18",
+            "description": "WebRTC ICE connectivity in PHP, ported to Amp v3 fibers and sockets. MadelineProto's PHP 8.2+ fork integrates the modular danog/php-rtc STUN, TURN, and mDNS stack.",
+            "abandoned": false
+        },
+        {
+            "name": "danog/php-rtc-mdns",
+            "direct-dependency": false,
+            "homepage": "https://github.com/danog/php-rtc-mdns",
+            "source": "https://github.com/danog/php-rtc-mdns/tree/1.1.12",
+            "version": "1.1.12",
+            "description": "An Amp v3 Multicast DNS resolver for WebRTC. MadelineProto's PHP 8.2+ fork is a Composer-compatible component of the modular danog/php-rtc stack.",
+            "abandoned": false
+        },
+        {
+            "name": "danog/php-rtc-mixin",
+            "direct-dependency": false,
+            "homepage": "https://github.com/danog/php-rtc-mixin",
+            "source": "https://github.com/danog/php-rtc-mixin/tree/2.0.9",
+            "version": "2.0.9",
+            "description": "Common PHP classes and traits for WebRTC components. MadelineProto's PHP 8.2+ fork is a Composer-compatible foundation of the modular danog/php-rtc stack.",
+            "abandoned": false
+        },
+        {
+            "name": "danog/php-rtc-ntp",
+            "direct-dependency": false,
+            "homepage": "https://github.com/danog/php-rtc-ntp",
+            "source": "https://github.com/danog/php-rtc-ntp/tree/1.1.15",
+            "version": "1.1.15",
+            "description": "Pure-PHP NTP timestamp conversion for WebRTC. MadelineProto's PHP 8.2+ fork fixes unsigned 64-bit handling and integrates with the modular danog/php-rtc stack.",
+            "abandoned": false
+        },
+        {
+            "name": "danog/php-rtc-rtcp",
+            "direct-dependency": false,
+            "homepage": "https://github.com/danog/php-rtc-rtcp",
+            "source": "https://github.com/danog/php-rtc-rtcp/tree/1.1.11",
+            "version": "1.1.11",
+            "description": "Pure-PHP RTCP packet parsing and generation. MadelineProto's PHP 8.2+ fork fixes unsigned NTP handling and integrates with the modular danog/php-rtc stack.",
+            "abandoned": false
+        },
+        {
+            "name": "danog/php-rtc-rtp",
+            "direct-dependency": false,
+            "homepage": "https://github.com/danog/php-rtc-rtp",
+            "source": "https://github.com/danog/php-rtc-rtp/tree/2.0.23",
+            "version": "2.0.23",
+            "description": "RTP packet and media transport handling for PHP, ported to Amp v3. MadelineProto's PHP 8.2+ fork supports optional media FFI in the modular danog/php-rtc stack.",
+            "abandoned": false
+        },
+        {
+            "name": "danog/php-rtc-rtp-parameter",
+            "direct-dependency": false,
+            "homepage": "https://github.com/danog/php-rtc-rtp-parameter",
+            "source": "https://github.com/danog/php-rtc-rtp-parameter/tree/1.1.8",
+            "version": "1.1.8",
+            "description": "RTP codec, payload, SSRC, header-extension, and RTCP parameter objects. MadelineProto's PHP 8.2+ fork supports the modular danog/php-rtc stack.",
+            "abandoned": false
+        },
+        {
+            "name": "danog/php-rtc-sctp",
+            "direct-dependency": false,
+            "homepage": "https://github.com/danog/php-rtc-sctp",
+            "source": "https://github.com/danog/php-rtc-sctp/tree/2.0.14",
+            "version": "2.0.14",
+            "description": "SCTP for PHP WebRTC data channels, ported to Amp v3 fibers and timers. MadelineProto's PHP 8.2+ fork is part of the modular danog/php-rtc stack.",
+            "abandoned": false
+        },
+        {
+            "name": "danog/php-rtc-sdp",
+            "direct-dependency": false,
+            "homepage": "https://github.com/danog/php-rtc-sdp",
+            "source": "https://github.com/danog/php-rtc-sdp/tree/1.1.12",
+            "version": "1.1.12",
+            "description": "SDP parsing and generation for PHP WebRTC. MadelineProto's PHP 8.2+ fork is a Composer-compatible component of the modular danog/php-rtc stack.",
+            "abandoned": false
+        },
+        {
+            "name": "danog/php-rtc-srtp",
+            "direct-dependency": false,
+            "homepage": "https://github.com/danog/php-rtc-srtp",
+            "source": "https://github.com/danog/php-rtc-srtp/tree/1.1.16",
+            "version": "1.1.16",
+            "description": "Pure-PHP SRTP and SRTCP encryption using phpseclib, with AES-CM and AES-GCM profiles. MadelineProto's PHP 8.2+ fork removes the libsrtp/FFI dependency.",
+            "abandoned": false
+        },
+        {
+            "name": "danog/php-rtc-stats",
+            "direct-dependency": false,
+            "homepage": "https://github.com/danog/php-rtc-stats",
+            "source": "https://github.com/danog/php-rtc-stats/tree/1.1.7",
+            "version": "1.1.7",
+            "description": "WebRTC statistics objects for RTP, DTLS, ICE, and media metrics. MadelineProto's PHP 8.2+ fork supports the modular danog/php-rtc stack.",
+            "abandoned": false
+        },
+        {
+            "name": "danog/php-rtc-stun",
+            "direct-dependency": false,
+            "homepage": "https://github.com/danog/php-rtc-stun",
+            "source": "https://github.com/danog/php-rtc-stun/tree/2.0.18",
+            "version": "2.0.18",
+            "description": "STUN transactions and NAT discovery for PHP, ported to Amp v3 sockets and fibers. MadelineProto's PHP 8.2+ fork supports the modular danog/php-rtc stack.",
+            "abandoned": false
+        },
+        {
+            "name": "danog/php-rtc-turn",
+            "direct-dependency": false,
+            "homepage": "https://github.com/danog/php-rtc-turn",
+            "source": "https://github.com/danog/php-rtc-turn/tree/2.0.9",
+            "version": "2.0.9",
+            "description": "TURN relay transport for PHP WebRTC, ported to Amp v3 TCP, UDP, and fibers. MadelineProto's PHP 8.2+ fork supports the modular danog/php-rtc stack.",
+            "abandoned": false
+        },
+        {
+            "name": "danog/php-rtc-webrtc",
+            "direct-dependency": false,
+            "homepage": "https://github.com/danog/php-rtc-webrtc",
+            "source": "https://github.com/danog/php-rtc-webrtc/tree/2.0.20",
+            "version": "2.0.20",
+            "description": "A modular PHP WebRTC stack for PHP 8.2+, ported to Amp v3 with pure-PHP DTLS/SRTP and optional media FFI. Maintained by danog for MadelineProto.",
             "abandoned": false
         },
         {
@@ -310,8 +490,8 @@
             "name": "danog/telegram-entities",
             "direct-dependency": false,
             "homepage": null,
-            "source": "https://github.com/danog/telegram-entities/tree/1.0.5",
-            "version": "1.0.5",
+            "source": "https://github.com/danog/telegram-entities/tree/1.1.0",
+            "version": "1.1.0",
             "description": "A library to work with Telegram UTF-16 styled text entities.",
             "abandoned": false
         },
@@ -424,15 +604,6 @@
             "abandoned": false
         },
         {
-            "name": "paragonie/random_compat",
-            "direct-dependency": false,
-            "homepage": null,
-            "source": "https://github.com/paragonie/random_compat",
-            "version": "v9.99.100",
-            "description": "PHP 5.x polyfill for random_bytes() and random_int() from PHP 7",
-            "abandoned": false
-        },
-        {
             "name": "phar-io/manifest",
             "direct-dependency": false,
             "homepage": null,
@@ -453,9 +624,9 @@
         {
             "name": "phpseclib/phpseclib",
             "direct-dependency": false,
-            "homepage": "http://phpseclib.sourceforge.net",
-            "source": "https://github.com/phpseclib/phpseclib/tree/3.0.57",
-            "version": "3.0.57",
+            "homepage": "https://phpseclib.com/",
+            "source": "https://github.com/phpseclib/phpseclib/tree/4.0.2",
+            "version": "4.0.2",
             "description": "PHP Secure Communications Library - Pure-PHP implementations of RSA, AES, SSH2, SFTP, X.509 etc.",
             "abandoned": false
         },
@@ -556,6 +727,24 @@
             "source": "https://github.com/php-fig/log/tree/3.0.2",
             "version": "3.0.2",
             "description": "Common interface for logging libraries",
+            "abandoned": false
+        },
+        {
+            "name": "ramsey/collection",
+            "direct-dependency": false,
+            "homepage": null,
+            "source": "https://github.com/ramsey/collection/tree/2.1.1",
+            "version": "2.1.1",
+            "description": "A PHP library for representing and manipulating collections.",
+            "abandoned": false
+        },
+        {
+            "name": "ramsey/uuid",
+            "direct-dependency": false,
+            "homepage": null,
+            "source": "https://github.com/ramsey/uuid/tree/4.9.4",
+            "version": "4.9.4",
+            "description": "A PHP library for generating and working with universally unique identifiers (UUIDs).",
             "abandoned": false
         },
         {
@@ -703,6 +892,15 @@
             "abandoned": false
         },
         {
+            "name": "symfony/polyfill-iconv",
+            "direct-dependency": false,
+            "homepage": "https://symfony.com",
+            "source": "https://github.com/symfony/polyfill-iconv/tree/v1.43.0",
+            "version": "v1.43.0",
+            "description": "Symfony polyfill for the Iconv extension",
+            "abandoned": false
+        },
+        {
             "name": "symfony/polyfill-mbstring",
             "direct-dependency": false,
             "homepage": "https://symfony.com",
@@ -712,12 +910,48 @@
             "abandoned": false
         },
         {
+            "name": "symfony/polyfill-php82",
+            "direct-dependency": false,
+            "homepage": "https://symfony.com",
+            "source": "https://github.com/symfony/polyfill-php82/tree/v1.43.0",
+            "version": "v1.43.0",
+            "description": "Symfony polyfill backporting some PHP 8.2+ features to lower PHP versions",
+            "abandoned": false
+        },
+        {
             "name": "symfony/polyfill-php83",
             "direct-dependency": false,
             "homepage": "https://symfony.com",
             "source": "https://github.com/symfony/polyfill-php83/tree/v1.43.0",
             "version": "v1.43.0",
             "description": "Symfony polyfill backporting some PHP 8.3+ features to lower PHP versions",
+            "abandoned": false
+        },
+        {
+            "name": "symfony/polyfill-php84",
+            "direct-dependency": false,
+            "homepage": "https://symfony.com",
+            "source": "https://github.com/symfony/polyfill-php84/tree/v1.43.0",
+            "version": "v1.43.0",
+            "description": "Symfony polyfill backporting some PHP 8.4+ features to lower PHP versions",
+            "abandoned": false
+        },
+        {
+            "name": "symfony/polyfill-php85",
+            "direct-dependency": false,
+            "homepage": "https://symfony.com",
+            "source": "https://github.com/symfony/polyfill-php85/tree/v1.43.0",
+            "version": "v1.43.0",
+            "description": "Symfony polyfill backporting some PHP 8.5+ features to lower PHP versions",
+            "abandoned": false
+        },
+        {
+            "name": "symfony/polyfill-php86",
+            "direct-dependency": false,
+            "homepage": "https://symfony.com",
+            "source": "https://github.com/symfony/polyfill-php86/tree/v1.43.0",
+            "version": "v1.43.0",
+            "description": "Symfony polyfill backporting some PHP 8.6+ features to lower PHP versions",
             "abandoned": false
         },
         {
@@ -733,8 +967,8 @@
             "name": "webmozart/assert",
             "direct-dependency": false,
             "homepage": null,
-            "source": "https://github.com/webmozarts/assert/tree/1.12.1",
-            "version": "1.12.1",
+            "source": "https://github.com/webmozarts/assert/tree/2.5.0",
+            "version": "2.5.0",
             "description": "Assertions to validate method input/output with nice error messages.",
             "abandoned": false
         },

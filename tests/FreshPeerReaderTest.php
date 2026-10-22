@@ -33,18 +33,20 @@ final class FreshPeerReaderTest extends TestCase
         self::assertArrayNotHasKey('send_photos', $harness->cached['default_banned_rights']);
     }
 
-    public function testActualPinnedGetInfoCanReturnMinAfterItAlreadyRefreshedItsCache(): void
+    public function testOfficialMinPeerRefreshIsFixedButRawFullReplyStillRequired(): void
     {
         $harness = new NativePeerReadHarness();
         $harness->cached['min'] = true;
         unset($harness->cached['default_banned_rights']);
-        $oldResult = $harness->getInfo($harness->peer);
-        self::assertTrue($oldResult['Chat']['min']);
-        self::assertArrayNotHasKey('default_banned_rights', $oldResult['Chat']);
-        self::assertTrue($harness->cached['default_banned_rights']['invite_users']);
+        $result = $harness->getInfo($harness->peer);
+        self::assertFalse($result['Chat']['min'] ?? false);
+        self::assertTrue($result['Chat']['default_banned_rights']['invite_users']);
         self::assertSame(['channels.getChannels'], $harness->calls);
-        // Restart at the same minimal state, now exercise the production reader.
-        $harness->cached = $oldResult['Chat'];
+        self::assertArrayNotHasKey(FreshPeerReader::EVIDENCE_KEY, $result);
+        // getInfo now re-reads its min-peer cache. getFullInfo still needs the
+        // immediate full RPC reply to prove the origin of saved permissions.
+        $harness->cached['min'] = true;
+        unset($harness->cached['default_banned_rights']);
         $fresh = FreshPeerReader::read($harness->peer, Runner::settings(), $harness->getFullInfo(...));
         self::assertFalse($fresh['Chat']['min'] ?? false);
         self::assertTrue($fresh['Chat']['default_banned_rights']['invite_users']);

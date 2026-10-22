@@ -54,7 +54,7 @@ foreach (['omer-counts.json' => 'CC-BY-4.0', 'omer-counts-localized.json' => 'CC
     ];
 }
 $report['local_patches'] = [];
-foreach (['madelineproto', 'madelineproto-geopoint', 'madelineproto-formatted-date', 'madelineproto-fresh-peer', 'broadcastmanager'] as $library) {
+foreach (['madelineproto-fresh-peer', 'broadcastmanager'] as $library) {
     $relative = 'patches/' . $library . '/manifest.json';
     if (!is_file($root . '/' . $relative)) {
         throw new RuntimeException('Missing required local patch manifest: ' . $relative);
@@ -104,6 +104,9 @@ foreach (['packages' => 'runtime', 'packages-dev' => 'dev'] as $section => $scop
         }
         if (!$verified) {
             $findings[] = 'NOT VERIFIED: declared SPDX not confirmed against a distributed root license text; release review required.';
+        }
+        if ($name === 'danog/php-rtc-av') {
+            $findings[] = 'Metadata declares MIT, but distributed LICENSE and PHP source headers state BSD-3-Clause. Preserve both upstream texts; the MIT declaration is not confirmed by the distributed license.';
         }
         if ($name === 'danog/madelineproto') {
             $findings[] = 'Metadata says AGPL-3.0-only; source headers grant version 3 or later. Preserve upstream grant and report mismatch; application license remains AGPL-3.0-only.';

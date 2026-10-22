@@ -12,4 +12,4 @@ Follow [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). Explain the problem, resulting 
 
 Existing project contact: [@WizardLoop on Telegram](https://t.me/WizardLoop).
 
-Composer validation uses --strict --no-check-all because MadelineProto is intentionally pinned to the exact reviewed source version. This retains schema and lock validation; only generic version-range recommendations are omitted.
+MadelineProto uses a stable compatible range in composer.json. Deployment always uses composer.lock; dependency upgrades require fresh source review and patch manifests for the exact locked release. Never run composer update as a routine server upgrade. Composer validation retains strict schema and lock checks; --no-check-all suppresses generic version-range advice for reviewed dependency policies.

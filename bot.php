@@ -12,6 +12,14 @@ declare(strict_types=1);
  * @link wizardloop => https://wizardloop.t.me 
  */
 
+require_once __DIR__.'/src/Runtime/PhpRuntime.php';
+try {
+    \Shabbat\Runtime\PhpRuntime::assertSupported();
+} catch (\RuntimeException $error) {
+    fwrite(STDERR, $error->getMessage()."\n");
+    exit(1);
+}
+
 $autoload = __DIR__.'/vendor/autoload.php';
 if (!file_exists($autoload)) {
     die("Autoload file not found. Please run 'composer install'.");

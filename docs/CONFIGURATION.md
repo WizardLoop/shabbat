@@ -18,7 +18,7 @@ The bot reads the private project-root `.env` as raw INI; nonempty process envir
 | `GEONAMES_USERNAME` | Optional; required for remote city/ID/GPS timezone lookup | Operator-owned account with web services enabled. Manual coordinates plus an explicit IANA zone remain available without it. |
 | `GEONAMES_ENDPOINT` | `https://secure.geonames.org` | Validated HTTPS provider endpoint. Account/quota errors are provider failures, not empty city lists. |
 | `CUSTOM_EMOJI_ENABLED` | `1`; set `0` for basic emoji | Enables supplied custom icons. Definite eligibility errors also trigger the guarded basic-emoji fallback. Client/account acceptance still needs a live test. |
-| `SOURCE_URL` | Empty in unpublished example; required by deployment/source policy | HTTPS URL to the exact corresponding source of the deployed build. Missing/invalid values produce the source-offer warning; startup does not enforce this policy automatically. |
+| `SOURCE_URL` | Matching release URL in the public example; required by deployment/source policy | HTTPS URL to the exact corresponding source of the deployed build. Missing/invalid values produce the source-offer warning; startup does not enforce this policy automatically. |
 | `BUILD_COMMIT` | Optional process/Compose build metadata | Actual matching 40-hex commit for build identity. Not a bot credential and not a replacement for the source fingerprint of local modifications. |
 
 `BUILD_COMMIT` is intentionally not filled in `.env.example`. Do not enter the old repository commit as if it described new unpublished files. Compose's `environment` section overrides the data/session values from its `env_file`. Keep the same Compose project name on upgrades so named volumes remain attached.
@@ -29,7 +29,7 @@ Private preferences and authorized group settings are separate contexts. Each co
 
 The six catalogs are `he`, `en`, `ru`, `fr`, `es` and `pt-br`. Catalog completeness and placeholder parity are checked automatically; this is not a claim of independent native-speaker review or complete translation of provider scripture/liturgy. Hebrew source text and external provider strings may remain in their source language.
 
-`/language` and `/lang` open the authorized language selector. `/setcommands all all preview` is an operator-only private preview; omitting `preview` writes command menus to Telegram. The menu language for Brazilian Portuguese is Telegram's `pt`, while application preferences use `pt-br`. Group administrator menus expose `/settings`. See the complete command tables in the READMEs and [operator guide](OPERATIONS.md).
+`/language` and `/lang` open the authorized language selector. `/setcommands all all preview` is an operator-only private preview; omitting `preview` writes command menus to Telegram. The menu language for Brazilian Portuguese is Telegram's `pt`, while application preferences use `pt-br`. Group administrator menus expose `/settings`. See the complete [command reference](COMMANDS.md) and [operator guide](OPERATIONS.md).
 
 New daily-zmanim/daf, tefillin and Omer scheduling modules are opt-in. Group locking, closing/opening notices and other content settings are independently configurable; imported legacy alerts use reviewed legacy settings. See [group settings](GROUP_SETTINGS.md), [methods](ZMANIM_METHODS.md) and [migration](MIGRATION.md).
 

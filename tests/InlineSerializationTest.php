@@ -116,9 +116,9 @@ final class InlineSerializationTest extends TestCase
                     $ensure(($markup['_'] ?? '') === 'replyInlineMarkup' && ($markup['rows'] ?? []) !== [], 'Bound message has no nonempty inline markup.');
                     $buttons = array_merge(...array_column($markup['rows'], 'buttons'));
                     $ensure(count($buttons) === 2, 'Expected exactly a selection callback and private deep link.');
-                    $ensure($buttons[0]['_'] === 'keyboardButtonCallback', 'Wrong native selection button.');
-                    $ensure(str_starts_with((string)$buttons[0]['data'], 'sb:lp:'), 'Selection flow identity changed.');
-                    $ensure($buttons[1]['_'] === 'keyboardButtonUrl' && str_starts_with($buttons[1]['url'], 'https://t.me/FixtureShabbatBot?start=loc_'), 'Wrong native confirmation link.');
+                    $ensure($buttons[0]['_'] === 'keyboardInlineButton' && $buttons[0]['type']['_'] === 'inlineButtonTypeCallback', 'Wrong native selection button.');
+                    $ensure(str_starts_with((string)$buttons[0]['type']['data'], 'sb:lp:'), 'Selection flow identity changed.');
+                    $ensure($buttons[1]['_'] === 'keyboardInlineButton' && $buttons[1]['type']['_'] === 'inlineButtonTypeUrl' && str_starts_with($buttons[1]['type']['url'], 'https://t.me/FixtureShabbatBot?start=loc_'), 'Wrong native confirmation link.');
                 }
                 $cases[$case] = ['results' => count($decoded['results']), 'wire_bytes' => $bytes, 'wire_sha256' => $sha, 'reply_markup_present' => true, 'buttons_per_result' => 2];
             }

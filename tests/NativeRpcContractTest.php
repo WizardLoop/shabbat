@@ -99,7 +99,7 @@ final class NativeRpcContractTest extends TestCase
 
     private static function schemaEntry(string $name): string
     {
-        $schema = file_get_contents(dirname(__DIR__) . '/vendor/danog/madelineproto/src/TL_telegram_v225.tl');
+        $schema = file_get_contents((new \danog\MadelineProto\Settings\TLSchema())->getAPISchema());
         self::assertIsString($schema);
         self::assertSame(1, preg_match('/^' . preg_quote($name, '/') . '#[^\r\n]+/m', $schema, $match), 'Missing native TL entry: ' . $name);
         return $match[0];

@@ -121,28 +121,64 @@ final class SourceInputsTest extends TestCase
         sort($expected);
         sort($actual);
         self::assertSame($expected, $actual);
-        self::assertCount(92, $actual);
+        self::assertCount(103, $actual);
         self::assertArrayHasKey('additional-source/amphp-windows-process-wrapper/LICENSE', $manifest['preferred_source']);
         self::assertArrayHasKey('additional-source/madelineproto-build-inputs/LICENSE', $manifest['preferred_source']);
         self::assertSame('MIT', $manifest['additional_source']['license']);
+        self::assertSame('f328e6b5682d7e885dcfab425839921312162008', $manifest['rtc_source_provenance']['reference']);
+        $rtc = $manifest['rtc_source_provenance']['source_files'][0];
+        $bytes = (string) file_get_contents($root . '/' . $manifest['preferred_source'][$rtc['path']]);
+        self::assertSame('811f02bddfc3c0fb6954f0f418d58215e78219c5f479cac60fbe2fbc398e9ae4', hash('sha256', $bytes));
+        self::assertSame($rtc['git_blob'], sha1('blob ' . strlen($bytes) . "\0" . $bytes));
     }
 
-    public function testMaintainerAttestationAppliesToTheUnmodifiedHistoricalHelperOnly(): void
+    public function testPreferredGeneratorInputsBindToTheLockedSdkAndOriginalGitBlobs(): void
     {
         $root = dirname(__DIR__);
-        $manifest = json_decode((string) file_get_contents($root . '/patches/madelineproto/manifest.json'), true, flags: JSON_THROW_ON_ERROR);
-        $reference = $manifest['original_reference'];
-        $attestation = $reference['maintainer_attestation'];
-        self::assertSame('2026-10-16', $attestation['date']);
-        self::assertSame('AGPL-3.0-only', $attestation['license']);
-        self::assertSame('patches/madelineproto/original-reference.php', $attestation['scope']);
-        self::assertSame('1ec2691498e878d28ca8e9cde94b00c803d9ccba789096ffc8471156dfb429e9', $reference['sha256']);
-        self::assertSame($reference['sha256'], $attestation['sha256']);
-        self::assertSame($attestation['sha256'], hash_file('sha256', $root . '/' . $attestation['scope']));
-        self::assertStringContainsString('authored', $attestation['authorship']);
-        self::assertStringContainsString('authorizes distribution', $attestation['distribution_authorization']);
-        self::assertStringContainsString('not an independent', $attestation['limits']);
+        $manifest = $this->manifest();
+        self::assertSame(83, $manifest['runtime_package_count']);
+        self::assertSame(4095, array_sum(array_column($manifest['runtime_packages'], 'file_count')));
+        $source = $manifest['madeline_generation_source'];
+        self::assertSame('49d3d8460257c7bfb1a7e12708e1bfdd59e898c1', $source['reference']);
+        self::assertSame('8.11.10', $source['upstream_provenance']['version']);
+        self::assertSame(84, $source['file_count']);
+        self::assertCount(84, $source['upstream_provenance']['source_files']);
+        $paths = [];
+        foreach ($source['upstream_provenance']['source_files'] as $file) {
+            $archive = 'additional-source/madelineproto-build-inputs/' . $file['path'];
+            self::assertArrayNotHasKey($file['path'], $paths);
+            $paths[$file['path']] = true;
+            $bytes = (string) file_get_contents($root . '/' . $manifest['preferred_source'][$archive]);
+            self::assertSame($file['sha256'], hash('sha256', $bytes));
+            self::assertSame($file['git_blob'], sha1('blob ' . strlen($bytes) . "\0" . $bytes));
+            self::assertSame($file['bytes'], strlen($bytes));
+            self::assertStringContainsString('/' . $file['reference'] . '/', $file['url']);
+        }
+        foreach (
+            ['tools/build_tl.php', 'tools/TL/Builder.php', 'tools/TL/SecretBuilder.php',
+            'tools/gen_filerefmap.php', 'tools/FileRefExtractor/FileRefGenerator.php',
+            'tools/translator.php', 'langs/en.json', 'schemas/TL_telegram_v232.tl',
+            'schemas/TL_mtproto_v1.tl', 'schemas/TL_secret.tl', 'docs/template/disallow.json', 'LICENSE'] as $required
+        ) {
+            self::assertArrayHasKey($required, $paths);
+        }
+    }
+
+    public function testOnlyActivePatchOutputsArePinnedAndRetiredSourceIsAbsent(): void
+    {
+        $root = dirname(__DIR__);
+        $manifest = $this->manifest();
+        $actual = array_map('basename', glob($root . '/patches/*', GLOB_ONLYDIR));
+        sort($actual);
+        self::assertSame(['broadcastmanager', 'madelineproto-fresh-peer'], $actual);
+        foreach ($actual as $name) {
+            $patch = json_decode((string) file_get_contents($root . '/patches/' . $name . '/manifest.json'), true, flags: JSON_THROW_ON_ERROR);
+            $approved = $patch['approved'][0];
+            $path = 'vendor/' . $patch['package'] . '/' . $patch['target'];
+            self::assertSame($approved['patched_sha256'], $manifest['files_sha256'][$path]);
+            self::assertSame($approved['original_sha256'], hash_file('sha256', $root . '/patches/' . $name . '/' . $approved['baseline']));
+            self::assertSame($approved['patched_sha256'], hash_file('sha256', $root . '/patches/' . $name . '/' . $approved['reviewed_output']));
+        }
         self::assertSame('57c8ff33c9c0cfc3ef00e650a1cc910d7ee479a8bc509f6c9209a7c2a11399d6', hash_file('sha256', $root . '/LICENSE'));
-        self::assertSame(hash_file('sha256', $root . '/LICENSE'), hash_file('sha256', $root . '/patches/madelineproto-formatted-date/upstream-LICENSE'));
     }
 }

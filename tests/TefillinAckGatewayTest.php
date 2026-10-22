@@ -76,7 +76,7 @@ final class TefillinAckGatewayTest extends TestCase
         self::assertArrayNotHasKey('icon', $second['style']);
         self::assertTrue($first['style']['bg_primary']);
         self::assertTrue($second['style']['bg_primary']);
-        self::assertSame($first['data'], $second['data']);
+        self::assertSame($first['type']['data'], $second['type']['data']);
 
         $previousLogger = Logger::$default;
         try {
@@ -96,8 +96,8 @@ final class TefillinAckGatewayTest extends TestCase
                 fclose($stream);
                 $button = $decoded['rows'][0]['buttons'][0];
                 self::assertSame(($index === 0 ? '' : '🔔 ') . $label . ' (3)', $button['text']);
-                self::assertInstanceOf(\danog\MadelineProto\TL\Types\Bytes::class, $button['data']);
-                self::assertSame($first['data'], (string)$button['data']);
+                self::assertInstanceOf(\danog\MadelineProto\TL\Types\Bytes::class, $button['type']['data']);
+                self::assertSame($first['type']['data'], (string)$button['type']['data']);
                 self::assertTrue($button['style']['bg_primary']);
                 if ($index === 0) {
                     self::assertSame(5944970388252402183, $button['style']['icon']);

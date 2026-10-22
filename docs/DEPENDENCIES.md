@@ -1,24 +1,12 @@
 # Dependency evidence
 
-[Machine-readable inventory](dependencies.json) is generated from composer.lock
-and installed license files with php scripts/dependencies.php. Each package has
-version, commit permalink, direct/indirect runtime/dev scope, SPDX metadata,
-license paths/SHA256 and unresolved findings. LICENSE_TEXT_PRESENT is evidence
-of a matching distributed text, not a complete legal compatibility certification.
+[dependencies.json](dependencies.json) is generated from the exact Composer lock and installed license files by php scripts/dependencies.php. It records 83 runtime and 26 development packages, versions, commits, runtime/dev scope, metadata, original license hashes and unresolved findings. LICENSE_TEXT_PRESENT is text evidence, not an authorship or legal-compatibility certificate.
 
-MadelineProto has the exact Composer constraint `8.7.0`, resolved to commit
-`7b99dd0f2d964a492c377912ffce9f5ce61aa9ed`, for reviewed patch/source semantics.
-The [official release](https://github.com/danog/MadelineProto/releases/tag/8.7.0)
-is marked pre-release, not stable. On 2026-10-14 the checked official v8 head
-`b1a4c5efee60a87cdbe7bc2b1eb542166ec7e2e3` still lacked the formatted-date wrapper;
-no tested official replacement was selected. See the
-[formatted-date review](MADELINE_FORMATTED_DATE.md) for the exact source comparison.
-BroadcastManager uses ~3.2.2, resolved to 3.2.2, allowing maintenance fixes without
-the previous unrestricted * or an unreviewed 3.3 API change. Lock is real Composer
-output. Direct use of Amp, Amp File, Amp HTTP Client and Revolt is explicit.
-PHP 8.3/8.4/8.5, PDO SQLite and mbstring are required. Composer plugins are disabled.
+MadelineProto is constrained by ^8.11.10 and locked at **8.11.10**, commit **49d3d8460257c7bfb1a7e12708e1bfdd59e898c1**, with TL layer 232. BroadcastManager ~3.2.2 resolves to **3.2.2**, commit f2792a383416b66bb68e55f09414563e540538d6. Install from composer.lock; a normal upgrade does not run composer update. [PATCHES](PATCHES.md) describes the two active reviewed modifications.
 
-Reproduce:
+## Reproduce the evidence
+
+Run in an isolated repository root with the locked dependencies installed, using the documented PHP requirements and Composer 2.10.3:
 
     composer validate --strict --no-check-all
     composer show --locked --format=json
@@ -27,59 +15,20 @@ Reproduce:
     composer check-platform-reqs
     php scripts/dependencies.php
 
-`--no-check-all` omits Composer's advice against intentionally exact constraints;
-`--strict` and the normal lock/schema checks remain enabled. It does not disable
-lock consistency validation. The 2026-10-14 pin used the supported metadata-only
-`composer update --lock --no-install --no-scripts --no-plugins --no-audit --no-interaction --no-progress`.
-All 83 package versions and source/dist references stayed unchanged, and a byte
-comparison showed only Composer's `content-hash` changed in `composer.lock`.
-No installation or dependency lifecycle scripts ran for this metadata refresh.
+The first five commands inspect configuration, inventory, advisories or platform support. The final command rewrites docs/dependencies.json; no bot or Telegram session is started. Composer plugins are disabled. The --no-check-all validation option suppresses constraint-style advice while lock/schema checks and --strict remain enabled.
 
-Security audit is separate from license review. [Patch provenance](PATCHES.md)
-and [third-party notices](../THIRD_PARTY_NOTICES.md) describe preserved notices.
-MadelineProto package metadata says AGPL-3.0-only while source grants version 3
-or later: retained and reported. NOT VERIFIED entries require release review.
+[composer-show.json](composer-show.json) is the locked inventory; [composer-licenses.json](composer-licenses.json) records the exact installed package metadata using the supported licenses command. Neither substitutes for reading original license files. The project version in Composer metadata may be the checkout branch, while release identity comes from VERSION and the reviewed release commit. Security audit results are separate from license evidence; rerun the audit for the release commit.
 
-Hebcal/GeoNames data, texts and graphics have independent terms in third-party
-notices; application AGPL does not relicense them.
-Composer 2.8.8 does not implement licenses --locked. The attempted invocation
-failed; composer-licenses.json records the supported licenses --format=json
-command against the installation made from composer.lock. composer-show.json
-and composer-audit.json record the locked inventory and advisory check.
+## Licensing and source scope
 
-## SQLite runtime evidence
+MadelineProto metadata says AGPL-3.0-only while source headers allow version 3 or later; both remain unchanged. The new php-rtc-av metadata says MIT but its distributed LICENSE/PHP headers state BSD-3-Clause. The inventory leaves the declared MIT grant NOT VERIFIED. Checked-in AV FFI declarations are included verbatim; no native FFmpeg binary or generator output is inferred from that metadata, and external derivation provenance is not established.
 
-The Windows test host loads SQLite 3.45.2 through PHP PDO, not a separate CLI.
-Its version is older than the [official WAL-reset fix](https://sqlite.org/wal.html).
-This blocks release-platform approval even though isolated single-writer tests pass.
-The fix is present in 3.51.3+ (specific backports 3.44.6 and 3.50.7 are recognized).
-Docker builds 3.51.3 from a fixed publisher archive and verifies SHA256
-81f5be397049b0cae1b167f2225af7646fc0f82e4a9b3c48c9ea3a533e21d77a before
-compilation, then tests the PHP-loaded version with self-check --release.
-The image build is not locally tested because Docker is unavailable on this host.
-Runtime source is public-domain SQLite; keep its source/terms separate from AGPL.
+The corresponding-source collection contains all 83 locked runtime package trees, with two exact public Amp TLS example-key omissions, approved local patch outputs, original notices and 103 preferred-source supplements. It excludes the 26 development packages and generated Composer autoload/bin metadata. PHPStan's PHAR is not called preferred source. External PHP, SQLite, optional FFmpeg and operating-system/container source are outside this collection. See [LICENSING](LICENSING.md), [THIRD_PARTY_DETAILS](THIRD_PARTY_DETAILS.md) and the [source manifest](../resources/release/source-manifest.json).
 
-## Quality tooling and scope
+The omitted Amp HTTP Server tools/tls/localhost.pem and tools/tls/localhost.key.pem are public development examples unused by the bot; exact paths and SHA-256 remain recorded. This packaging omission does not change installed vendor. All other unknown runtime files and credential patterns fail source packaging.
 
-The locked development tools include PHPUnit, PHPStan, and PHP_CodeSniffer
-4.0.4 (BSD-3-Clause). The inventory includes their transitive dependencies and
-distributed license texts. `composer style` enforces PSR-12 errors in new `src`,
-`bin`, `scripts`, and `tests` PHP files. The reviewed immutable patch baseline and
-synthetic fixtures are excluded. `composer style-review` additionally reports
-advisory PSR-12 line-length warnings. No error baseline is applied.
-The preserved legacy `bot.php` is syntax checked, while integration fixtures,
-authorization tests, and manual review cover its changed boundaries.
+## SQLite and local validation limits
 
-The publication corresponding-source archive contains the application and the
-57 locked runtime Composer dependency source trees, with their distributed
-licenses and local patch bases/diffs. The 26 development-tool packages are not
-included; in particular, a PHPStan PHAR is not represented as preferred source.
-PHP, SQLite, and operating-system base-image source are outside this collection;
-the Dockerfile retains the pinned upstream build inputs. See
-[publication scope](PUBLICATION_STATUS.md) and the archive manifest.
+The earlier Windows check runtime loaded PHP 8.5.0 and SQLite 3.45.2, predating the current PHP security baseline and the [official WAL-reset fix](https://sqlite.org/wal.html). Those results do not approve it as a release runtime. The isolated verifier now uses publisher-hash-verified PHP 8.5.12 with SQLite 3.53.4; it does not replace the Linux image checks. Docker builds pinned SQLite 3.51.3, verifies its publisher SHA-256 and checks the PHP-loaded version with self-check --release. The source hash is 81f5be397049b0cae1b167f2225af7646fc0f82e4a9b3c48c9ea3a533e21d77a. Docker is unavailable locally; exact release-platform evidence must come from the actual hosted build/checks. SQLite retains its public-domain terms.
 
-Amp HTTP Server's public development TLS example keys `tools/tls/localhost.pem`
-and `tools/tls/localhost.key.pem` are omitted by exact reviewed path and SHA-256.
-They are unused by this bot. Their provenance and hashes are retained in the
-archive manifest. Other private-key material or Telegram token patterns fail
-the archive scan. This omission never changes the installed vendor directory.
+Locked development tools include PHPUnit, PHPStan and PHP_CodeSniffer. Style checks apply to application PHP, scripts and tests; original dependency baselines and deliberately synthetic fixtures retain their existing exclusions. [Publication status](PUBLICATION_STATUS.md) identifies release evidence and live-acceptance limits.

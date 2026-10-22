@@ -39,7 +39,8 @@ final class DiagnosticsTransportTest extends TestCase
         $transport->responses['messages.sendMessage'] = ['_' => 'updateShortSentMessage', 'id' => 500];
         $gateway = new MadelineGateway($transport, false);
         self::assertSame(500, $gateway->sendDiagnosticPanel('2', '<b>Test</b>', ['inline_keyboard' => [[['text' => 'Next', 'callback_data' => 'dz:012345678901234567890123:next']]]]));
-        self::assertSame('keyboardButtonCallback', $transport->calls[0][1]['reply_markup']['rows'][0]['buttons'][0]['_']);
+        self::assertSame('keyboardInlineButton', $transport->calls[0][1]['reply_markup']['rows'][0]['buttons'][0]['_']);
+        self::assertSame('inlineButtonTypeCallback', $transport->calls[0][1]['reply_markup']['rows'][0]['buttons'][0]['type']['_']);
         $transport->responses['messages.sendMessage'] = ['_' => 'updates', 'updates' => []];
         $this->expectException(\RuntimeException::class);
         $gateway->sendDiagnosticPanel('2', 'Test', []);

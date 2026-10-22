@@ -22,14 +22,14 @@ final class PatchManager
     public function __construct(private string $root, private ?string $vendor = null, ?string $manifestFile = null, private ?string $writerLockPath = null)
     {
         $this->vendor ??= $root . '/vendor';
-        $manifestFile ??= $root . '/patches/madelineproto/manifest.json';
+        $manifestFile ??= $root . '/patches/madelineproto-fresh-peer/manifest.json';
         $this->patchDirectory = dirname($manifestFile);
         $this->manifest = json_decode(self::read($manifestFile), true, flags: JSON_THROW_ON_ERROR);
         $this->packageName = $this->manifest['package'] ?? 'danog/madelineproto';
         if (!preg_match('~^[a-z0-9_.-]+/[a-z0-9_.-]+$~D', $this->packageName)) {
             throw new RuntimeException('Invalid patch package identity.');
         }
-        $this->target = self::relativePath($this->manifest['target'] ?? 'src/Loop/Update/UpdateLoop.php');
+        $this->target = self::relativePath($this->manifest['target'] ?? 'src/MTProtoTools/PeerHandler.php');
     }
 
     public function process(bool $apply): string
@@ -58,16 +58,7 @@ final class PatchManager
             throw new RuntimeException('Unapproved ' . $this->packageName . ' version/commit: ' . $version . ' ' . $reference);
         }
         if (array_key_exists('added_files', $entry)) {
-            if ($entry['mode'] !== 'patch') {
-                throw new RuntimeException('Added-file review schema requires patch mode and complete file verification.');
-            }
-            return (new AddedFilePatchManager(
-                $this->vendor . '/' . $this->packageName,
-                $this->target,
-                $this->patchDirectory,
-                $entry,
-                $this->writerLockPath ?? $this->defaultWriterLockPath()
-            ))->process($apply);
+            throw new RuntimeException('Obsolete added-file patch schema is not supported.');
         }
         $path = $this->vendor . '/' . $this->packageName . '/' . $this->target;
         if (is_link($path)) {

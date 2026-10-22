@@ -85,9 +85,10 @@ final class RuntimeGatewayTest extends TestCase
     public function testInlineSwitchUsesMtprotoSamePeer(): void
     {
         $markup = MadelineGateway::normalizeMarkup(['inline_keyboard' => [[['text' => 'Search','switch_inline_query_current_chat' => 'loc fixturetoken ']]]]);
-        self::assertSame('keyboardButtonSwitchInline', $markup['rows'][0]['buttons'][0]['_']);
-        self::assertTrue($markup['rows'][0]['buttons'][0]['same_peer']);
-        self::assertSame('loc fixturetoken ', $markup['rows'][0]['buttons'][0]['query']);
+        self::assertSame('keyboardInlineButton', $markup['rows'][0]['buttons'][0]['_']);
+        self::assertSame('inlineButtonTypeSwitchInline', $markup['rows'][0]['buttons'][0]['type']['_']);
+        self::assertTrue($markup['rows'][0]['buttons'][0]['type']['same_peer']);
+        self::assertSame('loc fixturetoken ', $markup['rows'][0]['buttons'][0]['type']['query']);
     }
 
     public function testClosedTopicNeverFallsBackToGeneral(): void
