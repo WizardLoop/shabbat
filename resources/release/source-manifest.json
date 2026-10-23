@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "description": "Reviewed application Composer runtime source inputs for 3.1.0; exact locked dist bytes plus two manifest-approved local patches and pinned preferred-source supplements.",
+  "description": "Reviewed application Composer runtime source inputs for 3.1.1; unchanged exact locked dist bytes plus two approved local patches, preferred-source supplements and the pinned Docker igbinary extension source.",
   "composer_lock_sha256": "2b5d70795b5a6000769ea87b6f340667d9d743152ac5fefde8f7ae2ff9aecb14",
   "origin": {
     "review_date": "2026-10-22",
@@ -1043,6 +1043,8 @@
     "additional-source/amphp-windows-process-wrapper/src/Errors.c": "c8021ac52ed123e4ece667f97048b1ecadbad122b993c1e43327db985a21c463",
     "additional-source/amphp-windows-process-wrapper/src/Errors.h": "ec57545ed3bddf7710f23b8e14a21a0d5dda5f94613bf388b502fdd13932a34e",
     "additional-source/amphp-windows-process-wrapper/src/ProcessWrapper.c": "f93286e07aea62ffa1d7ba20839a3bdc21ede954c7f8a6096796d9fdb229a389",
+    "additional-source/igbinary/COPYING": "fea1fcee44deac260242b535e9da96c339d7568a35d59f5aa2b752a578b6110a",
+    "additional-source/igbinary/igbinary-3.2.16.tgz": "8bf25d465abc7973d9e2c9a3039a5f8eea635b23bc1477017ff3999ff95836da",
     "additional-source/madelineproto-build-inputs/.gitattributes": "e547789f2db16032af766dcd086c02cd099e67f7002bb488e110e0117c25d209",
     "additional-source/madelineproto-build-inputs/.gitmodules": "0be1b15bd151a137d0eda35e859e2a44dab559f77f74f6f50b628cec212044cb",
     "additional-source/madelineproto-build-inputs/LICENSE": "57c8ff33c9c0cfc3ef00e650a1cc910d7ee479a8bc509f6c9209a7c2a11399d6",
@@ -5243,6 +5245,8 @@
     "additional-source/amphp-windows-process-wrapper/src/Errors.c": "resources/release/preferred-source/additional-source/amphp-windows-process-wrapper/src/Errors.c",
     "additional-source/amphp-windows-process-wrapper/src/Errors.h": "resources/release/preferred-source/additional-source/amphp-windows-process-wrapper/src/Errors.h",
     "additional-source/amphp-windows-process-wrapper/src/ProcessWrapper.c": "resources/release/preferred-source/additional-source/amphp-windows-process-wrapper/src/ProcessWrapper.c",
+    "additional-source/igbinary/COPYING": "resources/release/preferred-source/additional-source/igbinary/COPYING",
+    "additional-source/igbinary/igbinary-3.2.16.tgz": "resources/release/preferred-source/additional-source/igbinary/igbinary-3.2.16.tgz",
     "additional-source/madelineproto-build-inputs/.gitattributes": "resources/release/preferred-source/additional-source/madelineproto-build-inputs/.gitattributes.source",
     "additional-source/madelineproto-build-inputs/.gitmodules": "resources/release/preferred-source/additional-source/madelineproto-build-inputs/.gitmodules",
     "additional-source/madelineproto-build-inputs/LICENSE": "resources/release/preferred-source/additional-source/madelineproto-build-inputs/LICENSE",
@@ -6701,5 +6705,15 @@
       "All eight checked-in C declaration headers are included verbatim. No separate header generator or extraction recipe exists in the complete pinned AV tree; whether these are directly maintained preferred source or derived output is unestablished. No specific FFmpeg source revision is asserted as their origin.",
       "No FFmpeg, libopus or libvpx native binary is distributed in these RTC packages. The optional FFmpeg downloader was not executed; its PHP-WebRTC/ffmpeg-builder v9.0.1 public repository/tag/release returned 404 during review. External native binary/build scope is not claimed."
     ]
+  },
+  "igbinary_source": {
+    "version": "3.2.16",
+    "source_url": "https://pecl.php.net/get/igbinary-3.2.16.tgz",
+    "license": "BSD-3-Clause",
+    "archive": "additional-source/igbinary/igbinary-3.2.16.tgz",
+    "sha256": "8bf25d465abc7973d9e2c9a3039a5f8eea635b23bc1477017ff3999ff95836da",
+    "license_file": "additional-source/igbinary/COPYING",
+    "review_date": "2026-10-24",
+    "changes": "None. Docker builds the official archive and retains the archive and original COPYING file."
   }
 }

@@ -2,7 +2,7 @@
 
 [English overview](../README.md) | [עברית](../readme-he.md) | [Configuration](CONFIGURATION.md) | [Migration](MIGRATION.md)
 
-This documents version 3.1.0; check [acceptance status](IMPLEMENTATION_STATUS.md) before deployment. Install the matching release deployment ZIP or exact tagged checkout. The owner confirmed dev.9 live locking, unlocking, original-permission restoration and restart; acceptance on your host and remaining feature-specific tests are separate. See [publication status](PUBLICATION_STATUS.md).
+This documents version 3.1.1; check [acceptance status](IMPLEMENTATION_STATUS.md) before deployment. Install the matching release deployment ZIP or exact tagged checkout. The owner confirmed dev.9 live locking, unlocking, original-permission restoration and restart; acceptance on your host and remaining feature-specific tests are separate. See [publication status](PUBLICATION_STATUS.md).
 
 ## Requirements and command context
 
@@ -10,7 +10,9 @@ Run the following commands in the unpacked project root on Linux. Docker command
 
 The Dockerfile pins PHP 8.4.27 and Composer 2.10.3 images by digest and builds checksum-verified SQLite 3.51.3. It installs dependencies from `composer.lock`, applies and verifies the two active local patch sets before startup, and runs without root as UID/GID 10001. Image building uses network access but no bot credentials. CI uses the same Composer version, including the upstream [GitHub Actions token-validation and disclosure fix](https://github.com/composer/composer/security/advisories/GHSA-f9f8-rm49-7jv2); authentication and all validation gates remain enabled. Runtime requires a separate configured bot, Telegram access and calendar provider access.
 
-Manual installation requires 64-bit PHP **8.3.36+, 8.4.27+ or 8.5.12+** within the 8.3/8.4/8.5 branches, Composer 2.10.3, the extensions required by `composer check-platform-reqs`, and a patched PHP-loaded SQLite version accepted by `php bin/self-check.php --release`. That gate accepts SQLite >=3.51.3 or the explicitly reviewed 3.44.6/3.50.7 backports. A newer standalone `sqlite3` executable does not change the library loaded by PHP PDO. The image is the documented deployment baseline; native process supervision is operator-managed.
+Existing MadelineProto sessions written with igbinary need the extension to read them. The 3.1.1 Docker image includes pinned igbinary 3.2.16 and retains its source and license. `php bin/igbinary-check.php` verifies a synthetic round trip and offline SDK initialization; it does not open the private session or establish a Telegram connection. Do not reset or convert a session to work around a missing extension.
+
+Manual installation requires 64-bit PHP **8.3.36+, 8.4.27+ or 8.5.12+** within the 8.3/8.4/8.5 branches, Composer 2.10.3, the extensions required by `composer check-platform-reqs`, enabled igbinary (3.2.16 is the pinned Docker baseline), and a patched PHP-loaded SQLite version accepted by `php bin/self-check.php --release`. That gate accepts SQLite >=3.51.3 or the explicitly reviewed 3.44.6/3.50.7 backports. A newer standalone `sqlite3` executable does not change the library loaded by PHP PDO. The image is the documented deployment baseline; native process supervision is operator-managed.
 
 <a id="php-security-baseline"></a>
 ## PHP security baseline — 22 October 2026
@@ -35,6 +37,7 @@ docker compose -p shabbat-test config --quiet
 docker compose -p shabbat-test build shabbat
 docker compose -p shabbat-test run --rm --no-deps shabbat php scripts/verify-patches.php
 docker compose -p shabbat-test run --rm --no-deps shabbat php bin/self-check.php --release
+docker compose -p shabbat-test run --rm --no-deps shabbat php bin/igbinary-check.php
 docker compose -p shabbat-test run --rm --no-deps shabbat php bin/runtime-permissions.php --require-non-root
 ```
 
@@ -71,6 +74,7 @@ Run as the operator from the new matching source root, retaining the existing pr
 docker compose -p shabbat-test stop shabbat
 docker compose -p shabbat-test build shabbat
 docker compose -p shabbat-test run --rm --no-deps shabbat php bin/self-check.php --release
+docker compose -p shabbat-test run --rm --no-deps shabbat php bin/igbinary-check.php
 docker compose -p shabbat-test run --rm --no-deps shabbat php -r 'if (is_dir("/app/data/backups") === false && mkdir("/app/data/backups", 0700, true) === false) { exit(1); }'
 docker compose -p shabbat-test run --rm --no-deps shabbat php bin/migrate.php --writers-stopped --backup-dir /app/data/backups --db /app/data/shabbat.sqlite
 docker compose -p shabbat-test up -d --force-recreate shabbat
@@ -90,6 +94,7 @@ composer check-platform-reqs
 php scripts/apply-patches.php
 php scripts/verify-patches.php
 php bin/self-check.php --release
+php bin/igbinary-check.php
 ```
 
 `--no-scripts` requires both explicit patch commands before startup. Ordinary `composer install` runs these hooks automatically; never apply patches while the bot is running. A dependency mismatch or partially patched file must stop installation. Normal upgrades use `composer install` with the existing lock; dependency updates are a separate reviewed maintenance task.

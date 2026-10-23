@@ -1,6 +1,6 @@
 # Third-party notices
 
-WizardLoop Shabbat **3.1.0** uses **AGPL-3.0-only** for the combined application. Dependencies, historical source and data retain their own grants and notices. The complete application license is in [LICENSE](LICENSE); exact versions, source revisions, license files and findings are in the [dependency inventory](docs/dependencies.json).
+WizardLoop Shabbat **3.1.1** uses **AGPL-3.0-only** for the combined application. Dependencies, historical source and data retain their own grants and notices. The complete application license is in [LICENSE](LICENSE); exact versions, source revisions, license files and findings are in the [dependency inventory](docs/dependencies.json).
 
 ## Code and tools
 
@@ -12,6 +12,7 @@ WizardLoop Shabbat **3.1.0** uses **AGPL-3.0-only** for the combined application
 | Amp and Revolt | [Amp](https://github.com/amphp), [Revolt](https://github.com/revoltphp/event-loop), MIT | Original package notices remain attached; Windows helper source is supplied separately with its MIT license. |
 | PHP RTC components | [danog repositories](https://github.com/danog), exact pins in the inventory | Most declare BSD-3-Clause. **php-rtc-av declares MIT in metadata but distributes a BSD-3-Clause LICENSE and BSD source headers.** Both are preserved; the MIT declaration is not confirmed by its distributed license. Optional FFmpeg/native libraries are not included. |
 | Development tools | PHPUnit/PHP_CodeSniffer: BSD-3-Clause; PHPStan: MIT | All 26 development packages are inventoried separately and excluded from the runtime source collection. |
+| igbinary 3.2.16 | [Official PECL source](https://pecl.php.net/package/igbinary/3.2.16), [original BSD-3-Clause notice](resources/release/preferred-source/additional-source/igbinary/COPYING) | Unmodified PHP extension used for session serialization. Docker verifies the pinned source hash and retains the archive and original notice; both are included in the corresponding-source inputs. |
 | SQLite | [Public-domain dedication](https://sqlite.org/copyright.html) | External PHP-loaded library. Docker pins its source checksum; it is not relicensed as application code. |
 
 There are **two active patch sets**, with immutable baselines, reviewed outputs, diffs and SHA-256 manifests under [patches](patches). Installation applies and verifies them before startup. Do not modify a running vendor tree. [Technical provenance](docs/THIRD_PARTY_DETAILS.md) records their identities and the retirement of earlier patches. Using official SDK code does not establish that every shutdown regression is resolved.

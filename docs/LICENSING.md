@@ -8,20 +8,22 @@ Dependency sources, patch baselines and upstream supplements retain original not
 
 Hebcal output, GeoNames data and Omer count resources retain CC-BY-4.0; the Wikisource Omer transcription/editorial resource retains CC-BY-SA-4.0. Preserve their attribution, pinned provenance and modification notes. Complete texts are in [LICENSES](../LICENSES/README.md). API access terms and quotas are separate from data grants.
 
+The Docker session serializer extension igbinary 3.2.16 retains its original BSD-3-Clause notice. Its pinned source is included in the corresponding-source inventory; this does not extend the source archive scope to the complete container operating system.
+
 ## Exact deployed source offer
 
 /source, /license and /version display application/source identity. SOURCE_URL must identify the exact deployed source, including application changes and active patches. A moving branch, lock file alone or fabricated BUILD_COMMIT cannot identify an unpublished modified deployment.
 
 When conveying a modified covered program, retain notices, identify modifications and provide the required corresponding source. GNU AGPL section 13 governs the applicable source offer for remote interaction with a modified network program. Read [the complete license](../LICENSE), especially sections 4–6 and 13, and [the official GNU text](https://www.gnu.org/licenses/agpl-3.0.html). This document records release evidence and practice; it does not certify unrelated contributions or deployments.
 
-## 3.1.0 archive scope
+## 3.1.1 archive scope
 
 | Artifact | Contents |
 |---|---|
-| shabbat-3.1.0.zip | Clean application source, resources, migrations, tests, scripts, exact Composer lock, public configuration, Docker, documentation, licenses and GitHub workflows. No installed vendor tree. |
-| shabbat-3.1.0-corresponding-source.zip | The application plus 83 locked Composer runtime packages with their original source/notices, the two reviewed patch outputs and pinned preferred-source supplements. Its manifest states exact hashes and exclusions. |
+| shabbat-3.1.1.zip | Clean application source, resources, migrations, tests, scripts, exact Composer lock, public configuration, Docker, documentation, licenses and GitHub workflows. No installed vendor tree. |
+| shabbat-3.1.1-corresponding-source.zip | The application plus 83 locked Composer runtime packages with their original source/notices, the two reviewed patch outputs and pinned preferred-source supplements. Its manifest states exact hashes and exclusions. |
 
-The checked-in [source manifest](../resources/release/source-manifest.json) pins **4,095 runtime dependency files and 103 supplementary source files**: 18 Windows helper source files, 84 MadelineProto build/schema/language inputs and the pinned RTC AV README. It verifies exact lock and runtime source bytes; generated Composer autoload/bin metadata and all 26 development packages are excluded. PHPStan's distributed PHAR is not described as its preferred source.
+The checked-in [source manifest](../resources/release/source-manifest.json) pins the exact runtime dependency files and supplementary source files, including: 18 Windows helper source files, 84 MadelineProto build/schema/language inputs the pinned RTC AV README, and the official igbinary 3.2.16 source archive plus its original COPYING. It verifies exact lock and runtime source bytes; generated Composer autoload/bin metadata and all 26 development packages are excluded. PHPStan's distributed PHAR is not described as its preferred source.
 
 The two reviewed public Amp HTTP Server TLS example private keys are omitted by exact recorded hash; neither is used by the bot. Real credentials, sessions, databases, backups and private work material must never enter source archives.
 

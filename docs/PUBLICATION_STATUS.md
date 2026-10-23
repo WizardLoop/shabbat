@@ -1,8 +1,10 @@
 # Publication and release status
 
-## 3.1.0 source and release requirements
+## 3.1.1 source and release requirements
 
-The upgrade targets MadelineProto 8.11.10 at the exact commit in `composer.lock`.
+Version 3.1.1 is being prepared in a reviewed PR. The final tag and stable assets must follow the verified merge commit; no pending branch artifact is the final release. This patch fixes Daf HTML escaping, shares the private/scheduled card formatter and conservatively handles eligible prepared retries. Composer dependencies and database schema are unchanged. Docker includes pinned igbinary 3.2.16 for existing serialized sessions and checks synthetic serialization before startup.
+
+The application retains MadelineProto 8.11.10 at the exact commit in `composer.lock`.
 Only the rebased Fresh Peer patch and the reviewed BroadcastManager patch remain
 active. Date/location compatibility now uses official SDK implementations;
 inline keyboards are normalized at the transport boundary for TL Layer 232.
@@ -28,7 +30,7 @@ Telegram traffic, IPC-daemon shutdown or Linux-signal acceptance.
 
 The release packager reads a clean committed Git tree and verifies exact locked
 runtime sources plus preferred-source supplements before producing
-`shabbat-3.1.0.zip`, `shabbat-3.1.0-corresponding-source.zip`, `SHA256SUMS`
+`shabbat-3.1.1.zip`, `shabbat-3.1.1-corresponding-source.zip`, `SHA256SUMS`
 and `RELEASE_MANIFEST.json`. Archive `build-info.json` records the exact commit
 and source fingerprint. No real configuration, session, database or log belongs
 in an archive. Unpublished archives are for review and isolated testing; release

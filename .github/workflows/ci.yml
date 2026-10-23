@@ -26,7 +26,7 @@ jobs:
           update: true
         with:
           php-version: ${{ matrix.version }}
-          extensions: pdo_sqlite, mbstring, xml, dom, fileinfo, zlib, zip
+          extensions: pdo_sqlite, mbstring, xml, dom, fileinfo, zlib, zip, igbinary
           tools: composer:2.10.3
           coverage: none
       - name: Verify exact security-patched PHP runtime
@@ -47,6 +47,7 @@ jobs:
       - run: composer check-docs
       - run: composer dependencies -- --output="$RUNNER_TEMP/dependencies.json"
       - run: composer self-check
+      - run: php bin/igbinary-check.php
       - name: Verify release packaging regressions
         if: matrix.php == '8.4'
         run: python3 tests/release_packaging_test.py
@@ -64,6 +65,7 @@ jobs:
           docker build -t shabbat-archive-ci "$archive_dir"
           docker run --rm shabbat-archive-ci php bin/runtime-permissions.php --require-non-root
           docker run --rm shabbat-archive-ci php bin/self-check.php --release
+          docker run --rm shabbat-archive-ci php bin/igbinary-check.php
           docker run --rm -e EXPECTED_COMMIT shabbat-archive-ci php -r '$m=json_decode(file_get_contents("/app/build-info.json"),true,flags:JSON_THROW_ON_ERROR); if ($m["commit"]!==getenv("EXPECTED_COMMIT") || $m["local_changes"]!==false) { exit(1); } echo "Archive identity retained.\n";'
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: matrix.php == '8.4'
@@ -78,3 +80,4 @@ jobs:
       - run: docker build --build-arg BUILD_COMMIT="${{ github.sha }}" -t shabbat-ci .
       - run: docker run --rm shabbat-ci php bin/runtime-permissions.php --require-non-root
       - run: docker run --rm shabbat-ci php bin/self-check.php --release
+      - run: docker run --rm shabbat-ci php bin/igbinary-check.php

@@ -1,6 +1,6 @@
 # Database upgrade and legacy import
 
-Use the [production runbook](PRODUCTION_UPGRADE.md) ([עברית](PRODUCTION_UPGRADE_HE.md)) to verify whether the real installation is at /root/shabbat or /root/shabat, back up stopped state and preserve the session. Existing 3.0 SQLite deployments keep their data and run the migration/schema gate; they do not run legacy import again. Version 3.1.0 adds no SQL migration and retains migrations 001–016 unchanged.
+Use the [production runbook](PRODUCTION_UPGRADE.md) ([עברית](PRODUCTION_UPGRADE_HE.md)) to verify whether the real installation is at /root/shabbat or /root/shabat, back up stopped state and preserve the session. Existing 3.0/3.1 SQLite deployments keep their data and run the migration/schema gate; they do not run legacy import again. Version 3.1.1 adds no SQL migration and retains migrations 001–016 unchanged.
 
 ## File-based legacy import
 

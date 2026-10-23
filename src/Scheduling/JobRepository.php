@@ -97,6 +97,41 @@ final class JobRepository
             }
         });
     }
+    /** Repair only the known pre-3.1.1 Daf serialization defect on an eligible leased retry. */
+    public function repairPreparedDafPayload(int $id, string $owner): bool
+    {
+        return $this->db->transaction(function (PDO $pdo) use ($id, $owner): bool {
+            $now = $this->clock->now()->getTimestamp();
+            $query = $pdo->prepare("SELECT * FROM scheduled_jobs WHERE job_id=? AND status='leased' AND lease_owner=? AND lease_until>? AND expires_at>?");
+            $query->execute([$id,$owner,$now,$now]);
+            $row = $query->fetch();
+            if ($row === false) {
+                throw new \RuntimeException('Job ownership or delivery window was lost before Daf payload repair.');
+            }
+            if ($row['module'] !== 'daf' || $row['payload_prepared_at'] === null) {
+                return false;
+            }
+            // The transport guard stamps dispatch before Madeline parses HTML.
+            // A known local parse rejection can therefore have a dispatch stamp;
+            // a generic transport uncertainty must retain its frozen payload.
+            $error = (string)($row['last_error'] ?? '');
+            if ($row['dispatch_started_at'] !== null && !(str_contains($error, 'DOMDocument::loadXML()') && str_contains($error, 'EntityRef: expecting'))) {
+                return false;
+            }
+            $payload = \Shabbat\Content\LegacyDafPayload::repair(json_decode($row['payload_json'], true, 64, JSON_THROW_ON_ERROR));
+            if ($payload === null) {
+                return false;
+            }
+            // No provider work, re-planning or identity/history reset: only the
+            // invalid URL encoding changes, under the existing lease and CAS.
+            $query = $pdo->prepare("UPDATE scheduled_jobs SET payload_json=? WHERE job_id=? AND lease_owner=? AND status='leased' AND lease_until>? AND expires_at>? AND payload_json=?");
+            $query->execute([Database::encode($payload),$id,$owner,$now,$now,$row['payload_json']]);
+            if ($query->rowCount() !== 1) {
+                throw new \RuntimeException('Prepared Daf payload changed before repair persistence.');
+            }
+            return true;
+        });
+    }
     /**
      * Lease ownership depends on mutable database state and the current clock.
      *

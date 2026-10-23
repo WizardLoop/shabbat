@@ -2,7 +2,7 @@
 
 This directory holds release source inputs, not installed dependencies or runtime state.
 
-[source-manifest.json](source-manifest.json) pins **4,095 runtime files from 83 locked Composer packages** and **103 preferred-source files**. The supplements contain 18 upstream Windows helper files, 84 MadelineProto 8.11.10 generator/current-schema/language inputs and the pinned RTC AV README, preserving original licenses and Git-blob/SHA-256 evidence.
+[source-manifest.json](source-manifest.json) pins **4,095 runtime files from 83 locked Composer packages** and **105 preferred-source files**. The supplements contain 18 upstream Windows helper files, 84 MadelineProto 8.11.10 generator/current-schema/language inputs, the pinned RTC AV README, and the official igbinary 3.2.16 source archive with its original BSD-3-Clause license, preserving original licenses and Git-blob/SHA-256 evidence.
 
 The runtime inventory was compared with each exact locked Composer distribution. Only the fresh-peer and BroadcastManager outputs differ, matching their approved manifests. It excludes two public Amp TLS example private keys by exact hash, installed development tools and generated Composer autoload/bin metadata. Unknown, missing or changed runtime files fail packaging.
 

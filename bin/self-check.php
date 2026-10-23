@@ -15,7 +15,7 @@ require_once $root . '/vendor/autoload.php';
 require_once $root . '/scripts/apply-patches.php';
 $failures = [];
 $warnings = [];
-foreach (['pdo_sqlite', 'mbstring', 'xml', 'dom', 'fileinfo', 'zlib'] as $extension) {
+foreach (['pdo_sqlite', 'mbstring', 'xml', 'dom', 'fileinfo', 'zlib', 'igbinary'] as $extension) {
     if (!extension_loaded($extension)) {
         $failures[] = 'Missing PHP extension ' . $extension;
     }

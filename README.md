@@ -8,7 +8,7 @@ A Telegram bot for Shabbat and festival group quiet periods, Jewish calendar inf
 [![PHP 8.3–8.5](https://img.shields.io/badge/PHP-8.3%E2%80%938.5-777BB4)](composer.json)
 [![MadelineProto 8.11.10](https://img.shields.io/badge/MadelineProto-8.11.10-2CA5E0)](composer.lock)
 
-**Version 3.1.0.** Release requirements and acceptance limits are described in [implementation status](docs/IMPLEMENTATION_STATUS.md). For an existing installation, start with the [upgrade guide](docs/PRODUCTION_UPGRADE.md) ([עברית](docs/PRODUCTION_UPGRADE_HE.md)); the commands below create a new database.
+**Version 3.1.1 (release preparation).** Release requirements and acceptance limits are described in [implementation status](docs/IMPLEMENTATION_STATUS.md). For an existing installation, start with the [upgrade guide](docs/PRODUCTION_UPGRADE.md) ([עברית](docs/PRODUCTION_UPGRADE_HE.md)); the commands below create a new database.
 
 [Features](#features) · [Requirements](#requirements) · [Install](#install) · [Configure](#configure) · [First use](#first-use) · [Operate and update](#operate) · [Documentation](#documentation) · [License](#license)
 
@@ -42,24 +42,24 @@ docker --version
 docker compose version
 ~~~
 
-Docker supplies PHP 8.4.27, Composer, SQLite and the locked dependencies. Manual installations require 64-bit PHP **8.3.36+, 8.4.27+ or 8.5.12+**, within those supported branches. See the [22 October 2026 security baseline](docs/INSTALLATION.md#php-security-baseline) and [manual installation](docs/INSTALLATION.md#manual-installation).
+Docker supplies PHP 8.4.27, Composer, SQLite, igbinary 3.2.16 for session compatibility and the locked dependencies. Manual installations require 64-bit PHP **8.3.36+, 8.4.27+ or 8.5.12+**, within those supported branches. See the [22 October 2026 security baseline](docs/INSTALLATION.md#php-security-baseline) and [manual installation](docs/INSTALLATION.md#manual-installation).
 
 <a id="install"></a>
 ## 1. Extract a fresh installation
 
-Download `shabbat-3.1.0.zip` and `SHA256SUMS` from the matching [GitHub release](https://github.com/WizardLoop/shabbat/releases). Run in **Bash on the server**, in the upload directory, with Docker access. The checksum must report `OK`.
+After the verified 3.1.1 release is published, download `shabbat-3.1.1.zip` and `SHA256SUMS` from the matching [GitHub release](https://github.com/WizardLoop/shabbat/releases). Run in **Bash on the server**, in the upload directory, with Docker access. The checksum must report `OK`.
 
 ~~~sh
 set -euo pipefail
 umask 077
-awk '$2 == "shabbat-3.1.0.zip" {
+awk '$2 == "shabbat-3.1.1.zip" {
   if (NF != 2 || length($1) != 64 || $1 ~ /[^0-9a-f]/) exit 1
   print; n++
 } END { if (n != 1) exit 1 }' SHA256SUMS > deployment.sha256
 sha256sum --check deployment.sha256
-test ! -e shabbat-3.1.0
-unzip -q shabbat-3.1.0.zip -d shabbat-3.1.0
-cd shabbat-3.1.0
+test ! -e shabbat-3.1.1
+unzip -q shabbat-3.1.1.zip -d shabbat-3.1.1
+cd shabbat-3.1.1
 cp .env.example .env
 chmod 600 .env
 unset BUILD_COMMIT
@@ -78,7 +78,7 @@ API_HASH=replace_with_your_32_character_api_hash
 BOT_TOKEN=replace_with_your_bot_token
 ADMIN=123456789
 GEONAMES_USERNAME=your_geonames_username
-SOURCE_URL=https://github.com/WizardLoop/shabbat/releases/tag/v3.1.0
+SOURCE_URL=https://github.com/WizardLoop/shabbat/releases/tag/v3.1.1
 ~~~
 
 Keep the other values from `.env.example` unless an advanced setting is needed. Never publish this file or use test credentials in production. The source URL must offer the exact deployed source, including the corresponding-source archive. See [all configuration variables](docs/CONFIGURATION.md).
@@ -88,6 +88,7 @@ From the extracted project root, build and check the image, then initialize the 
 ~~~sh
 docker compose build shabbat
 docker compose run --rm --no-deps shabbat php bin/self-check.php --release
+docker compose run --rm --no-deps shabbat php bin/igbinary-check.php
 docker compose run --rm --no-deps shabbat php bin/runtime-permissions.php --require-non-root
 docker compose run --rm --no-deps shabbat php bin/migrate.php --writers-stopped --db /app/data/shabbat.sqlite
 ~~~
