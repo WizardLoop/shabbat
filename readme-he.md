@@ -10,7 +10,7 @@
 [![PHP 8.3–8.5](https://img.shields.io/badge/PHP-8.3%E2%80%938.5-777BB4)](composer.json)
 [![MadelineProto 8.11.10](https://img.shields.io/badge/MadelineProto-8.11.10-2CA5E0)](composer.lock)
 
-**גרסה 3.1.1 (בהכנה לשחרור).** דרישות השחרור ומגבלות האימות מתוארות ב[מצב המימוש](docs/IMPLEMENTATION_STATUS.md). להתקנה קיימת התחילו ב[מדריך השדרוג בעברית](docs/PRODUCTION_UPGRADE_HE.md) ([English](docs/PRODUCTION_UPGRADE.md)); הפקודות שבהמשך יוצרות מסד נתונים חדש.
+**גרסה 3.1.1.** דרישות השחרור ומגבלות האימות מתוארות ב[מצב המימוש](docs/IMPLEMENTATION_STATUS.md). להתקנה קיימת התחילו ב[מדריך השדרוג בעברית](docs/PRODUCTION_UPGRADE_HE.md) ([English](docs/PRODUCTION_UPGRADE.md)); הפקודות שבהמשך יוצרות מסד נתונים חדש.
 
 [יכולות](#features) · [דרישות](#requirements) · [התקנה](#install) · [הגדרה](#configure) · [שימוש ראשון](#first-use) · [תפעול ועדכון](#operate) · [תיעוד](#documentation) · [רישיון](#license)
 
@@ -53,7 +53,7 @@ Docker מספק PHP 8.4.27,‏ Composer,‏ SQLite,‏ igbinary 3.2.16 לתאי�
 <a id="install"></a>
 ## 1. חילוץ התקנה חדשה
 
-לאחר פרסום גרסה 3.1.1 המאומתת, לאחר פרסום גרסה 3.1.1 המאומתת, הורידו את `shabbat-3.1.1.zip` ואת `SHA256SUMS` מ[שחרור GitHub המתאים](https://github.com/WizardLoop/shabbat/releases). הריצו ב־**Bash בשרת**, מתיקיית ההעלאה ועם גישה ל־Docker. אימות הקובץ חייב להחזיר `OK`.
+הורידו את `shabbat-3.1.1.zip` ואת `SHA256SUMS` מ[שחרור GitHub המתאים](https://github.com/WizardLoop/shabbat/releases). הריצו ב־**Bash בשרת**, מתיקיית ההעלאה ועם גישה ל־Docker. אימות הקובץ חייב להחזיר `OK`.
 
 <div dir="ltr">
 

@@ -1,6 +1,6 @@
 # Shabbat 3.1.1
 
-**Release preparation: the final tag and release assets are pending the reviewed merge commit and its required checks.** A version number in this branch is not evidence of a published or tested release. See [release requirements](RELEASE.md), [publication status](PUBLICATION_STATUS.md) and [implementation status](IMPLEMENTATION_STATUS.md).
+**Shabbat 3.1.1 fixes Daf message formatting and retries, private settings entry when Telegram cannot reach the user, and igbinary session compatibility.** The release manifest and matching GitHub Actions run identify the final verified source and assets. See [release requirements](RELEASE.md), [publication status](PUBLICATION_STATUS.md) and [implementation status](IMPLEMENTATION_STATUS.md).
 
 ## Changes
 
@@ -24,7 +24,7 @@ An existing 3.0/3.1 SQLite installation keeps its database, session, settings an
 
 For an installation still using the file-based legacy bot, use the separate [English production guide](PRODUCTION_UPGRADE.md) or [מדריך השדרוג בעברית](PRODUCTION_UPGRADE_HE.md). Verify the actual production path and rehearse restore. The migration/import path is not required again after a successful earlier import.
 
-## Planned assets and exact source
+## Assets and exact source
 
 | Asset | Purpose |
 |---|---|
@@ -35,13 +35,15 @@ For an installation still using the file-based legacy bot, use the separate [Eng
 
 Generate the final assets only from the reviewed merge commit after the release gates pass. CI artifacts from a PR or intermediate commit are verification outputs, not the final stable release assets.
 
-Keep archive `build-info.json` unchanged and leave `BUILD_COMMIT` out of the private `.env` when using an unchanged release ZIP. Set `SOURCE_URL=https://github.com/WizardLoop/shabbat/releases/tag/v3.1.1` only once that release and its corresponding-source asset exist. Until then, a testing deployment needs the exact source offer for its tested commit; a future tag URL is not an available source offer. Modified deployments need their exact source offer.
+Keep archive `build-info.json` unchanged and leave `BUILD_COMMIT` out of the private `.env` when using an unchanged release ZIP. Use `SOURCE_URL=https://github.com/WizardLoop/shabbat/releases/tag/v3.1.1` with the published release and its corresponding-source asset. A testing or modified deployment needs the exact source offer for its own source; an unavailable tag URL is not a source offer.
 
 The source scope excludes the complete operating system/container and optional development-tool source; consult [licensing](LICENSING.md), [third-party notices](../THIRD_PARTY_NOTICES.md) and the source manifest.
 
 ## Verification and acceptance limits
 
-Run all [required quality, image and archive checks](RELEASE.md) against the final source. Record their actual results on the PR and final commit; this document does not claim unexecuted checks passed. Automated tests use provider fixtures and isolated databases. `TextEntities::fromHtml` verifies the locked SDK parsing boundary, not live Telegram delivery or rendering in every client.
+The reviewed implementation at `0f08f0548e85518e1d15b83975dcfbf03b2dc9e8` in [PR #24](https://github.com/WizardLoop/shabbat/pull/24) passed all eight push/PR CI jobs: PHP 8.3.36, 8.4.27 and 8.5.12, plus the Docker job in each workflow. The suite reported **1,397 tests and 55,328 assertions**. Static analysis, lint/style, documentation/locales, Composer audit, patch/source checks and packaging checks passed. Docker verified PHP 8.4.27 with igbinary 3.2.16; the deployment ZIP built successfully without Git or a `BUILD_COMMIT` override.
+
+Those results identify that reviewed implementation commit. Every later change and the final merge commit must pass the [required checks](RELEASE.md) again before tagging and final asset creation. The final merge validation is separate from these recorded branch results. Automated tests use provider fixtures and isolated databases. `TextEntities::fromHtml` verifies the locked SDK parsing boundary, not live Telegram delivery or rendering in every client.
 
 The owner-reported dev.9 locking, unlocking, original-permission restoration and restart results from 2026-10-16 are historical. They do not establish the new Daf delivery behavior, real holy-day transitions, paid operations, sustained traffic or a long soak. On a separate bot and disposable group, verify a scheduled Daf message, the page link, selected custom emoji/fallback and the custom message features used by the deployment before production acceptance.
 

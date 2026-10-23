@@ -2,7 +2,7 @@
 
 PHP 8.3 compatibility: module-delivery bookkeeping now uses the database-owned `BEGIN IMMEDIATE` transaction state and exact connection identity; native callback/message fixtures initialize inherited readonly properties from their declaring class. Regression tests cover rejected foreign/outside transactions, rollback and state reset.
 
-## 3.1.1 - unreleased
+## 3.1.1
 
 - Escape provider-derived Daf text and Sefaria links exactly once at the HTML boundary. Keep the `{{daf}}` substitution raw so custom HTML templates and native Telegram entities retain their intended text without double escaping.
 - Share the existing Presentation-based Daf card formatter between private views and scheduled group messages: bold heading, group location/timezone, Gregorian and Hebrew date, bold tractate/page and the localized page link. Keep the `daf_yomi` animated emoji and existing Unicode fallback; the default `{{daf}}` template retains the rich card.

@@ -8,7 +8,7 @@ A Telegram bot for Shabbat and festival group quiet periods, Jewish calendar inf
 [![PHP 8.3–8.5](https://img.shields.io/badge/PHP-8.3%E2%80%938.5-777BB4)](composer.json)
 [![MadelineProto 8.11.10](https://img.shields.io/badge/MadelineProto-8.11.10-2CA5E0)](composer.lock)
 
-**Version 3.1.1 (release preparation).** Release requirements and acceptance limits are described in [implementation status](docs/IMPLEMENTATION_STATUS.md). For an existing installation, start with the [upgrade guide](docs/PRODUCTION_UPGRADE.md) ([עברית](docs/PRODUCTION_UPGRADE_HE.md)); the commands below create a new database.
+**Version 3.1.1.** Release requirements and acceptance limits are described in [implementation status](docs/IMPLEMENTATION_STATUS.md). For an existing installation, start with the [upgrade guide](docs/PRODUCTION_UPGRADE.md) ([עברית](docs/PRODUCTION_UPGRADE_HE.md)); the commands below create a new database.
 
 [Features](#features) · [Requirements](#requirements) · [Install](#install) · [Configure](#configure) · [First use](#first-use) · [Operate and update](#operate) · [Documentation](#documentation) · [License](#license)
 
@@ -47,7 +47,7 @@ Docker supplies PHP 8.4.27, Composer, SQLite, igbinary 3.2.16 for session compat
 <a id="install"></a>
 ## 1. Extract a fresh installation
 
-After the verified 3.1.1 release is published, download `shabbat-3.1.1.zip` and `SHA256SUMS` from the matching [GitHub release](https://github.com/WizardLoop/shabbat/releases). Run in **Bash on the server**, in the upload directory, with Docker access. The checksum must report `OK`.
+Download `shabbat-3.1.1.zip` and `SHA256SUMS` from the matching [GitHub release](https://github.com/WizardLoop/shabbat/releases). Run in **Bash on the server**, in the upload directory, with Docker access. The checksum must report `OK`.
 
 ~~~sh
 set -euo pipefail

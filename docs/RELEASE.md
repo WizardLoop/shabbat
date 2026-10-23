@@ -1,6 +1,6 @@
 # Release preparation and publication
 
-The version in [VERSION](../VERSION) is **3.1.1**. This patch release is in preparation. The final tag and archives must follow the reviewed merge commit and the exact-commit release gates below. The owner confirmed dev.9 live locking, unlocking, original-permission restoration and restart. Broader holy-day, load, soak and feature-specific acceptance remain separate. See [release notes](RELEASE_NOTES.md), [implementation status](IMPLEMENTATION_STATUS.md) and [licensing/source scope](LICENSING.md).
+The version in [VERSION](../VERSION) is **3.1.1**. The final tag and archives must identify the reviewed merge commit after the exact-commit release gates below pass. The owner confirmed dev.9 live locking, unlocking, original-permission restoration and restart. Broader holy-day, load, soak and feature-specific acceptance remain separate. See [release notes](RELEASE_NOTES.md), [implementation status](IMPLEMENTATION_STATUS.md) and [licensing/source scope](LICENSING.md).
 
 ## Review and publication sequence
 

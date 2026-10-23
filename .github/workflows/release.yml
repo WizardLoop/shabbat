@@ -14,7 +14,7 @@ jobs:
           update: true
         with:
           php-version: "8.4.27"
-          extensions: pdo_sqlite, mbstring, xml, dom, fileinfo, zlib, zip
+          extensions: pdo_sqlite, mbstring, xml, dom, fileinfo, zlib, zip, igbinary
           tools: composer:2.10.3
           coverage: none
       - name: Verify exact security-patched PHP runtime
@@ -31,9 +31,11 @@ jobs:
       - run: composer check-locales
       - run: composer dependencies -- --output="$RUNNER_TEMP/dependencies.json"
       - run: php bin/self-check.php
+      - run: php bin/igbinary-check.php
       - run: docker build --build-arg BUILD_COMMIT="${{ github.sha }}" -t shabbat-release .
       - run: docker run --rm shabbat-release php bin/runtime-permissions.php --require-non-root
       - run: docker run --rm shabbat-release php bin/self-check.php --release
+      - run: docker run --rm shabbat-release php bin/igbinary-check.php
       - run: python3 tests/release_packaging_test.py
       - run: composer package
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
