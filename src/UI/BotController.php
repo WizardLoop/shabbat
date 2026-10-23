@@ -1353,11 +1353,9 @@ final class BotController
                 }
             } elseif ($module === 'daf') {
                 $data = $this->calendar->daf($context, $date);
-                $title = ($languageOverride ?? $context['language']) === 'he' ? ($data['hebrew'] ?? $data['title']) : $data['title'];
-                $content[] = '<b>📖 ' . $this->escape($title) . '</b>';
-                if (is_string($data['link'] ?? null) && parse_url($data['link'], PHP_URL_SCHEME) === 'https') {
-                    $content[] = '<a href="' . $this->escape($data['link']) . '">' . $this->escape($translate('daf_open_page')) . '</a>';
-                }
+                $presentation = $context;
+                $presentation['language'] = $languageOverride ?? ($context['language'] ?? 'he');
+                return (new \Shabbat\Content\DafFormatter($this->lang))->html($presentation, $data, $date);
             } elseif ($module === 'tefillin') {
                 $data = $this->calendar->zmanim($context, $date);
                 $state = $this->calendar->snapshot($context, new \DateTimeImmutable($date . ' 12:00', new \DateTimeZone($context['timezone_id'])));
@@ -1630,6 +1628,11 @@ final class BotController
     }
     private function sendError(string $user, \Throwable $error): void
     {
+        if ($error instanceof \Shabbat\Telegram\PrivateChatUnavailableException) {
+            // The original private reply was rejected. Sending an error to the
+            // same unreachable peer would fail again and flood operator logs.
+            throw $error;
+        }
         $key = $error instanceof \Shabbat\Location\LocationException ? ($this->geo->configured() ? 'unavailable' : 'geonames_missing') : ($error instanceof \InvalidArgumentException ? (str_contains($error->getMessage(), 'YYYY-MM-DD') ? 'date_invalid' : 'hours_invalid') : 'denied');
         $this->send($user, $this->t($user, $key));
     }

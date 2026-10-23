@@ -1,14 +1,16 @@
 <div dir="rtl">
 
-# שדרוג בטוח ל־3.1.0
+# שדרוג בטוח ל־3.1.1
 
 [English](PRODUCTION_UPGRADE.md) · [README בעברית](../readme-he.md) · [מיפוי הייבוא](MIGRATION.md) · [התאוששות הרשאות](PERMISSION_RECOVERY.md)
 
-זהו מדריך לביצוע ידני; לא בוצעה פריסה. השתמשו בקובצי 3.1.0 שפורסמו ואומתו לאחר שבדיקות החובה עברו. הנתיב המבוקש הוא **/root/shabbat**; בתיעוד קודם הופיע **/root/shabat**. חובה לאמת את הקונטיינר והתיקייה האמיתיים לפני שינוי. אין להשתמש בנתוני בוט הבדיקה.
+זהו מדריך לביצוע ידני; לא בוצעה פריסה. השתמשו בקובצי 3.1.1 שפורסמו ואומתו לאחר שבדיקות החובה עברו. הנתיב המבוקש הוא **/root/shabbat**; בתיעוד קודם הופיע **/root/shabat**. חובה לאמת את הקונטיינר והתיקייה האמיתיים לפני שינוי. אין להשתמש בנתוני בוט הבדיקה.
 
 הפקודות תומכות בהתקנת legacy שמחברת את כל הפרויקט ובאמצעי האחסון הרגילים של 3.0. בדיקת הנתיבים ב־3.0 קוראת תצורה בלבד; היא אינה פותחת API או סשן. שם סשן מותאם או שרידי נעילה ללא תוכן סשן עוצרים את ההליך. חיבורים מותאמים, אחסון חיצוני, קישורים לנתונים פרטיים או כותב נוסף מחייבים גיבוי מותאם מראש. הריצו את בלוקי השרת באותו **חלון Bash כ־root**, עם Docker/Compose,‏ unzip, כלי GNU ומקום פנוי מספיק. הגיבויים נשמרים מחוץ לקוד ולבנייה. רק ההפעלה בסוף מחברת את הבוט החדש ל־Telegram.
 
 האימג׳ החדש משתמש ב־PHP **8.4.27**. בהתקנה ידנית נדרש **8.3.36+,‏ 8.4.27+ או 8.5.12+** בתוך הענפים האלה; ראו [דרישות אבטחה מ־22 באוקטובר 2026](INSTALLATION.md#php-security-baseline). שמרו את האימג׳ הישן לחזרה לאחור, אך אין לראות במפרש ישן עמידה בדרישות החדשות.
+
+בהתקנה שכבר שודרגה ל־3.1.0 ומחזיקה מסד SQLite, השתמשו ב[עדכון התקנת SQLite קיימת](INSTALLATION.md#updating-an-existing-sqlite-deployment) ושמרו את שם פרויקט Compose, אמצעי האחסון והסשן הקיימים. אין לייבא legacy שוב או לאפס תורים. תיקון הודעות הדף המוכנות מתבצע רק במסלול הניסיון החוזר הרגיל ובהתאם לתוקף ההודעה. הפקודות כאן מיועדות למעבר נפרד מהמערכת הישנה.
 
 ## 1. העלאה מהמחשב
 
@@ -17,8 +19,8 @@
 <div dir="ltr">
 
 ~~~sh
-ssh root@SERVER "install -d -m 700 /root/shabbat-upload-3.1.0"
-scp shabbat-3.1.0.zip SHA256SUMS root@SERVER:/root/shabbat-upload-3.1.0/
+ssh root@SERVER "install -d -m 700 /root/shabbat-upload-3.1.1"
+scp shabbat-3.1.1.zip SHA256SUMS root@SERVER:/root/shabbat-upload-3.1.1/
 ~~~
 
 </div>
@@ -72,10 +74,10 @@ else
   echo 'STOP: custom storage layout needs a reviewed backup/cutover.' >&2
   exit 1
 fi
-VERSION=3.1.0
-NEW_PROJECT=shabbat-production-310
+VERSION=3.1.1
+NEW_PROJECT=shabbat-production-311
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
-UPLOAD_DIR=/root/shabbat-upload-3.1.0
+UPLOAD_DIR=/root/shabbat-upload-3.1.1
 RELEASE_DIR="/root/shabbat-stage-$VERSION-$STAMP"
 BACKUP_DIR="/root/shabbat-backups/$VERSION-$STAMP"
 RETIRED_DIR="$ORIGINAL_DIR.before-$VERSION-$STAMP"
@@ -101,13 +103,13 @@ printf '%s\n' "$ORIGINAL_DIR" "$OLD_CONTAINER_ID" "$OLD_PROJECT" "$OLD_IMAGE_ID"
 ~~~sh
 (
   cd "$UPLOAD_DIR"
-  awk '$2 == "shabbat-3.1.0.zip" {
+  awk '$2 == "shabbat-3.1.1.zip" {
     if (NF != 2 || length($1) != 64 || $1 ~ /[^0-9a-f]/) exit 1
     print; n++
   } END { if (n != 1) exit 1 }' SHA256SUMS > deployment.sha256
   sha256sum --check deployment.sha256
 )
-unzip -q "$UPLOAD_DIR/shabbat-3.1.0.zip" -d "$RELEASE_DIR"
+unzip -q "$UPLOAD_DIR/shabbat-3.1.1.zip" -d "$RELEASE_DIR"
 test "$(cat "$RELEASE_DIR/VERSION")" = "$VERSION"
 test -f "$RELEASE_DIR/build-info.json"
 cp "$RELEASE_DIR/.env.example" "$RELEASE_DIR/.env"
@@ -126,7 +128,7 @@ DATA_DIR=/app/data
 SESSION_PATH=/app/runtime/bot.shabbat
 HEARTBEAT_PATH=/app/data/scheduler-heartbeat.json
 LEGACY_DATA_PATH=.
-SOURCE_URL=https://github.com/WizardLoop/shabbat/releases/tag/v3.1.0
+SOURCE_URL=https://github.com/WizardLoop/shabbat/releases/tag/v3.1.1
 ~~~
 
 </div>
@@ -150,6 +152,7 @@ new_compose config --quiet
 new_compose build shabbat
 new_compose run --rm --no-deps shabbat php scripts/verify-patches.php
 new_compose run --rm --no-deps shabbat php bin/self-check.php --release
+new_compose run --rm --no-deps shabbat php bin/igbinary-check.php
 new_compose run --rm --no-deps shabbat php bin/runtime-permissions.php --require-non-root
 ~~~
 
@@ -218,8 +221,8 @@ new_compose run --rm --no-deps --user 0:0 \
   cp -a /review/session/. /app/runtime/
   (cd /app/data; sha256sum --check /review/data.sha256)
   (cd /app/runtime; sha256sum --check /review/session.sha256)
-  test ! -e /app/data/upgrade-3.1.0
-  mkdir -m 700 /app/data/upgrade-3.1.0
+  test ! -e /app/data/upgrade-3.1.1
+  mkdir -m 700 /app/data/upgrade-3.1.1
 ' > "$BACKUP_DIR/copied-state-check.txt"
 inventory() {
   new_compose run --rm --no-deps --user 0:0 shabbat php -r '
@@ -248,7 +251,7 @@ if [ "$LAYOUT" = sqlite ]; then
 fi
 new_compose run --rm --no-deps --user 0:0 shabbat \
   php bin/migrate.php --writers-stopped --db /app/data/shabbat.sqlite \
-  --backup-dir /app/data/upgrade-3.1.0 > "$BACKUP_DIR/migrate.json"
+  --backup-dir /app/data/upgrade-3.1.1 > "$BACKUP_DIR/migrate.json"
 if [ "$LAYOUT" = sqlite ]; then
   inventory > "$BACKUP_DIR/database-after.json"
   cmp "$BACKUP_DIR/database-before.json" "$BACKUP_DIR/database-after.json"
@@ -257,7 +260,7 @@ fi
 
 </div>
 
-בשדרוג SQLite מ־3.0, השוואת שורות המסד חייבת להתאים ואין לבצע ייבוא legacy; המשיכו לשלב 7. במערכת legacy המשיכו לשלב הבא. ב־3.1.0 אין שינוי בסכמת SQL; כל הבדל בלתי צפוי מחייב בירור לפני הפעלה.
+בשדרוג SQLite מ־3.0, השוואת שורות המסד חייבת להתאים ואין לבצע ייבוא legacy; המשיכו לשלב 7. במערכת legacy המשיכו לשלב הבא. ב־3.1.1 אין שינוי בסכמת SQL; כל הבדל בלתי צפוי מחייב בירור לפני הפעלה.
 
 ## 6. רק ל־legacy: בדיקה וייבוא תואם לדוח
 
@@ -285,7 +288,7 @@ new_compose run --rm --no-deps --user 0:0 \
 new_compose run --rm --no-deps --user 0:0 \
   --volume "$BACKUP_DIR:/review:ro" shabbat \
   php bin/import-legacy.php --db /app/data/shabbat.sqlite --legacy /review/source \
-  --apply --writers-stopped --backup-dir /app/data/upgrade-3.1.0 \
+  --apply --writers-stopped --backup-dir /app/data/upgrade-3.1.1 \
   --expect-report /review/import-preview.json > "$BACKUP_DIR/import-apply.json"
 new_compose run --rm --no-deps --user 0:0 \
   --volume "$BACKUP_DIR:/review:ro" shabbat php -r '
@@ -312,20 +315,21 @@ $db=Shabbat\Storage\Database::open("/app/data/shabbat.sqlite");
 $db->assertCurrentSchema();
 $checks=$db->integrity();
 if($checks["integrity_check"]!==["ok"] || $checks["foreign_key_check"]!==[]) throw new RuntimeException("Database check failed");
-$result=(new Shabbat\Storage\BackupService())->backup($db,"/app/data/upgrade-3.1.0/ready.sqlite");
+$result=(new Shabbat\Storage\BackupService())->backup($db,"/app/data/upgrade-3.1.1/ready.sqlite");
 echo Shabbat\Storage\Database::encode($result),PHP_EOL;
 ' > "$BACKUP_DIR/ready-backup.json"
 install -d -m 700 "$BACKUP_DIR/sqlite"
 new_compose run --rm --no-deps --user 0:0 \
   --volume "$BACKUP_DIR/sqlite:/export" shabbat sh -ec '
-  cp -a /app/data/upgrade-3.1.0/. /export/
+  cp -a /app/data/upgrade-3.1.1/. /export/
   chown -R 10001:10001 /app/data /app/runtime
 '
 new_compose run --rm --no-deps shabbat php bin/restore.php \
-  --backup /app/data/upgrade-3.1.0/ready.sqlite \
+  --backup /app/data/upgrade-3.1.1/ready.sqlite \
   --db /tmp/restore-rehearsal.sqlite --writers-stopped > "$BACKUP_DIR/restore-rehearsal.json"
 new_compose run --rm --no-deps shabbat php scripts/verify-patches.php
 new_compose run --rm --no-deps shabbat php bin/self-check.php --release
+new_compose run --rm --no-deps shabbat php bin/igbinary-check.php
 new_compose run --rm --no-deps shabbat php bin/runtime-permissions.php --require-non-root
 ~~~
 
@@ -371,9 +375,9 @@ new_compose ps
 
 </div>
 
-מנהל קבוצה צריך לטפל בכל צילום לא מאומת מחוץ לזמנים מוגנים: לקבוע ב־Telegram הרשאות רגילות רצויות, לרענן את פאנל ההתאוששות של הקבוצה ולאשר במפורש את אימוץ ההרשאות הנוכחיות. פתיחה כללית אינה בהכרח ברירת המחדל הרצויה. עקבו אחר שתי הפעימות, התורים, ההרשאות והתזכורות לאורך מחזור שבת/חג אמיתי ראשון. בדיקות 3.0 אינן אישור ל־3.1.0, לתזמון בחג או להרצה ממושכת. שמרו חומרי חזרה לאחור עד לקבלת התוצאה.
+מנהל קבוצה צריך לטפל בכל צילום לא מאומת מחוץ לזמנים מוגנים: לקבוע ב־Telegram הרשאות רגילות רצויות, לרענן את פאנל ההתאוששות של הקבוצה ולאשר במפורש את אימוץ ההרשאות הנוכחיות. פתיחה כללית אינה בהכרח ברירת המחדל הרצויה. עקבו אחר שתי הפעימות, התורים, ההרשאות והתזכורות לאורך מחזור שבת/חג אמיתי ראשון. בדיקות 3.0 אינן אישור ל־3.1.1, לתזמון בחג או להרצה ממושכת. שמרו חומרי חזרה לאחור עד לקבלת התוצאה.
 
-פקודות עתידיות מריצים מ־ORIGINAL_DIR המאומת עם **--project-name shabbat-production-310**. שומרים את שם הפרויקט ואת שני אמצעי האחסון. מגבים יחד קוד תואם, .env, מסד, סשן ומצב BroadcastManager.
+פקודות עתידיות מריצים מ־ORIGINAL_DIR המאומת עם **--project-name shabbat-production-311**. שומרים את שם הפרויקט ואת שני אמצעי האחסון. מגבים יחד קוד תואם, .env, מסד, סשן ומצב BroadcastManager.
 
 ## 9. חזרה לאחור
 

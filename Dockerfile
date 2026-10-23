@@ -12,6 +12,17 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* /tmp/sqlite.tar.gz /tmp/sqlite-autoconf-3510300 \
     && groupadd --gid 10001 shabbat \
     && useradd --uid 10001 --gid shabbat --create-home shabbat
+# The retained production session uses igbinary serialization. Keep the exact source and license.
+RUN curl --fail --location --proto '=https' --tlsv1.2 https://pecl.php.net/get/igbinary-3.2.16.tgz -o /tmp/igbinary-3.2.16.tgz \
+    && echo '8bf25d465abc7973d9e2c9a3039a5f8eea635b23bc1477017ff3999ff95836da  /tmp/igbinary-3.2.16.tgz' | sha256sum -c - \
+    && pecl install /tmp/igbinary-3.2.16.tgz \
+    && docker-php-ext-enable igbinary \
+    && install -d -m 0755 /usr/local/share/shabbat/igbinary \
+    && cp /tmp/igbinary-3.2.16.tgz /usr/local/share/shabbat/igbinary/igbinary-3.2.16.tgz \
+    && tar -xzf /tmp/igbinary-3.2.16.tgz -C /tmp \
+    && install -m 0644 /tmp/igbinary-3.2.16/COPYING /usr/local/share/shabbat/igbinary/COPYING \
+    && rm -rf /tmp/igbinary-3.2.16 /tmp/igbinary-3.2.16.tgz \
+    && php -r 'if (!extension_loaded("igbinary") || phpversion("igbinary") !== "3.2.16") { throw new RuntimeException("Pinned igbinary extension is unavailable."); }'
 COPY --from=composer /usr/bin/composer /usr/local/bin/composer
 COPY resources/php/99-shabbat-runtime.ini /usr/local/etc/php/conf.d/99-shabbat-runtime.ini
 WORKDIR /app
@@ -36,6 +47,7 @@ ENV DATA_DIR=/app/data SESSION_PATH=/app/runtime/bot.shabbat
 USER shabbat
 # PrimeModule fallback copies and the IPC bootstrap logger use the working directory.
 # Exercise these filesystem requirements as the actual bot user before startup.
-RUN php bin/runtime-permissions.php --require-non-root
+RUN php bin/runtime-permissions.php --require-non-root \
+    && php bin/igbinary-check.php
 VOLUME ["/app/data", "/app/runtime"]
 CMD ["php", "/app/bot.php"]

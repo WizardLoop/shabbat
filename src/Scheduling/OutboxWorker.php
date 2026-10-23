@@ -74,6 +74,9 @@ final class OutboxWorker
                 $this->jobs->preparePayload($job['job_id'], $owner, $prepared);
                 $job = $this->jobs->get($job['job_id']) ?? throw new \RuntimeException('Prepared job disappeared.');
             }
+            if ($job['module'] === 'daf' && $job['payload_prepared_at'] !== null && $this->jobs->repairPreparedDafPayload($job['job_id'], $owner)) {
+                $job = $this->jobs->get($job['job_id']) ?? throw new \RuntimeException('Repaired Daf job disappeared.');
+            }
             // Re-read revisions/time after eligibility work and immediately before the request.
             $settings = $this->settings->getGroup($job['group_id']);
             $stillEligible = $settings !== null && ($this->eligibility)($job, $settings, $this->clock->now());

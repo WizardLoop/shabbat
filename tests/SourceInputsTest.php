@@ -121,7 +121,7 @@ final class SourceInputsTest extends TestCase
         sort($expected);
         sort($actual);
         self::assertSame($expected, $actual);
-        self::assertCount(103, $actual);
+        self::assertCount(105, $actual);
         self::assertArrayHasKey('additional-source/amphp-windows-process-wrapper/LICENSE', $manifest['preferred_source']);
         self::assertArrayHasKey('additional-source/madelineproto-build-inputs/LICENSE', $manifest['preferred_source']);
         self::assertSame('MIT', $manifest['additional_source']['license']);
@@ -180,5 +180,23 @@ final class SourceInputsTest extends TestCase
             self::assertSame($approved['patched_sha256'], hash_file('sha256', $root . '/patches/' . $name . '/' . $approved['reviewed_output']));
         }
         self::assertSame('57c8ff33c9c0cfc3ef00e650a1cc910d7ee479a8bc509f6c9209a7c2a11399d6', hash_file('sha256', $root . '/LICENSE'));
+    }
+
+    public function testDockerIgbinarySourceAndLicenseArePinnedInTheSourceOffer(): void
+    {
+        $root = dirname(__DIR__);
+        $manifest = $this->manifest();
+        $source = $manifest['igbinary_source'];
+        self::assertSame('3.2.16', $source['version']);
+        self::assertSame('BSD-3-Clause', $source['license']);
+        self::assertSame('8bf25d465abc7973d9e2c9a3039a5f8eea635b23bc1477017ff3999ff95836da', $source['sha256']);
+        self::assertSame($source['sha256'], $manifest['files_sha256'][$source['archive']]);
+        self::assertArrayHasKey($source['license_file'], $manifest['preferred_source']);
+        $docker = (string) file_get_contents($root . '/Dockerfile');
+        self::assertStringContainsString($source['source_url'], $docker);
+        self::assertStringContainsString($source['sha256'], $docker);
+        self::assertStringContainsString('docker-php-ext-enable igbinary', $docker);
+        self::assertStringContainsString('php bin/igbinary-check.php', $docker);
+        self::assertStringContainsString('Redistribution and use', (string) file_get_contents($root . '/' . $manifest['preferred_source'][$source['license_file']]));
     }
 }

@@ -21,13 +21,17 @@ BroadcastManager retains original source, dev.3 presentation source (3d9425f7911
 
 ## Retired patches and historical findings
 
-3.1.0 uses official SDK UpdateLoop, GeoPoint and FormattedDate source. Their former local patch directories, helper and wrapper are absent from this release tree. Retirement does not claim that every upstream shutdown behavior is resolved; [publication status](PUBLICATION_STATUS.md) and actual regression evidence govern that conclusion.
+Since 3.1.0, the application uses official SDK UpdateLoop, GeoPoint and FormattedDate source. Their former local patch directories, helper and wrapper are absent from this release tree. Retirement does not claim that every upstream shutdown behavior is resolved; [publication status](PUBLICATION_STATUS.md) and actual regression evidence govern that conclusion.
 
 For historical identification only:
 
 - The earlier standalone UpdateLoop helper SHA-256 was 1ec2691498e878d28ca8e9cde94b00c803d9ccba789096ffc8471156dfb429e9. On 2026-10-16 the maintainer stated authorship and authorized distribution of those exact bytes under AGPL-3.0-only. Prior release provenance retains that scoped statement; it is not an independent legal certification.
 - Historical formatted-date exports had script SHA-256 c3091f61a401d8022b8ef1d228cf8c5f31a1094982de69a0be108e21885cb967 and wrapper SHA-256 a9e3146e49a88bec469e67e53f5e27cffb1b5127cde547590f2e385ef02dd264. Their MIT/proprietary project declarations conflicted and no standalone grant or recovered Git history was found. Those exports were not redistributed.
 - The separately authored wrapper shipped in earlier releases had SHA-256 ffe03d0d78215bc42968cd836c25b1f8a602f161fb55eba189b4102d9b99d5e5, Copyright WizardLoop 2026, AGPL-3.0-or-later. It is no longer an active source input.
+
+## Docker session serializer
+
+The unmodified igbinary 3.2.16 extension is built from the official PECL archive with SHA-256 `8bf25d465abc7973d9e2c9a3039a5f8eea635b23bc1477017ff3999ff95836da`. The [source manifest](../resources/release/source-manifest.json) records its URL, archive and original BSD-3-Clause COPYING. Docker retains both under `/usr/local/share/shabbat/igbinary/`; the corresponding-source collection includes them under `additional-source/igbinary/`. Existing sessions serialized with igbinary require this extension for reading. The offline probe uses synthetic data and does not deserialize a private session.
 
 ## Current SDK preferred source
 

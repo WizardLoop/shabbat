@@ -14,7 +14,7 @@ use Shabbat\Location\GeoNames;
 use Shabbat\UI\BotController;
 use Shabbat\UI\Lang;
 use Shabbat\Notifications\ReminderPlanner;
-use Shabbat\Content\{OmerText,TemplateRenderer,ShabbatTimesFormatter};
+use Shabbat\Content\{DafFormatter,OmerText,TemplateRenderer,ShabbatTimesFormatter};
 
 final class Application
 {
@@ -433,9 +433,13 @@ final class Application
         if ($kind === 'zmanim') {
             $text = $this->ui->renderView('0', $g, 'zmanim', $date);
         }
+        $dafPlain = '';
         if ($kind === 'daf') {
+            // Provider failures must reach the worker so a scheduled message can retry.
             $d = $this->calendar->daf($g, $date);
-            $text = htmlspecialchars(($g['language'] === 'he' ? $d['hebrew'] : $d['title']) . ' - ' . $date, ENT_QUOTES, 'UTF-8') . "\n" . $d['link'];
+            $formatter = new DafFormatter($lang);
+            $dafPlain = $formatter->plain($g, $d, $date);
+            $text = $formatter->html($g, $d, $date);
         }
         if ($kind === 'tefillin') {
             $sun = $this->calendar->zmanim($g, $date)['times'];
@@ -478,13 +482,17 @@ final class Application
         if ($inline !== '' && $template === null) {
             $payload['text'] = $inline;
         }
+        if ($kind === 'daf' && $payload['text'] === '{{daf}}' && !array_key_exists('entities', $payload)) {
+            // The built-in default selects the card; authored native entities remain plain text.
+            $payload['text'] = $text;
+        }
         if (str_contains($payload['text'], '{{')) {
             $z = $this->calendar->zmanim($g, $date);
             $sun = $z['times'];
             $state = $this->calendar->snapshot($g, $instant);
             $event = $state['current_event'] ?? $state['next_event'];
             $format = fn(?int $at): string=>$at === null ? '-' : (new \DateTimeImmutable('@' . $at))->setTimezone($zone)->format('H:i');
-            $values = ['location' => $g['location_name'],'date' => $date,'hdate' => $z['hdate'] ?? '-','source' => 'Hebcal','daf' => $text,'omer' => $text,'sunset' => $format($sun['sunset'] ?? null),'remaining' => isset($sun['sunset']) ? (string)max(0, (int)ceil(($sun['sunset'] - $instant->getTimestamp()) / 60)) : '-','candles' => $format($event['candles_at'] ?? null),'havdalah' => $format($event['havdalah_at'] ?? null),'close' => $format($event['close_at'] ?? null),'open' => $format($event['open_at'] ?? null)];
+            $values = ['location' => $g['location_name'],'date' => $date,'hdate' => $z['hdate'] ?? '-','source' => 'Hebcal','daf' => $kind === 'daf' ? $dafPlain : $text,'omer' => $text,'sunset' => $format($sun['sunset'] ?? null),'remaining' => isset($sun['sunset']) ? (string)max(0, (int)ceil(($sun['sunset'] - $instant->getTimestamp()) / 60)) : '-','candles' => $format($event['candles_at'] ?? null),'havdalah' => $format($event['havdalah_at'] ?? null),'close' => $format($event['close_at'] ?? null),'open' => $format($event['open_at'] ?? null)];
             $payload = (new TemplateRenderer())->renderPayload($payload, $values);
         }
         return $payload;

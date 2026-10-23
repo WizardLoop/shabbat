@@ -1,6 +1,6 @@
 # Offline patch installation
 
-Only two patch sets are active in 3.1.0:
+Only two patch sets are active in 3.1.1:
 
 | Package | Local change | Reviewed source |
 |---|---|---|

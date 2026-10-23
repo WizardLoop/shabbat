@@ -399,7 +399,14 @@ final class MadelineGateway implements TelegramGateway, \Shabbat\Telegram\Guarde
     }
     public function sendPrivate(string $userId, string $text, array $markup = []): void
     {
-        $this->call('messages.sendMessage', ['peer' => $userId, 'random_id' => random_int(1, PHP_INT_MAX), 'message' => $this->present(['text' => $text])['text'], 'parse_mode' => 'HTML', 'reply_markup' => (self::normalizeMarkup($markup, $this->customEmojiEnabled) ?: null), 'no_webpage' => true]);
+        try {
+            $this->call('messages.sendMessage', ['peer' => $userId, 'random_id' => random_int(1, PHP_INT_MAX), 'message' => $this->present(['text' => $text])['text'], 'parse_mode' => 'HTML', 'reply_markup' => (self::normalizeMarkup($markup, $this->customEmojiEnabled) ?: null), 'no_webpage' => true]);
+        } catch (\danog\MadelineProto\RPCErrorException $error) {
+            if ($error->rpc !== 'PEER_ID_INVALID' || !preg_match('/^[1-9][0-9]{0,18}$/D', $userId)) {
+                throw $error;
+            }
+            throw new \Shabbat\Telegram\PrivateChatUnavailableException($userId, $error);
+        }
     }
 
     /** Caller must verify the persisted group/message binding before editing a counter. */

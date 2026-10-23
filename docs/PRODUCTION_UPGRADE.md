@@ -1,20 +1,22 @@
-# Production upgrade to 3.1.0
+# Production upgrade to 3.1.1
 
 [עברית](PRODUCTION_UPGRADE_HE.md) · [README](../README.md) · [Import mapping](MIGRATION.md) · [Permission recovery](PERMISSION_RECOVERY.md)
 
-This is a manual runbook, not an executed deployment. Use the released, verified 3.1.0 assets after required checks pass. The requested path is **/root/shabbat**; older instructions used **/root/shabat**. Verify the real container and directory before changing either. Never use the test bot's data.
+This is a manual runbook, not an executed deployment. Use the released, verified 3.1.1 assets after required checks pass. The requested path is **/root/shabbat**; older instructions used **/root/shabat**. Verify the real container and directory before changing either. Never use the test bot's data.
 
 Commands cover the legacy whole-project bind mount or standard 3.0 Docker data/session volumes. The 3.0 path probe only reads configuration; it opens no API/session. A custom session name or lock-only remnants stop this procedure. Custom mounts, external storage, symlinks to private data or another writer need a tailored backup first. Run server blocks in one **root Bash session** with Docker/Compose, unzip, GNU coreutils and sufficient storage. Keep backups outside source/build directories. Only the final start connects the new bot to Telegram.
 
 The new image uses PHP **8.4.27**. Manual runtimes require **8.3.36+, 8.4.27+ or 8.5.12+** within those branches; see the [22 October 2026 security baseline](INSTALLATION.md#php-security-baseline). Preserve the old image for rollback, but do not treat an older interpreter as meeting the new baseline.
+
+For an installation already upgraded to 3.1.0 with SQLite, use [updating an existing SQLite deployment](INSTALLATION.md#updating-an-existing-sqlite-deployment), retaining its Compose project, volumes and session. Do not import legacy data again or reset queues. Prepared Daf repair happens only on the normal retry path while a job remains eligible. The full staged cutover below is for the separate older-installation path.
 
 ## 1. Upload from your computer
 
 Download the deployment ZIP and SHA256SUMS from the matching GitHub release. In the computer's terminal, replace SERVER with your SSH hostname/IP. SFTP can upload the same files to the same protected destination.
 
 ~~~sh
-ssh root@SERVER "install -d -m 700 /root/shabbat-upload-3.1.0"
-scp shabbat-3.1.0.zip SHA256SUMS root@SERVER:/root/shabbat-upload-3.1.0/
+ssh root@SERVER "install -d -m 700 /root/shabbat-upload-3.1.1"
+scp shabbat-3.1.1.zip SHA256SUMS root@SERVER:/root/shabbat-upload-3.1.1/
 ~~~
 
 ## 2. Verify production and set protected paths
@@ -64,10 +66,10 @@ else
   echo 'STOP: custom storage layout needs a reviewed backup/cutover.' >&2
   exit 1
 fi
-VERSION=3.1.0
-NEW_PROJECT=shabbat-production-310
+VERSION=3.1.1
+NEW_PROJECT=shabbat-production-311
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
-UPLOAD_DIR=/root/shabbat-upload-3.1.0
+UPLOAD_DIR=/root/shabbat-upload-3.1.1
 RELEASE_DIR="/root/shabbat-stage-$VERSION-$STAMP"
 BACKUP_DIR="/root/shabbat-backups/$VERSION-$STAMP"
 RETIRED_DIR="$ORIGINAL_DIR.before-$VERSION-$STAMP"
@@ -89,13 +91,13 @@ The checksum must pass. Keep archive build-info.json. Edit the new .env privatel
 ~~~sh
 (
   cd "$UPLOAD_DIR"
-  awk '$2 == "shabbat-3.1.0.zip" {
+  awk '$2 == "shabbat-3.1.1.zip" {
     if (NF != 2 || length($1) != 64 || $1 ~ /[^0-9a-f]/) exit 1
     print; n++
   } END { if (n != 1) exit 1 }' SHA256SUMS > deployment.sha256
   sha256sum --check deployment.sha256
 )
-unzip -q "$UPLOAD_DIR/shabbat-3.1.0.zip" -d "$RELEASE_DIR"
+unzip -q "$UPLOAD_DIR/shabbat-3.1.1.zip" -d "$RELEASE_DIR"
 test "$(cat "$RELEASE_DIR/VERSION")" = "$VERSION"
 test -f "$RELEASE_DIR/build-info.json"
 cp "$RELEASE_DIR/.env.example" "$RELEASE_DIR/.env"
@@ -110,7 +112,7 @@ DATA_DIR=/app/data
 SESSION_PATH=/app/runtime/bot.shabbat
 HEARTBEAT_PATH=/app/data/scheduler-heartbeat.json
 LEGACY_DATA_PATH=.
-SOURCE_URL=https://github.com/WizardLoop/shabbat/releases/tag/v3.1.0
+SOURCE_URL=https://github.com/WizardLoop/shabbat/releases/tag/v3.1.1
 ~~~
 
 After editing, build and run offline checks. The new project must have no existing volumes; inspect an earlier attempt instead of deleting them. These commands do not start the bot. Ensure space for the entire old folder, data/session snapshots, old image and new image.
@@ -130,6 +132,7 @@ new_compose config --quiet
 new_compose build shabbat
 new_compose run --rm --no-deps shabbat php scripts/verify-patches.php
 new_compose run --rm --no-deps shabbat php bin/self-check.php --release
+new_compose run --rm --no-deps shabbat php bin/igbinary-check.php
 new_compose run --rm --no-deps shabbat php bin/runtime-permissions.php --require-non-root
 ~~~
 
@@ -190,8 +193,8 @@ new_compose run --rm --no-deps --user 0:0 \
   cp -a /review/session/. /app/runtime/
   (cd /app/data; sha256sum --check /review/data.sha256)
   (cd /app/runtime; sha256sum --check /review/session.sha256)
-  test ! -e /app/data/upgrade-3.1.0
-  mkdir -m 700 /app/data/upgrade-3.1.0
+  test ! -e /app/data/upgrade-3.1.1
+  mkdir -m 700 /app/data/upgrade-3.1.1
 ' > "$BACKUP_DIR/copied-state-check.txt"
 inventory() {
   new_compose run --rm --no-deps --user 0:0 shabbat php -r '
@@ -220,14 +223,14 @@ if [ "$LAYOUT" = sqlite ]; then
 fi
 new_compose run --rm --no-deps --user 0:0 shabbat \
   php bin/migrate.php --writers-stopped --db /app/data/shabbat.sqlite \
-  --backup-dir /app/data/upgrade-3.1.0 > "$BACKUP_DIR/migrate.json"
+  --backup-dir /app/data/upgrade-3.1.1 > "$BACKUP_DIR/migrate.json"
 if [ "$LAYOUT" = sqlite ]; then
   inventory > "$BACKUP_DIR/database-after.json"
   cmp "$BACKUP_DIR/database-before.json" "$BACKUP_DIR/database-after.json"
 fi
 ~~~
 
-For 3.0 SQLite, row hashes must match and no legacy import is needed; continue at step 7. For legacy, continue below. No SQL schema change is introduced in 3.1.0; investigate any unexpected difference before startup.
+For 3.0 SQLite, row hashes must match and no legacy import is needed; continue at step 7. For legacy, continue below. No SQL schema change is introduced in 3.1.1; investigate any unexpected difference before startup.
 
 ## 6. Legacy only: review and bind the import
 
@@ -249,7 +252,7 @@ Apply is not one all-or-nothing transaction. On failure keep the bot stopped, pr
 new_compose run --rm --no-deps --user 0:0 \
   --volume "$BACKUP_DIR:/review:ro" shabbat \
   php bin/import-legacy.php --db /app/data/shabbat.sqlite --legacy /review/source \
-  --apply --writers-stopped --backup-dir /app/data/upgrade-3.1.0 \
+  --apply --writers-stopped --backup-dir /app/data/upgrade-3.1.1 \
   --expect-report /review/import-preview.json > "$BACKUP_DIR/import-apply.json"
 new_compose run --rm --no-deps --user 0:0 \
   --volume "$BACKUP_DIR:/review:ro" shabbat php -r '
@@ -272,20 +275,21 @@ $db=Shabbat\Storage\Database::open("/app/data/shabbat.sqlite");
 $db->assertCurrentSchema();
 $checks=$db->integrity();
 if($checks["integrity_check"]!==["ok"] || $checks["foreign_key_check"]!==[]) throw new RuntimeException("Database check failed");
-$result=(new Shabbat\Storage\BackupService())->backup($db,"/app/data/upgrade-3.1.0/ready.sqlite");
+$result=(new Shabbat\Storage\BackupService())->backup($db,"/app/data/upgrade-3.1.1/ready.sqlite");
 echo Shabbat\Storage\Database::encode($result),PHP_EOL;
 ' > "$BACKUP_DIR/ready-backup.json"
 install -d -m 700 "$BACKUP_DIR/sqlite"
 new_compose run --rm --no-deps --user 0:0 \
   --volume "$BACKUP_DIR/sqlite:/export" shabbat sh -ec '
-  cp -a /app/data/upgrade-3.1.0/. /export/
+  cp -a /app/data/upgrade-3.1.1/. /export/
   chown -R 10001:10001 /app/data /app/runtime
 '
 new_compose run --rm --no-deps shabbat php bin/restore.php \
-  --backup /app/data/upgrade-3.1.0/ready.sqlite \
+  --backup /app/data/upgrade-3.1.1/ready.sqlite \
   --db /tmp/restore-rehearsal.sqlite --writers-stopped > "$BACKUP_DIR/restore-rehearsal.json"
 new_compose run --rm --no-deps shabbat php scripts/verify-patches.php
 new_compose run --rm --no-deps shabbat php bin/self-check.php --release
+new_compose run --rm --no-deps shabbat php bin/igbinary-check.php
 new_compose run --rm --no-deps shabbat php bin/runtime-permissions.php --require-non-root
 ~~~
 
@@ -321,9 +325,9 @@ new_compose exec -T shabbat php bin/health.php --deep
 new_compose ps
 ~~~
 
-A group administrator must resolve every unverified snapshot outside protected periods: set intended normal rights in Telegram, refresh the named recovery panel and explicitly adopt current permissions. Generally open rights are not necessarily the intended baseline. Monitor both heartbeats, queues, permissions and reminders through the first real Shabbat/festival close/open sequence. Earlier 3.0 live checks do not certify 3.1.0, holiday timing or a long soak. Retain rollback material until acceptance.
+A group administrator must resolve every unverified snapshot outside protected periods: set intended normal rights in Telegram, refresh the named recovery panel and explicitly adopt current permissions. Generally open rights are not necessarily the intended baseline. Monitor both heartbeats, queues, permissions and reminders through the first real Shabbat/festival close/open sequence. Earlier 3.0 live checks do not certify 3.1.1, holiday timing or a long soak. Retain rollback material until acceptance.
 
-Future commands run from the verified ORIGINAL_DIR with **--project-name shabbat-production-310**. Keep that project identity and both volumes. Back up matching source, .env, database, session and BroadcastManager state.
+Future commands run from the verified ORIGINAL_DIR with **--project-name shabbat-production-311**. Keep that project identity and both volumes. Back up matching source, .env, database, session and BroadcastManager state.
 
 ## 9. Rollback
 

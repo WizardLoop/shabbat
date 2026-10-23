@@ -1,16 +1,16 @@
 # Release preparation and publication
 
-The version in [VERSION](../VERSION) is **3.1.0**. Publication requires the exact-commit release gates below. The owner confirmed dev.9 live locking, unlocking, original-permission restoration and restart. Broader holy-day, load, soak and feature-specific acceptance remain separate. See [release notes](RELEASE_NOTES.md), [implementation status](IMPLEMENTATION_STATUS.md) and [licensing/source scope](LICENSING.md).
+The version in [VERSION](../VERSION) is **3.1.1**. The final tag and archives must identify the reviewed merge commit after the exact-commit release gates below pass. The owner confirmed dev.9 live locking, unlocking, original-permission restoration and restart. Broader holy-day, load, soak and feature-specific acceptance remain separate. See [release notes](RELEASE_NOTES.md), [implementation status](IMPLEMENTATION_STATUS.md) and [licensing/source scope](LICENSING.md).
 
 ## Review and publication sequence
 
-Work in an isolated checkout without production credentials or state. Require green checks on the reviewed PR, merge it, and verify the exact resulting commit before creating `v3.1.0` and a stable GitHub release. Release artifacts must identify that actual commit and fingerprint with `local_changes=false`. Tagging and publishing require the owner's authorization; none of the commands below publishes or deploys.
+Work in an isolated checkout without production credentials or state. Require green checks on the reviewed PR, merge it, and verify the exact resulting commit before creating `v3.1.1` and a stable GitHub release. Release artifacts must identify that actual commit and fingerprint with `local_changes=false`. Tagging and publishing require the owner's authorization; none of the commands below publishes or deploys.
 
-The release provides `shabbat-3.1.0.zip`, `shabbat-3.1.0-corresponding-source.zip`, `RELEASE_MANIFEST.json` and `SHA256SUMS`. The deployment ZIP contains clean repository source plus build identity, without installed vendor. The corresponding-source ZIP adds the locked runtime sources, licenses, reviewed patches and pinned preferred-source supplements. The manifest states the scope and exclusions; no claim covers the complete Docker operating system or all development-tool source.
+The release provides `shabbat-3.1.1.zip`, `shabbat-3.1.1-corresponding-source.zip`, `RELEASE_MANIFEST.json` and `SHA256SUMS`. The deployment ZIP contains clean repository source plus build identity, without installed vendor. The corresponding-source ZIP adds the locked runtime sources, licenses, reviewed patches and pinned preferred-source supplements. The manifest states the scope and exclusions; no claim covers the complete Docker operating system or all development-tool source.
 
 ## Reproduce quality checks
 
-Run at the root of a disposable checkout, as its nonroot owner with write access, with the supported [patched PHP/Composer runtime](INSTALLATION.md#php-security-baseline): 64-bit PHP 8.3.36+, 8.4.27+ or 8.5.12+ within those branches, and Composer 2.10.3. The locked installation writes only this checkout's dependencies and applies the approved patches. Never install or patch dependencies inside an active bot tree.
+Run at the root of a disposable checkout, as its nonroot owner with write access, with the supported [patched PHP/Composer runtime](INSTALLATION.md#php-security-baseline): 64-bit PHP 8.3.36+, 8.4.27+ or 8.5.12+ within those branches, and Composer 2.10.3, with igbinary enabled. The locked installation writes only this checkout's dependencies and applies the approved patches. Never install or patch dependencies inside an active bot tree.
 
 ```sh
 composer validate --strict --no-check-all
@@ -25,6 +25,7 @@ composer check-docs
 composer check-locales
 php bin/self-check.php
 php bin/self-check.php --release
+php bin/igbinary-check.php
 ```
 
 The validation command retains strict manifest/lock checking. MadelineProto now uses a reviewed stable version range, while composer.lock pins the exact installed source. Installation/upgrades use `composer install` with the existing lock; dependency changes require separate review. The release self-check enforces the loaded SQLite/target runtime gate. Do not bypass it on an older host runtime.
@@ -79,7 +80,7 @@ Exclude `.git`, actual `.env`, sessions, application/runtime databases and WAL/S
 
 ## Production remains a separate action
 
-Use the [production upgrade guide](PRODUCTION_UPGRADE.md) ([עברית](PRODUCTION_UPGRADE_HE.md)) to verify the actual /root/shabbat or /root/shabat installation and select its legacy or SQLite path. Existing SQLite deployments must not import legacy data again. Version 3.1.0 retains all 16 immutable migration sources.
+Use the [production upgrade guide](PRODUCTION_UPGRADE.md) ([עברית](PRODUCTION_UPGRADE_HE.md)) to verify the actual /root/shabbat or /root/shabat installation and select its legacy or SQLite path. Existing SQLite deployments must not import legacy data again. Version 3.1.1 retains all 16 immutable migration sources.
 
 Stop all writers before migration, retain matching source/database/session/BroadcastManager state, verify import/settings and restore, and monitor the first real production close/open cycle. Review old permission snapshots through the provenance-aware recovery panel. Keep the exact corresponding source available and set `SOURCE_URL` before public operation. Publication itself does not execute a server command or restart a bot.
 

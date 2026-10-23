@@ -2,7 +2,7 @@
 
 **Release policy: publication requires successful mandatory checks on the exact final commit. Use the matching GitHub Actions run and release manifest to verify the tested source and artifacts.**
 
-Version: **3.1.0**, targeting the locked official MadelineProto 8.11.10 / TL layer 232 release. Existing PHP/SQLite bot capabilities and migration bytes are retained. This page distinguishes implemented behavior, previous acceptance and checks still required on the final new tree.
+Version: **3.1.1**, targeting the locked official MadelineProto 8.11.10 / TL layer 232 release. Existing PHP/SQLite bot capabilities and migration bytes are retained. This page distinguishes implemented behavior, previous acceptance and checks still required on the final new tree.
 
 ## Implemented paths and limits
 
@@ -12,7 +12,7 @@ Version: **3.1.0**, targeting the locked official MadelineProto 8.11.10 / TL lay
 | Group permissions | Fresh native permission capture, durable original snapshot, guarded close/open, conflict recovery panel | Old unverified snapshots require administrator review; Telegram cannot make concurrent administrator edits atomic with the bot |
 | Group enrollment | `/add`, `/settings`, legacy group-list compatibility and explicit full import | `/add` creates a new group in off mode; first registration through `/settings` currently inherits lock mode. Review the shown mode before enabling a new real group |
 | Calendar views | Nearest Shabbat, upcoming dates and Yom Tov entry/exit, daily zmanim, Daf Yomi and Omer | Provider text and Hebrew ritual text are not completely translated into every interface language |
-| Scheduled content | Per-group opt-in daily modules, fixed/interval/solar tefillin reminders and Omer policies | Personal preferences supply views/settings, not automatic private reminder subscriptions |
+| Scheduled content | Per-group opt-in daily modules, shared private/scheduled Daf cards, fixed/interval/solar tefillin reminders and Omer policies | Personal preferences supply views/settings, not automatic private reminder subscriptions |
 | Delivery safety | Final dispatch eligibility, ordinary holy-period quiet, actual spacing/caps, durable uncertainty, bounded backlog | A configured closing notice is an intentional exception; an already-dispatched network request may arrive after the local boundary |
 | Group presentation | Rich templates with entities/media, independent keyboards, share defaults, tefillin acknowledgement toggles | Telegram/client support, custom emoji eligibility and live media rendering require testing; fallback handles supported definite failures |
 | Moderation | Configurable restriction flags and optional received-message cleanup | Other-bot visibility depends on Telegram delivery rules, BotFather mode/privacy and admin state; deletion also needs delete permission |
@@ -28,15 +28,17 @@ Version: **3.1.0**, targeting the locked official MadelineProto 8.11.10 / TL lay
 
 On 2026-10-16 the project owner reported successful live dev.9 tests of group locking, unlocking, restoration of the original permissions and restart. This is operator-reported evidence for those paths. It does not establish a real Shabbat/Yom Tov transition, a full holiday sequence, sustained load capacity, a long wall-clock soak, every client/language, payment flow or the legacy production migration.
 
-That confirmation belongs to the earlier implementation. It is not live acceptance of MadelineProto 8.11.10, the new keyboard boundary or the 3.1.0 import procedure. No new 3.1.0 Telegram acceptance is claimed.
+That confirmation belongs to the earlier implementation. It does not establish acceptance of the 3.1.0 dependency/import changes or the 3.1.1 Daf rendering and retry changes. No new live Telegram acceptance is inferred from those earlier tests.
 
 ## Automated verification and host limits
 
+The reviewed implementation at `0f08f0548e85518e1d15b83975dcfbf03b2dc9e8` in [PR #24](https://github.com/WizardLoop/shabbat/pull/24) passed the push and PR CI matrices on PHP **8.3.36, 8.4.27 and 8.5.12**, with **1,397 tests and 55,328 assertions**. Composer audit and the configured quality/source/packaging checks passed. Hosted Docker checks passed with PHP **8.4.27** and igbinary **3.2.16**, including an extracted ZIP build without Git or a build-commit override. These are automated checks for that commit, not live Telegram acceptance. Latest-branch and final-merge checks remain separate release gates.
+
 Shutdown coverage exercises official SDK loop recovery/stop behavior and real disconnect/finalize methods with an in-memory transport and modeled delayed flush. The lock barrier must retain writer ownership until finalization completes. Loop `stop()` prevents rescheduling after the current body returns; it does not promise immediate cancellation of that body. These fixtures do not serialize a real session or exercise Telegram, an IPC daemon or Linux signals. Platform-specific worker checks must be evaluated on the relevant operating system.
 
-The suites exercise fake transports, provider fixtures, controlled clocks, isolated databases, migration/restore, patch lifecycle and simulated load. Run them against the final reviewed 3.1.0 commit and locked installation. Earlier 3.0.0 hosted results do not replace this version's mandatory clean-install, regression, analysis, image and artifact checks. Publication requires those gates to pass on the exact final commit. Release manifests, SHA-256 sums and the matching GitHub Actions run identify the tested source/artifacts. Local checks directories are external evidence, not runtime source.
+The suites exercise fake transports, provider fixtures, controlled clocks, isolated databases, migration/restore, patch lifecycle and simulated load. Run them against the final reviewed 3.1.1 commit and locked installation. Earlier 3.0.0 hosted results do not replace this version's mandatory clean-install, regression, analysis, image and artifact checks. Publication requires those gates to pass on the exact final commit. Release manifests, SHA-256 sums and the matching GitHub Actions run identify the tested source/artifacts. Local checks directories are external evidence, not runtime source.
 
-Local Windows limitations include unavailable Docker and POSIX-only/symlink-dependent coverage. The recorded local PHP 8.5.0 and PHP-loaded SQLite 3.45.2 are below the current deployment baseline; their test results remain compatibility evidence. The [22 October 2026 baseline](INSTALLATION.md#php-security-baseline) requires PHP 8.3.36+, 8.4.27+ or 8.5.12+ within those branches. Docker targets PHP 8.4.27 and SQLite 3.51.3 and must pass the release gate. Do not describe an unexecuted image build, CI run or Telegram operation as successful. See [publication status](PUBLICATION_STATUS.md) for source scope and [release preparation](RELEASE.md) for gates.
+Local Windows limitations include unavailable Docker and POSIX-only/symlink-dependent coverage. Earlier local PHP 8.5.0 / SQLite 3.45.2 results remain historical compatibility evidence. The current isolated local verifier uses PHP 8.5.12 but lacks igbinary, so its extension-dependent self-check cannot establish deployment readiness; the hosted Linux image checks supply that evidence. The [22 October 2026 baseline](INSTALLATION.md#php-security-baseline) requires PHP 8.3.36+, 8.4.27+ or 8.5.12+ within those branches. Docker targets PHP 8.4.27 and SQLite 3.51.3 and must pass the release gate. Do not describe an unexecuted image build, CI run or Telegram operation as successful. See [publication status](PUBLICATION_STATUS.md) for source scope and [release preparation](RELEASE.md) for gates.
 
 ## Remaining deployment acceptance
 

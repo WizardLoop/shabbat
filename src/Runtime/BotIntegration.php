@@ -121,7 +121,29 @@ trait BotIntegration
                 $message->reply($this->v3Text($user, 'provider_unavailable'));
             }return;
         }
-        $app->ui->handleMessage($event);
+        $this->v3HandleUiMessage($event, fn(string $text, array $markup) => $message->reply($text, replyMarkup: $markup));
+    }
+    /** A rejected private reply gets one public start link, never another DM. */
+    private function v3HandleUiMessage(array $event, callable $reply): void
+    {
+        $app = $this->v3App();
+        try {
+            $app->ui->handleMessage($event);
+        } catch (\Shabbat\Telegram\PrivateChatUnavailableException $error) {
+            if ($error->userId !== (string)($event['user_id'] ?? '')) {
+                throw $error;
+            }
+            $group = (string)($event['group_id'] ?? '');
+            if (($event['private'] ?? true) !== false || !preg_match('/^-[1-9][0-9]{0,18}$/D', $group)) {
+                return;
+            }
+            $locale = $app->settings->getGroup($group)['language'] ?? 'he';
+            $lang = new Lang();
+            $reply($lang->text($locale, 'not_private'), ['inline_keyboard' => [[[
+                'text' => $lang->text($locale, 'select_private'),
+                'url' => 'https://t.me/' . $app->gateway->botUsername() . '?start=g_' . $group,
+            ]]]]);
+        }
     }
     private function v3Rpc(string $method, array $parameters): mixed
     {

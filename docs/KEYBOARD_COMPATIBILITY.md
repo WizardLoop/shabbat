@@ -1,6 +1,6 @@
 # Keyboard compatibility
 
-Shabbat 3.1.0 converts keyboards immediately before transport through
+Shabbat 3.1.1 converts keyboards immediately before transport through
 `Shabbat\Telegram\KeyboardMarkup`. MadelineProto 8.11.10 uses Telegram Layer 232:
 inline keyboards contain `keyboardInlineButtonRow`, `keyboardInlineButton`
 and a nested `InlineButtonType`. Reply keyboards use `keyboardButtonRow`,

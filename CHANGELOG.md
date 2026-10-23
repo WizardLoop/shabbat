@@ -2,6 +2,16 @@
 
 PHP 8.3 compatibility: module-delivery bookkeeping now uses the database-owned `BEGIN IMMEDIATE` transaction state and exact connection identity; native callback/message fixtures initialize inherited readonly properties from their declaring class. Regression tests cover rejected foreign/outside transactions, rollback and state reset.
 
+## 3.1.1
+
+- Escape provider-derived Daf text and Sefaria links exactly once at the HTML boundary. Keep the `{{daf}}` substitution raw so custom HTML templates and native Telegram entities retain their intended text without double escaping.
+- Share the existing Presentation-based Daf card formatter between private views and scheduled group messages: bold heading, group location/timezone, Gregorian and Hebrew date, bold tractate/page and the localized page link. Keep the `daf_yomi` animated emoji and existing Unicode fallback; the default `{{daf}}` template retains the rich card.
+- Repair only the recognized frozen two-line 3.1.0 Daf HTML under an eligible owned retry lease, before dispatch or after the specific local DOM parse failure. Escape its stored URL without regenerating the message; preserve delivery identity, attempt history, expiry and metadata. Generic uncertain sends, native/custom payloads and failed/expired jobs remain unchanged; scheduled provider failures remain retryable.
+- Preserve customized text/entities, media, buttons and topics, including keyboard-only customization. Add regressions through MadelineProto `TextEntities::fromHtml` for real parameterized Hebcal links, card parity, custom emoji/fallback, prepared retries and single escaping.
+- Handle Telegram `PEER_ID_INVALID` when a group settings action cannot reach the administrator privately: avoid a second error message to the same unreachable user and show the existing localized private-start link in the originating group. Settings remain private and normal administrator checks still apply; other RPC errors, group delivery and cancellation retain their existing behavior.
+- Include pinned igbinary 3.2.16 in Docker for existing sessions serialized with igbinary. Verify extension availability, a serialization round trip and offline MadelineProto initialization before startup; retain the original extension source and BSD-3-Clause notice.
+- Keep Composer dependencies, the lock file, active library patches and migrations 001-016 unchanged. Prepare matching English/Hebrew guidance; the final tag and release artifacts must be created from the verified merge commit.
+
 ## 3.1.0
 
 - Require PHP 8.3.36, 8.4.27 or 8.5.12 and later patches on those branches, incorporating the upstream security fixes published on 22 October 2026. Pin the Docker image to verified PHP 8.4.27 bytes and verify exact patched runtimes in CI and release packaging.
