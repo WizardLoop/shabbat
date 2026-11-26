@@ -14,18 +14,11 @@ use danog\MadelineProto\DataCenter;
 use danog\MadelineProto\DataCenterConnection;
 use danog\MadelineProto\Logger;
 use danog\MadelineProto\MTProto;
-use danog\MadelineProto\Stream\BufferedStreamInterface;
 use danog\MadelineProto\Stream\ConnectionContext;
 use danog\MadelineProto\Stream\ContextIterator;
-use danog\MadelineProto\Stream\MTProtoBufferInterface;
 use PHPUnit\Framework\TestCase;
 use Shabbat\Runtime\Runner;
 use Shabbat\Runtime\SingleInstance;
-
-/** Native buffered transport used by the SDK connection. */
-interface ShutdownFixtureTransport extends BufferedStreamInterface, MTProtoBufferInterface
-{
-}
 
 /** Real SDK unreference/disconnect/finalize; an in-memory transport and flush callback replace network/session I/O. */
 final class SdkShutdownBarrierTest extends TestCase
