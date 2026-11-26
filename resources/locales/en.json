@@ -33,6 +33,7 @@
     "next": "Next page",
     "previous": "Previous page",
     "no_groups": "No known groups that you currently administer were found. In a known group use /settings.",
+    "group_directory_retry": "Telegram could not verify your groups just now. Try again in {{seconds}} seconds.",
     "settings_private_sent": "The settings panel has been sent to your private chat.",
     "group_panel": "<b>👥 {{title}}</b>\n\n📍 {{location}}\n🌐 <code>{{timezone}}</code>\n\n<b>Mode:</b> {{mode}}\n<b>Next action:</b> {{next}}\n\nChoose Shabbat and holidays to set when the group closes and opens. Choose Messages and design to edit the text and buttons members see.",
     "personal_panel": "<b>⚙️ My preferences</b>\n\n📍 {{location}}\n🌐 <code>{{timezone}}</code>\n\nChoose your language, location and calculation methods. These preferences determine your personal times.",
@@ -466,6 +467,7 @@
     "settings_shabbat_timing": "🕯️ Entry, exit and locking",
     "settings_shabbat_messages": "✏️ Messages and design",
     "settings_shabbat_timing_intro": "Choose the candle-lighting custom, end-time method and closing/opening offsets. All times use the group location. Consecutive Shabbat and Yom Tov days stay locked until the entire period ends.",
+    "settings_transition_mode_hint": "To send opening and closing notices, choose “Lock and messages” or “Messages only” and enable the notices you want.",
     "settings_shabbat_messages_intro": "Choose closing/opening messages, quiet hours and the group topic. Edit each message's text, formatting, media and buttons separately.",
     "settings_shabbat_summary": "<b>✡️ Shabbat and holidays - {{title}}</b>\n📍 {{location}}\n🌐 <code>{{timezone}}</code>\n\n<b>Mode:</b> {{mode}}\n<b>Shabbat:</b> {{shabbat}} · <b>Yom Tov:</b> {{holidays}}\n\n<b>🕯️ Entry and exit</b>\nCandle lighting: {{candles}} minutes before sunset\nEnd time: {{havdalah}}\nLock: {{close}} minutes before candle lighting\nReopen: {{open}} minutes after the end\n\nChoose a section below. Confirmed changes return you to the same section.",
     "template_current_summary": "<b>Current design</b>\nText: {{text}}\nMedia: {{media}}\nButtons: {{buttons}}\n\nEdit content or buttons, review the preview, then save. A test message to the group requires separate confirmation.",
@@ -596,4 +598,5 @@
     "diagnostics_snapshot_verification": "Permission snapshot verification",
     "diagnostics_snapshot_verified": "Saved after a verified read",
     "diagnostics_snapshot_unverified": "Older-version snapshot - administrator review required",
-    "permission_error_readback": "⚠️ The permission update was sent, but its result was not verified. Permissions may already have changed. Review them in Te
+    "permission_error_readback": "⚠️ The permission update was sent, but its result was not verified. Permissions may already have changed. Review them in Telegram and Resolve permission problem before retrying."
+}

@@ -33,6 +33,7 @@
     "next": "Page suivante",
     "previous": "Page précédente",
     "no_groups": "Aucun groupe connu que vous administrez actuellement n’a été trouvé. Dans un groupe déjà inscrit, utilisez /settings.",
+    "group_directory_retry": "Telegram ne peut pas vérifier vos groupes pour le moment. Réessayez dans {{seconds}} secondes.",
     "settings_private_sent": "Le panneau des réglages a été envoyé dans votre discussion privée.",
     "group_panel": "<b>👥 {{title}}</b>\n\n📍 {{location}}\n🌐 <code>{{timezone}}</code>\n\n<b>Mode :</b> {{mode}}\n<b>Prochaine action :</b> {{next}}\n\nChoisissez Chabbat et fêtes pour régler la fermeture et la réouverture du groupe. Dans Messages et présentation, modifiez le texte et les boutons visibles par les membres.",
     "personal_panel": "<b>⚙️ Mes préférences</b>\n\n📍 {{location}}\n🌐 <code>{{timezone}}</code>\n\nChoisissez votre langue, votre lieu et les méthodes de calcul. Ces préférences déterminent vos horaires personnels.",
@@ -466,6 +467,7 @@
     "settings_shabbat_timing": "🕯️ Entrée, sortie et fermeture",
     "settings_shabbat_messages": "✏️ Messages et présentation",
     "settings_shabbat_timing_intro": "Choisissez la coutume d'allumage, la méthode de sortie et les décalages de fermeture/ouverture. Les heures suivent le lieu du groupe. Un Chabbat et un Yom Tov consécutifs restent fermés jusqu'à la fin de toute la période.",
+    "settings_transition_mode_hint": "Pour envoyer les avis d’ouverture et de fermeture, choisissez le mode avec messages et activez les avis souhaités.",
     "settings_shabbat_messages_intro": "Choisissez les messages de fermeture/ouverture, les heures calmes et le sujet du groupe. Modifiez séparément le texte, la mise en forme, les médias et les boutons.",
     "settings_shabbat_summary": "<b>✡️ Chabbat et fêtes - {{title}}</b>\n📍 {{location}}\n🌐 <code>{{timezone}}</code>\n\n<b>Mode :</b> {{mode}}\n<b>Chabbat :</b> {{shabbat}} · <b>Yom Tov :</b> {{holidays}}\n\n<b>🕯️ Entrée et sortie</b>\nAllumage : {{candles}} minutes avant le coucher du soleil\nSortie : {{havdalah}}\nFermeture : {{close}} minutes avant l'allumage\nRéouverture : {{open}} minutes après la sortie\n\nChoisissez une rubrique. Après confirmation, vous revenez à cette rubrique.",
     "template_current_summary": "<b>Présentation actuelle</b>\nTexte : {{text}}\nMédia : {{media}}\nBoutons : {{buttons}}\n\nModifiez le contenu ou les boutons, vérifiez l'aperçu, puis enregistrez. Un envoi de test au groupe demande une confirmation distincte.",
@@ -596,4 +598,5 @@
     "diagnostics_snapshot_verification": "Vérification des droits enregistrés",
     "diagnostics_snapshot_verified": "Enregistrés après une lecture vérifiée",
     "diagnostics_snapshot_unverified": "État d’une ancienne version - vérification par un administrateur requise",
-    "permission_error_readback": "⚠️ La demande de modification des droits a été envoyée, mais son résultat n’a pas été vérifié. Les droits ont peut-être déjà changé. Vérifiez-les dans Telegram et dans la résolution 
+    "permission_error_readback": "⚠️ La demande de modification des droits a été envoyée, mais son résultat n’a pas été vérifié. Les droits ont peut-être déjà changé. Vérifiez-les dans Telegram et dans la résolution des problèmes de droits avant de réessayer."
+}

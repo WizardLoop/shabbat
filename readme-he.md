@@ -48,7 +48,7 @@ docker compose version
 
 </div>
 
-Docker מספק PHP 8.4.27,‏ Composer,‏ SQLite,‏ igbinary 3.2.16 לתאימות הסשן ואת התלויות הנעולות. בהתקנה ידנית נדרש PHP ב־64 ביט: **8.3.36+,‏ 8.4.27+ או 8.5.12+**, בתוך הענפים הנתמכים האלה. ראו [דרישות אבטחה מ־22 באוקטובר 2026](docs/INSTALLATION.md#php-security-baseline) ו[התקנה ידנית](docs/INSTALLATION.md#manual-installation).
+Docker מספק PHP 8.4.28,‏ Composer,‏ SQLite,‏ igbinary 3.2.16 לתאימות הסשן ואת התלויות הנעולות. בהתקנה ידנית נדרש PHP ב־64 ביט: **8.3.36+,‏ 8.4.27+ או 8.5.12+**, בתוך הענפים הנתמכים האלה. ראו [דרישות אבטחה מ־22 באוקטובר 2026](docs/INSTALLATION.md#php-security-baseline) ו[התקנה ידנית](docs/INSTALLATION.md#manual-installation).
 
 <a id="install"></a>
 ## 1. חילוץ התקנה חדשה

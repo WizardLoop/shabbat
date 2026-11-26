@@ -101,24 +101,29 @@ final class RuntimeApplicationTest extends TestCase
         self::assertCount(1, $this->gateway->sent);
     }
 
-    public static function transitionBoundaries(): array
+    public static function transitionBoundaries(): iterable
     {
-        return [
+        $boundaries = [
             'Shabbat into festival' => ['2026-10-18', '2026-10-16T17:45:00+03:00', '2026-10-17T21:00:00+03:00', '2026-10-18T19:00:00+03:00', 'close', 'holiday_open'],
             'festival into Shabbat' => ['2026-10-16', '2026-10-15T17:45:00+03:00', '2026-10-16T21:00:00+03:00', '2026-10-17T19:00:00+03:00', 'holiday_close', 'open'],
             'festival on Shabbat' => ['2026-10-17', '2026-10-16T17:45:00+03:00', '2026-10-17T12:00:00+03:00', '2026-10-17T19:00:00+03:00', 'holiday_close', 'holiday_open'],
         ];
+        foreach (['lock_messages','messages'] as $mode) {
+            foreach ($boundaries as $label => $boundary) {
+                yield $mode . ': ' . $label => [$mode, ...$boundary];
+            }
+        }
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('transitionBoundaries')]
-    public function testMergedSequencesSelectIndependentBoundaryTemplates(string $day, string $start, string $middle, string $end, string $close, string $open): void
+    public function testMergedSequencesSelectIndependentBoundaryTemplates(string $mode, string $day, string $start, string $middle, string $end, string $close, string $open): void
     {
         $this->clock->set(new \DateTimeImmutable($start));
         $provider = new RuntimeFakeJson([['date' => $day,'category' => 'holiday','yomtov' => true,'title' => 'Festival','hebrew' => 'חג']]);
         $this->calendar = new CalendarService(new HebcalProvider($provider), $this->clock);
         $app = $this->app();
         $app->settings->ensureGroup('-1001', 'Example', [
-            'mode' => 'lock_messages','open_message_enabled' => true,'close_message_enabled' => true,
+            'mode' => $mode,'open_message_enabled' => true,'close_message_enabled' => true,
         ]);
         foreach (['open','close','holiday_open','holiday_close'] as $kind) {
             $app->templates->save('-1001', $kind, ['text' => $kind], '42');
@@ -132,6 +137,7 @@ final class RuntimeApplicationTest extends TestCase
         $app->tick();
         self::assertCount(2, $this->gateway->sent);
         self::assertSame($open, $this->gateway->sent[1][1]['text']);
+        self::assertSame($mode === 'messages' ? 0 : 2, $this->gateway->mutations);
     }
 
     public function testOneGroupFailureDoesNotPreventOtherGroupsLocking(): void

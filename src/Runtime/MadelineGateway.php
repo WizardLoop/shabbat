@@ -21,6 +21,7 @@ final class MadelineGateway implements TelegramGateway, \Shabbat\Telegram\Guarde
 {
     private MadelineTransport $transport;
     private array $directoryMisses = [];
+    private int $directoryRetryAt = 0;
     private readonly \Amp\Sync\LocalSemaphore $directorySlots;
 
     public function __construct(\danog\MadelineProto\SimpleEventHandler|MadelineTransport $bot, private bool $customEmojiEnabled = true, private ?array $customEmojiAlternatives = null)
@@ -248,7 +249,15 @@ final class MadelineGateway implements TelegramGateway, \Shabbat\Telegram\Guarde
         }
         $slot = $this->directorySlots->acquire();
         try {
-            $admin = $this->readGroupAdmin($userId, $groupId);
+            if ($this->directoryRetryAt > time()) {
+                throw new RetryableTelegramException('Directory lookup paused', max(1, $this->directoryRetryAt - time()));
+            }
+            try {
+                $admin = $this->readGroupAdmin($userId, $groupId);
+            } catch (RetryableTelegramException $error) {
+                $this->directoryRetryAt = max($this->directoryRetryAt, time() + $error->retryAfterSeconds);
+                throw $error;
+            }
             if ($admin === false) {
                 // Briefly reuse definitive negative answers for navigation only.
                 if (count($this->directoryMisses) >= 4096) {
@@ -264,7 +273,11 @@ final class MadelineGateway implements TelegramGateway, \Shabbat\Telegram\Guarde
 
     public function isGroupAdmin(string $userId, string $groupId): bool
     {
-        $admin = $this->readGroupAdmin($userId, $groupId) === true;
+        try {
+            $admin = $this->readGroupAdmin($userId, $groupId) === true;
+        } catch (RetryableTelegramException) {
+            return false;
+        }
         if ($admin) {
             unset($this->directoryMisses[$userId . ':' . $groupId]);
         }
@@ -294,7 +307,7 @@ final class MadelineGateway implements TelegramGateway, \Shabbat\Telegram\Guarde
             $response = $this->call('channels.getParticipant', ['channel' => $groupId, 'participant' => $userId]);
             $type = $response['participant']['_'] ?? null;
             return is_string($type) ? in_array($type, ['channelParticipantAdmin', 'channelParticipantCreator'], true) : null;
-        } catch (CancelledException $error) {
+        } catch (CancelledException|RetryableTelegramException $error) {
             throw $error;
         } catch (\danog\MadelineProto\RPCErrorException $error) {
             return $error->rpc === 'USER_NOT_PARTICIPANT' ? false : null;

@@ -33,6 +33,7 @@
     "next": "Página siguiente",
     "previous": "Página anterior",
     "no_groups": "No se encontraron grupos registrados que administres actualmente. En un grupo ya registrado, usa /settings.",
+    "group_directory_retry": "Telegram no puede verificar tus grupos en este momento. Vuelve a intentarlo en {{seconds}} segundos.",
     "settings_private_sent": "El panel de ajustes se ha enviado a tu chat privado.",
     "group_panel": "<b>👥 {{title}}</b>\n\n📍 {{location}}\n🌐 <code>{{timezone}}</code>\n\n<b>Modo:</b> {{mode}}\n<b>Próxima acción:</b> {{next}}\n\nEn Shabat y festividades puedes elegir cuándo se cierra y se abre el grupo. En Mensajes y diseño puedes editar el texto y los botones que ven los miembros.",
     "personal_panel": "<b>⚙️ Mis preferencias</b>\n\n📍 {{location}}\n🌐 <code>{{timezone}}</code>\n\nElige tu idioma, ubicación y métodos de cálculo. Estas preferencias determinan tus horarios personales.",
@@ -466,6 +467,7 @@
     "settings_shabbat_timing": "🕯️ Entrada, salida y cierre",
     "settings_shabbat_messages": "✏️ Mensajes y diseño",
     "settings_shabbat_timing_intro": "Elige la costumbre de velas, el método de salida y los márgenes de cierre/apertura. Las horas usan la ubicación del grupo. Shabat y Yom Tov consecutivos permanecen cerrados hasta el final de todo el período.",
+    "settings_transition_mode_hint": "Para enviar avisos de apertura y cierre, elige un modo que incluya mensajes y activa los avisos que quieras enviar.",
     "settings_shabbat_messages_intro": "Elige mensajes de cierre/apertura, horas de silencio y el tema del grupo. Edita por separado el texto, el formato, los archivos y los botones.",
     "settings_shabbat_summary": "<b>✡️ Shabat y fiestas - {{title}}</b>\n📍 {{location}}\n🌐 <code>{{timezone}}</code>\n\n<b>Modo:</b> {{mode}}\n<b>Shabat:</b> {{shabbat}} · <b>Yom Tov:</b> {{holidays}}\n\n<b>🕯️ Entrada y salida</b>\nVelas: {{candles}} minutos antes de la puesta del sol\nSalida: {{havdalah}}\nCierre: {{close}} minutos antes de las velas\nApertura: {{open}} minutos después de la salida\n\nElige una sección. Al confirmar el cambio volverás a la misma sección.",
     "template_current_summary": "<b>Diseño actual</b>\nTexto: {{text}}\nArchivo: {{media}}\nBotones: {{buttons}}\n\nEdita el contenido o los botones, revisa la vista previa y guarda. El envío de prueba al grupo requiere una confirmación adicional.",
@@ -596,4 +598,5 @@
     "diagnostics_snapshot_verification": "Verificación de permisos guardados",
     "diagnostics_snapshot_verified": "Guardados tras una lectura verificada",
     "diagnostics_snapshot_unverified": "Estado de una versión anterior - requiere revisión del administrador",
-    "permission_error_readback": "⚠️ Se envió el cambio de permisos, pero no se verificó el resultado. Los permisos pueden haber cambiado. Revísalos en Telegram y en la re
+    "permission_error_readback": "⚠️ Se envió el cambio de permisos, pero no se verificó el resultado. Los permisos pueden haber cambiado. Revísalos en Telegram y en la resolución de problemas de permisos antes de reintentar."
+}

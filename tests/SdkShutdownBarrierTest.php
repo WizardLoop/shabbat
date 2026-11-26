@@ -67,7 +67,6 @@ final class SdkShutdownBarrierTest extends TestCase
         };
         $socket->stream = $transport;
         (new \ReflectionProperty($shared, 'connections'))->setValue($shared, [$socket]);
-        (new \ReflectionProperty($shared, 'availableConnections'))->setValue($shared, [100]);
         $datacenter = (new \ReflectionClass(DataCenter::class))->newInstanceWithoutConstructor();
         (new \ReflectionProperty($datacenter, 'list'))->setValue($datacenter, [$shared]);
         $api->datacenter = $datacenter;

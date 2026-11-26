@@ -201,4 +201,6 @@ final class PermissionRecoveryController
 
     private function send(string $user, string $text, array $rows): void
     {
-        $this->gateway->sendPrivate($user, $text, ['_' => 'replyInlineMarkup', 'rows' => array_map(static fn(array $buttons): array => ['_' => 'keyboardButtonRow', 'buttons
+        $this->gateway->sendPrivate($user, $text, ['_' => 'replyInlineMarkup', 'rows' => array_map(static fn(array $buttons): array => ['_' => 'keyboardButtonRow', 'buttons' => $buttons], $rows)]);
+    }
+}

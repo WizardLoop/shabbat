@@ -212,7 +212,7 @@ final class BotController
                     $context = $this->group($user, $token);
                     $context['_flow']['payload']['return_screen'] = $value;
                 } else {
-                    $context = $this->context($user, $token, in_array($action, ['pc', 'px'], true) ? 'permission_recovery_confirm' : 'panel', refresh: $action === 'pr');
+                    $context = $this->context($user, $token, in_array($action, ['pc', 'px'], true) ? 'permission_recovery_confirm' : 'panel');
                 }
                 $recovery = new PermissionRecoveryController($this->settings, $this->flows, $this->gateway, $this->permissionRecovery, $this->lang);
                 match ($action) {
@@ -241,7 +241,9 @@ final class BotController
             } elseif ($action === 'personal') {
                 $this->panel($user, $this->settings->getUser($user));
             } elseif ($action === 'group') {
-                $this->panel($user, $this->context($user, $token, 'panel', refresh: true));
+                $context = preg_match('/^-[1-9][0-9]{0,18}$/D', $token)
+                    ? $this->group($user, $token) : $this->context($user, $token, 'panel');
+                $this->panel($user, $context);
             } elseif ($action === 'help') {
                 $this->help($user, $token);
             } elseif ($action === 'show') {
@@ -621,7 +623,14 @@ final class BotController
             $batch = $this->settings->listGroups($cursor, 32, $search);
             foreach (array_chunk($batch, 4) as $chunk) {
                 $checks = array_map(static fn(array $group) => \Amp\async($isAdmin, $user, (string)$group['group_id']), $chunk);
-                $authorized = \Amp\Future\await($checks);
+                try {
+                    $authorized = \Amp\Future\await($checks);
+                } catch (\Shabbat\Telegram\RetryableTelegramException $error) {
+                    $this->send($user, $this->t($user, 'group_directory_retry', ['seconds' => $error->retryAfterSeconds]), $this->keyboard([
+                        [$this->button($user, 'groups', 'sb:groups')], [$this->button($user, 'back', 'sb:start')],
+                    ]));
+                    return;
+                }
                 foreach ($chunk as $i => $group) {
                     $position = $cursor++;
                     if (!$authorized[$i]) {
@@ -631,8 +640,7 @@ final class BotController
                         $next = $position;
                         break 3;
                     }
-                    $token = $this->token($user, $group, 'panel');
-                    $rows[] = [['text' => (string)($group['title'] ?: $group['group_id']), 'data' => 'sb:group:' . $token]];
+                    $rows[] = [['text' => (string)($group['title'] ?: $group['group_id']), 'data' => 'sb:group:' . $group['group_id']]];
                 }
             }
         } while (count($batch) === 32);
@@ -759,6 +767,11 @@ final class BotController
             $wizard = $this->token($user, $context, 'panel', ['wizard_module' => 'shabbat']);
             $rows = $this->wizardFieldButtons($user, $context, 'shabbat', $wizard, fields: SettingsWizard::sectionFields($screen));
             if ($screen === 'shabbat_messages') {
+                if (!in_array($context['mode'], ['messages', 'lock_messages'], true)) {
+                    $text .= "\n\n" . $this->t($user, 'settings_transition_mode_hint');
+                    array_unshift($rows, [['text' => $this->t($user, 'settings_mode_button', ['mode' => $this->t($user, 'mode_' . $context['mode'])]),
+                        'data' => 'sb:v:' . $token . ':shabbat_mode', 'style' => ['_' => 'keyboardButtonStyle', 'bg_primary' => true]]]);
+                }
                 $rows[] = [$this->button($user, 'template_kind_close', 'v3:templates:' . $context['group_id'] . ':close'),
                     $this->button($user, 'template_kind_open', 'v3:templates:' . $context['group_id'] . ':open')];
                 $rows[] = [$this->button($user, 'template_kind_holiday_close', 'v3:templates:' . $context['group_id'] . ':holiday_close'),
@@ -1435,7 +1448,7 @@ final class BotController
             return $translate('provider_unavailable');
         }
     }
-    private function context(string $user, string $token, string $action, bool $refresh = false): array
+    private function context(string $user, string $token, string $action): array
     {
         $flow = $this->flows->peek($token, $user, $action) ?? throw new \RuntimeException('Settings context expired or belongs to another user');
         if (isset($flow['payload']['source_wizard_token'])) {
@@ -1451,7 +1464,7 @@ final class BotController
             }
         }
         $context = in_array($flow['scope'], ['group','share'], true) ? $this->group($user, (string) $flow['group_id']) : $this->settings->getUser($user);
-        if (!$refresh && (int) $context['revision'] !== (int) $flow['revision']) {
+        if ((int) $context['revision'] !== (int) $flow['revision']) {
             throw new \RuntimeException('Settings changed; reopen the panel');
         } $context['_flow'] = $flow;
         return $context;
@@ -1678,4 +1691,10 @@ final class BotController
     {
         if ($error instanceof \Shabbat\Telegram\PrivateChatUnavailableException) {
             // The original private reply was rejected. Sending an error to the
-            // same unreachable peer would fail again and fl
+            // same unreachable peer would fail again and flood operator logs.
+            throw $error;
+        }
+        $key = $error instanceof \Shabbat\Location\LocationException ? ($this->geo->configured() ? 'unavailable' : 'geonames_missing') : ($error instanceof \InvalidArgumentException ? (str_contains($error->getMessage(), 'YYYY-MM-DD') ? 'date_invalid' : 'hours_invalid') : 'denied');
+        $this->send($user, $this->t($user, $key));
+    }
+}

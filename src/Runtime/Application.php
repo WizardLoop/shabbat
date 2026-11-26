@@ -521,17 +521,10 @@ final class Application
         $kind = $job['module'];
         $transition = in_array($kind, ['open','close'], true);
         $instant = ($kind === 'times_alert' || $transition) ? new \DateTimeImmutable('@' . $job['run_at']) : $now;
-        $event = null;
-        if ($transition && !str_starts_with($job['event_key'], $kind . ':manual:')) {
-            foreach ($this->calendar->snapshot($g, $instant)['operational_events'] as $candidate) {
-                if ($job['event_key'] === $kind . ':' . $candidate['event_key']) {
-                    $event = $candidate;
-                    if ($event[$kind . '_is_yom_tov']) {
-                        $kind = 'holiday_' . $kind;
-                    }
-                    break;
-                }
-            }
+        // Eligibility just verified this event. Do not fetch a second snapshot for a basic notice.
+        $event = $this->dispatchWindows[$job['job_id']]['transition_event'] ?? null;
+        if ($event !== null && $event[$kind . '_is_yom_tov']) {
+            $kind = 'holiday_' . $kind;
         }
         $payload = $this->payload($g, $kind, $instant, transitionEvent: $event);
         return $this->tefillinAcknowledgements->preparePayload($job, $g, $instant, $payload);
@@ -759,8 +752,12 @@ final class Application
         if (($g['manual_override_until'] ?? 0) > $stamp) {
             $until = min($until, $g['manual_override_until']);
         }
+        $transitionEvent = null;
         foreach (['events' => ['start_at', 'end_at'], 'operational_events' => ['close_at', 'open_at']] as $collection => $fields) {
             foreach ($state[$collection] as $event) {
+                if ($transition && $collection === 'operational_events' && $job['event_key'] === $kind . ':' . $event['event_key']) {
+                    $transitionEvent = $event;
+                }
                 foreach ($fields as $field) {
                     if ($event[$field] > $stamp) {
                         $until = min($until, $event[$field]);
@@ -807,7 +804,8 @@ final class Application
         if (count($this->dispatchWindows) >= 512) {
             unset($this->dispatchWindows[array_key_first($this->dispatchWindows)]);
         }
-        $this->dispatchWindows[$job['job_id']] = ['settings' => hash('sha256', Database::encode($g)), 'checked_at' => $stamp, 'until' => $until];
+        $this->dispatchWindows[$job['job_id']] = ['settings' => hash('sha256', Database::encode($g)), 'checked_at' => $stamp,
+            'until' => $until, 'transition_event' => $transitionEvent];
         // Additional provider work above may have crossed a boundary. Do not trust the
         // captured timestamp again, even before the gateway performs its own preflight.
         return $this->dispatchEligible($job, $g, $this->clock->now());

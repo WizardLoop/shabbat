@@ -76,6 +76,24 @@ final class RecoveryCalendarGuardTest extends TestCase
     {
         return (new \ReflectionMethod($app, 'permissionRecoveryStillAllowed'))->invoke($app, '-1001');
     }
+    public function testReviewMayCrossAClockSecondWithinTheVerifiedWindow(): void
+    {
+        $clock = new class implements \Shabbat\Time\Clock {
+            private int $ticks = 0;
+            public function now(): \DateTimeImmutable
+            {
+                return (new \DateTimeImmutable('2026-10-15T12:00:00+03:00'))->modify('+' . $this->ticks++ . ' seconds');
+            }
+        };
+        $db = Database::open(':memory:');
+        $db->migrate();
+        $app = new Application(new RuntimeFakeGateway(), $clock, $db, new CalendarService(new HebcalProvider(new RuntimeFakeJson()), $clock));
+        $app->settings->ensureGroup('-1001', 'Weekday');
+        self::assertTrue($this->allowed($app));
+        self::assertTrue($this->stillAllowed($app));
+        self::assertSame(0, $app->gateway->mutations);
+    }
+
     public function testSynchronousFenceAllowsSlowReadOnlyUntilVerifiedReligiousBoundary(): void
     {
         $app = $this->app('2026-10-16T17:19:55+03:00', ['mode' => 'off', 'shabbat_enabled' => false]);

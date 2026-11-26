@@ -33,6 +33,7 @@
     "next": "Próxima página",
     "previous": "Página anterior",
     "no_groups": "Nenhum grupo conhecido em que você seja administrador foi encontrado. Use /settings em um grupo já cadastrado.",
+    "group_directory_retry": "O Telegram não conseguiu verificar seus grupos agora. Tente novamente em {{seconds}} segundos.",
     "settings_private_sent": "O painel de configurações foi enviado para sua conversa privada.",
     "group_panel": "<b>👥 {{title}}</b>\n\n📍 {{location}}\n🌐 <code>{{timezone}}</code>\n\n<b>Modo:</b> {{mode}}\n<b>Próxima ação:</b> {{next}}\n\nEm Shabat e festas, escolha quando o grupo fecha e abre. Em Mensagens e aparência, edite o texto e os botões que os membros veem.",
     "personal_panel": "<b>⚙️ Minhas preferências</b>\n\n📍 {{location}}\n🌐 <code>{{timezone}}</code>\n\nEscolha seu idioma, localização e métodos de cálculo. Essas preferências definem seus horários pessoais.",
@@ -466,6 +467,7 @@
     "settings_shabbat_timing": "🕯️ Entrada, saída e bloqueio",
     "settings_shabbat_messages": "✏️ Mensagens e aparência",
     "settings_shabbat_timing_intro": "Escolha o costume de velas, o método de saída e as margens de fechamento/abertura. Os horários usam o local do grupo. Shabat e Yom Tov consecutivos permanecem fechados até o fim de todo o período.",
+    "settings_transition_mode_hint": "Para enviar avisos de abertura e fechamento, escolha um modo com mensagens e ative os avisos desejados.",
     "settings_shabbat_messages_intro": "Escolha mensagens de fechamento/abertura, horários de silêncio e o tópico do grupo. Edite separadamente o texto, a formatação, a mídia e os botões.",
     "settings_shabbat_summary": "<b>✡️ Shabat e festas - {{title}}</b>\n📍 {{location}}\n🌐 <code>{{timezone}}</code>\n\n<b>Modo:</b> {{mode}}\n<b>Shabat:</b> {{shabbat}} · <b>Yom Tov:</b> {{holidays}}\n\n<b>🕯️ Entrada e saída</b>\nVelas: {{candles}} minutos antes do pôr do sol\nSaída: {{havdalah}}\nFechamento: {{close}} minutos antes das velas\nAbertura: {{open}} minutos após a saída\n\nEscolha uma seção. Ao confirmar, você volta para a mesma seção.",
     "template_current_summary": "<b>Aparência atual</b>\nTexto: {{text}}\nMídia: {{media}}\nBotões: {{buttons}}\n\nEdite o conteúdo ou os botões, confira a prévia e salve. Um envio de teste ao grupo exige confirmação separada.",
@@ -596,4 +598,5 @@
     "diagnostics_snapshot_verification": "Verificação das permissões salvas",
     "diagnostics_snapshot_verified": "Salvas após uma leitura verificada",
     "diagnostics_snapshot_unverified": "Estado de uma versão anterior - requer revisão do administrador",
-    "permission_error_readback": "⚠️ A alteração de permissões foi enviada, mas o resultado não foi verificado. As permissões podem já ter mudado. Confira no Telegram e na resolução de
+    "permission_error_readback": "⚠️ A alteração de permissões foi enviada, mas o resultado não foi verificado. As permissões podem já ter mudado. Confira no Telegram e na resolução de problemas de permissões antes de tentar novamente."
+}
