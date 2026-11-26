@@ -14,15 +14,15 @@ final class CommandMenusTest extends TestCase
     private array $calls = [];
     private function service(?callable $authorize = null): CommandMenus
     {
-        return new CommandMenus(new Lang(), function (string $method, array $parameters): bool {
+        return new CommandMenus(new Lang(), function (string $method, array $parameters): array|bool {
                 $this->calls[] = [$method,$parameters];
-                return true;
+                return $method === 'bots.getBotCommands' ? [] : true;
         }, $authorize ?? static fn(string $user): bool=>$user === '42');
     }
     public function testAllSixLanguagesHaveCorrectPrivateOperatorAndGroupScopes(): void
     {
         $plans = $this->service()->plan(['42','43']);
-        self::assertCount(35, $plans);
+        self::assertCount(42, $plans);
         foreach ($plans as $plan) {
             $ids = array_column($plan['commands'], 'command');
             $scope = $plan['scope']['_'];
@@ -31,9 +31,9 @@ final class CommandMenusTest extends TestCase
                 self::assertNotContains('setcommands', $ids);
                 self::assertNotContains('add', $ids);
             }
-            if ($scope === 'botCommandScopeChats') {
-                self::assertNotContains('admin', $ids);
-                self::assertSame(['settings'], $ids);
+            if (in_array($scope, ['botCommandScopeChats', 'botCommandScopeDefault'], true)) {
+                self::assertTrue($plan['remove_settings']);
+                self::assertSame([], $ids);
             }
             if ($scope === 'botCommandScopeChatAdmins') {
                 self::assertContains('settings', $ids);
@@ -84,9 +84,9 @@ final class CommandMenusTest extends TestCase
     public function testNativeApiUsesLangCodeAndNoGroupReceivesOperatorCommands(): void
     {
         $result = $this->service()->apply('42', ['42'], 'pt-br', 'all');
-        self::assertSame(4, $result['applied']);
+        self::assertSame(5, $result['applied']);
         foreach ($this->calls as [$method,$parameters]) {
-            self::assertSame('bots.setBotCommands', $method);
+            self::assertSame(in_array($parameters['scope']['_'], ['botCommandScopeChats', 'botCommandScopeDefault'], true) ? 'bots.getBotCommands' : 'bots.setBotCommands', $method);
             self::assertSame('pt', $parameters['lang_code']);
             self::assertArrayNotHasKey('language_code', $parameters);
         }
@@ -117,7 +117,7 @@ final class CommandMenusTest extends TestCase
         $result = $service->apply('42', ['42']);
         self::assertSame(1, $calls);
         self::assertSame(1, $result['applied']);
-        self::assertSame(27, $result['skipped']);
+        self::assertSame(34, $result['skipped']);
     }
     public function testPerOperatorCapabilitiesFilterOnlyOperatorCommandsAndNeverGrantAuthority(): void
     {
@@ -157,6 +157,62 @@ final class CommandMenusTest extends TestCase
         self::assertSame([], $this->calls);
         $this->expectException(\RuntimeException::class);
         $service->apply('42', ['42'], 'en', 'operators');
+    }
+
+    public function testUpgradeRemovesOnlyPublicSettingsAcrossAllLanguagesAndFallback(): void
+    {
+        $installed = [];
+        $settings = ['_' => 'botCommand', 'command' => 'settings', 'description' => 'Old settings'];
+        $custom = ['_' => 'botCommand', 'command' => 'rules', 'description' => 'Existing custom rules'];
+        $languages = ['he','en','ru','fr','es','pt',''];
+        foreach ($languages as $code) {
+            $installed['botCommandScopeDefault'][$code] = [$settings, $custom];
+            $installed['botCommandScopeChats'][$code] = [$settings];
+        }
+        $writes = 0;
+        $menus = new CommandMenus(new Lang(), static function (string $method, array $p) use (&$installed, &$writes): array|bool {
+            $scope = $p['scope']['_'];
+            $code = $p['lang_code'];
+            if ($method === 'bots.getBotCommands') {
+                return $installed[$scope][$code] ?? [];
+            }
+            if ($method === 'bots.resetBotCommands') {
+                self::assertArrayNotHasKey('commands', $p);
+                unset($installed[$scope][$code]);
+            } else {
+                self::assertSame('bots.setBotCommands', $method);
+                $installed[$scope][$code] = $p['commands'];
+            }
+            $writes++;
+            return true;
+        }, static fn() => true);
+        self::assertSame(0, $menus->apply('1', [], 'all', 'all')['failed']);
+        foreach ($languages as $code) {
+            self::assertSame([$custom], $installed['botCommandScopeDefault'][$code]);
+            self::assertArrayNotHasKey($code, $installed['botCommandScopeChats']);
+            self::assertSame(['settings'], array_column($installed['botCommandScopeChatAdmins'][$code], 'command'));
+            self::assertSame(['start','shabbat','zmanim','daf','omer','groups','preferences','language','help','donate','stats','source'], array_column($installed['botCommandScopeUsers'][$code], 'command'));
+        }
+        $writes = 0;
+        self::assertSame(0, $menus->apply('1', [], 'all', 'groups')['failed']);
+        self::assertSame(7, $writes, 'Previously cleaned public scopes require no more writes.');
+    }
+
+    public function testRevocationAfterReadingPublicScopePreventsItsModification(): void
+    {
+        $allowed = true;
+        $calls = [];
+        $menus = new CommandMenus(new Lang(), static function (string $method) use (&$calls, &$allowed): array {
+            $calls[] = $method;
+            $allowed = false;
+            return [['_'=>'botCommand', 'command'=>'settings', 'description'=>'Old settings']];
+        }, static function () use (&$allowed): bool {
+            return $allowed;
+        });
+        $result = $menus->apply('1', [], 'en', 'groups');
+        self::assertSame(['bots.getBotCommands'], $calls);
+        self::assertSame(1, $result['failed']);
+        self::assertSame(0, $result['applied']);
     }
 
     public function testFalseAcknowledgementIsReportedAsFailure(): void

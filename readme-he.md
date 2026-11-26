@@ -10,7 +10,7 @@
 [![PHP 8.3–8.5](https://img.shields.io/badge/PHP-8.3%E2%80%938.5-777BB4)](composer.json)
 [![MadelineProto 8.23.1](https://img.shields.io/badge/MadelineProto-8.23.1-2CA5E0)](composer.lock)
 
-**גרסה 3.2.0.** דרישות השחרור ומגבלות האימות מתוארות ב[מצב המימוש](docs/IMPLEMENTATION_STATUS.md). לעדכון בוט שכבר רץ עם SQLite השתמשו ב[הוראות העדכון עם Docker Compose](docs/UPDATE_3_2.md); הפקודות שבהמשך יוצרות מסד נתונים חדש.
+**גרסה 3.2.0.** דרישות השחרור ומגבלות האימות מתוארות ב[מצב המימוש](docs/IMPLEMENTATION_STATUS.md). לעדכון בוט שכבר רץ עם SQLite השתמשו ב[הוראות העדכון עם Docker Compose](docs/UPDATE_3_2_HE.md); הפקודות שבהמשך יוצרות מסד נתונים חדש.
 
 [יכולות](#features) · [דרישות](#requirements) · [התקנה](#install) · [הגדרה](#configure) · [שימוש ראשון](#first-use) · [תפעול ועדכון](#operate) · [תיעוד](#documentation) · [רישיון](#license)
 

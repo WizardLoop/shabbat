@@ -167,7 +167,7 @@ trait BotIntegration
     private function v3Rpc(string $method, array $parameters): mixed
     {
         [$namespace,$name] = explode('.', $method, 2);
-        if (!in_array($method, ['payments.exportInvoice','messages.setBotPrecheckoutResults','bots.setBotCommands'], true)) {
+        if (!in_array($method, ['payments.exportInvoice','messages.setBotPrecheckoutResults','bots.setBotCommands','bots.getBotCommands','bots.resetBotCommands'], true)) {
             throw new \InvalidArgumentException('Unsupported service RPC.');
         }
         if (array_key_exists('query_id', $parameters)) {

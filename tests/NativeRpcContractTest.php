@@ -29,6 +29,8 @@ final class NativeRpcContractTest extends TestCase
             ['messages.setInlineBotResults', ['query_id', 'results', 'cache_time', 'private', 'next_offset', 'switch_pm']],
             ['payments.exportInvoice', ['invoice_media']],
             ['messages.setBotPrecheckoutResults', ['query_id', 'success', 'error']],
+            ['bots.getBotCommands', ['scope', 'lang_code']],
+            ['bots.resetBotCommands', ['scope', 'lang_code']],
             ['bots.setBotCommands', ['scope', 'lang_code', 'commands']],
         ];
     }
@@ -84,6 +86,7 @@ final class NativeRpcContractTest extends TestCase
             'labeledPrice' => ['label', 'amount'],
             'dataJSON' => ['data'],
             'botCommandScopeUsers' => [],
+            'botCommandScopeDefault' => [],
             'botCommandScopeChats' => [],
             'botCommandScopeChatAdmins' => [],
             'botCommandScopePeer' => ['peer'],

@@ -1,5 +1,7 @@
 # Update an existing SQLite installation to 3.2.0
 
+[עברית](UPDATE_3_2_HE.md)
+
 Use Bash as root on the Linux Docker host. The production installation previously identified in this project runs from /root/shabat, under Compose project shabbat-production-310 with service shabbat. Keep its actual project name. For another installation, pass its own directory and project name. Schedule the brief stop away from a closing or opening transition.
 
 Download and verify the two assets before extracting or executing the upgrade script. Run these commands on the host:
@@ -33,4 +35,4 @@ docker compose -p shabbat-production-310 logs --tail=80 shabbat
 docker compose -p shabbat-production-310 exec -T shabbat php bin/health.php --deep
 ~~~
 
-Confirm healthy=true and version 3.2.0, then inspect /source privately. Verify /settings and a Shabbat and holiday template in a test group. If a step fails after stopping the bot, use the printed backup path to inspect both the old image and the saved state before restart. For recovery, use the [backup and restore guide](BACKUP_RESTORE.md); take only one writer online. Telegram actions already accepted cannot be undone by restoring SQLite.
+Confirm healthy=true and version 3.2.0, then inspect /source privately. From a bot operator account, send **/setcommands all all** in private and check the completion report. This updates stored Telegram menus for the supported languages. Reopen the group command menu as an ordinary member and as an administrator: only the administrator should see /settings. Verify the private settings panel and the Shabbat and holiday templates in a test group. If a step fails after stopping the bot, use the printed backup path to inspect both the old image and the saved state before restart. For recovery, use the [backup and restore guide](BACKUP_RESTORE.md); take only one writer online. Telegram actions already accepted cannot be undone by restoring SQLite.

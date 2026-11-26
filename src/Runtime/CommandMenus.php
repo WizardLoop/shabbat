@@ -41,10 +41,11 @@ final class CommandMenus
         if (in_array($scope, ['all','private'], true)) {
             $scopes[] = ['scope' => ['_' => 'botCommandScopeUsers'],'ids' => self::PRIVATE_COMMANDS];
         }
-        if (in_array($scope, ['all','groups'], true)) {
-            $scopes[] = ['scope' => ['_' => 'botCommandScopeChats'],'ids' => self::GROUP_COMMANDS];
-        }
-        if (in_array($scope, ['all','group_admins'], true)) {
+        if (in_array($scope, ['all','groups','group_admins'], true)) {
+            // Telegram falls back from the all-chats menu to the default menu.
+            foreach (['botCommandScopeDefault', 'botCommandScopeChats'] as $publicScope) {
+                $scopes[] = ['scope' => ['_' => $publicScope], 'ids' => [], 'remove_settings' => true];
+            }
             $scopes[] = ['scope' => ['_' => 'botCommandScopeChatAdmins'],'ids' => self::GROUP_COMMANDS];
         }
         if (in_array($scope, ['all','operators'], true)) {
@@ -81,7 +82,7 @@ final class CommandMenus
             }
             $commands[] = ['_' => 'botCommand','command' => $id,'description' => $description];
         }
-        return ['locale' => $locale,'scope' => $spec['scope'],'lang_code' => $nativeCode,'commands' => $commands];
+        return ['locale' => $locale,'scope' => $spec['scope'],'lang_code' => $nativeCode,'commands' => $commands, 'remove_settings' => $spec['remove_settings'] ?? false];
     }
     /** @phpstan-impure Operator authorization may change while menu RPCs await Telegram. */
     private function isAuthorized(string $operator): bool
@@ -105,10 +106,13 @@ final class CommandMenus
                 break;
             }$attempted++;
             try {
-                $params = ['scope' => $plan['scope'],'lang_code' => $plan['lang_code'],'commands' => $plan['commands']];
-                if (($this->rpc)('bots.setBotCommands', $params) !== true) {
+                $target = ['scope' => $plan['scope'], 'lang_code' => $plan['lang_code']];
+                if ($plan['remove_settings']) {
+                    $this->removePublicSettings($operator, $target);
+                } elseif (($this->rpc)('bots.setBotCommands', $target + ['commands' => $plan['commands']]) !== true) {
                     throw new \RuntimeException('Telegram did not acknowledge the menu update.');
-                }$applied++;
+                }
+                $applied++;
             } catch (\Amp\CancelledException $error) {
                 throw $error;
             } catch (\Throwable $error) {
@@ -116,5 +120,34 @@ final class CommandMenus
             }
         }
         return ['preview' => false,'total' => count($plans),'attempted' => $attempted,'applied' => $applied,'failed' => count($failures),'skipped' => count($plans) - $attempted,'failures' => $failures];
+    }
+
+    private function removePublicSettings(string $operator, array $target): void
+    {
+        $existing = ($this->rpc)('bots.getBotCommands', $target);
+        if (!is_array($existing) || !array_is_list($existing)) {
+            throw new \RuntimeException('Unexpected Telegram command list.');
+        }
+        $remaining = [];
+        foreach ($existing as $command) {
+            if (!is_array($command) || !is_string($command['command'] ?? null) || !is_string($command['description'] ?? null)) {
+                throw new \RuntimeException('Unexpected Telegram command.');
+            }
+            if ($command['command'] !== 'settings') {
+                $remaining[] = $command;
+            }
+        }
+        if (count($remaining) === count($existing)) {
+            return;
+        }
+        if (!$this->isAuthorized($operator)) {
+            throw new \RuntimeException('Operator permission required.');
+        }
+        $ok = $remaining === []
+            ? ($this->rpc)('bots.resetBotCommands', $target)
+            : ($this->rpc)('bots.setBotCommands', $target + ['commands' => $remaining]);
+        if ($ok !== true) {
+            throw new \RuntimeException('Telegram did not acknowledge the public menu update.');
+        }
     }
 }

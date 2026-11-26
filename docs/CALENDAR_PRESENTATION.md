@@ -25,7 +25,7 @@ Actual availability still depends on the peer type, granted rights and the serve
 
 ## Commands and source
 
-Publishing group and group-administrator command menus with `/setcommands` replaces those scopes with only `/settings`, in all six supported languages and the default-language fallback. Existing private commands remain available. The repository's old and current publishers use global group scopes, so replacing them removes the previously published group menu entries. Private-only operator scopes are not removed. Any independently installed external peer-specific menus are outside this repository's known publication history.
+The group command menu shows `/settings` to group creators and administrators. The command opens a private panel after Telegram verifies the requesting account. Existing deployments should apply the [command menu upgrade](COMMANDS.md#group-command-menu-upgrade).
 
 The public menu includes one `/source` command. The source card includes the official [WizardLoop/shabbat repository](https://github.com/WizardLoop/shabbat), running version, commit, application license and the operator's matching build source URL. The official repository is explicitly distinguished from a locally modified build's corresponding source. `/version` and `/license` remain compatible aliases of that complete card.
 
