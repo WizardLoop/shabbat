@@ -415,7 +415,6 @@ final class Application
                 }break;
             }
         }
-
     }
     private function enqueue(array $g, array $job): void
     {

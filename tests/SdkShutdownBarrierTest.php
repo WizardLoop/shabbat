@@ -14,12 +14,18 @@ use danog\MadelineProto\DataCenter;
 use danog\MadelineProto\DataCenterConnection;
 use danog\MadelineProto\Logger;
 use danog\MadelineProto\MTProto;
+use danog\MadelineProto\Stream\BufferedStreamInterface;
 use danog\MadelineProto\Stream\ConnectionContext;
 use danog\MadelineProto\Stream\ContextIterator;
 use danog\MadelineProto\Stream\MTProtoBufferInterface;
 use PHPUnit\Framework\TestCase;
 use Shabbat\Runtime\Runner;
 use Shabbat\Runtime\SingleInstance;
+
+/** Native buffered transport used by the SDK connection. */
+interface ShutdownFixtureTransport extends BufferedStreamInterface, MTProtoBufferInterface
+{
+}
 
 /** Real SDK unreference/disconnect/finalize; an in-memory transport and flush callback replace network/session I/O. */
 final class SdkShutdownBarrierTest extends TestCase
@@ -49,22 +55,11 @@ final class SdkShutdownBarrierTest extends TestCase
         $socket = (new \ReflectionClass(Connection::class))->newInstanceWithoutConstructor();
         $socket->API = $api;
         (new \ReflectionProperty($socket, 'shared'))->setValue($socket, $shared);
-        $transport = new class ($events) implements MTProtoBufferInterface {
-            public int $disconnects = 0;
-            public int $writes = 0;
-            public function __construct(public array &$events)
-            {
-            }
-            public function disconnect(): void
-            {
-                $this->disconnects++;
-                $this->events[] = 'transport_disconnected';
-            }
-            public function write(string $bytes): void
-            {
-                $this->writes++;
-            }
-        };
+        $transport = $this->createMock(ShutdownFixtureTransport::class);
+        $transport->expects(self::once())->method('disconnect')->willReturnCallback(static function () use (&$events): void {
+            $events[] = 'transport_disconnected';
+        });
+        $transport->expects(self::never())->method('getWriteBuffer');
         $socket->stream = $transport;
         (new \ReflectionProperty($shared, 'connections'))->setValue($shared, [$socket]);
         $datacenter = (new \ReflectionClass(DataCenter::class))->newInstanceWithoutConstructor();
@@ -96,12 +91,11 @@ final class SdkShutdownBarrierTest extends TestCase
             $nextWriter->release();
             self::assertSame(['shutdown_requested', 'transport_disconnected', 'unreferenced',
                 'writer_still_owned', 'flush_completed', 'finalize_completed', 'next_writer_acquired'], $events);
-            self::assertSame(1, $transport->disconnects);
             self::assertNull($socket->stream);
             self::assertSame(0, $shared->hasConnection());
             $late = \Amp\async(static function () use ($shared): void {
                 $connection = $shared->waitGetConnection();
-                $connection->stream->write('late fixture request');
+                $connection->stream->getWriteBuffer(1);
             });
             $keepAlive = \Revolt\EventLoop::repeat(1.0, static function (): void {
             });
@@ -109,7 +103,6 @@ final class SdkShutdownBarrierTest extends TestCase
                 $late->await(new TimeoutCancellation(0.01));
                 self::fail('A disconnected datacenter supplied a stale socket.');
             } catch (CancelledException) {
-                self::assertSame(0, $transport->writes);
                 self::assertFalse($late->isComplete());
             } finally {
                 \Revolt\EventLoop::cancel($keepAlive);
@@ -122,8 +115,6 @@ final class SdkShutdownBarrierTest extends TestCase
                     self::assertTrue($late->isComplete());
                 }
             }
-            self::assertSame(0, $transport->writes);
-            self::assertSame(1, $transport->disconnects);
         } finally {
             $destructors->setValue(null, $previousDestructors);
             $lock->release();

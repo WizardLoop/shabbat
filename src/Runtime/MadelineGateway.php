@@ -307,7 +307,7 @@ final class MadelineGateway implements TelegramGateway, \Shabbat\Telegram\Guarde
             $response = $this->call('channels.getParticipant', ['channel' => $groupId, 'participant' => $userId]);
             $type = $response['participant']['_'] ?? null;
             return is_string($type) ? in_array($type, ['channelParticipantAdmin', 'channelParticipantCreator'], true) : null;
-        } catch (CancelledException|RetryableTelegramException $error) {
+        } catch (CancelledException | RetryableTelegramException $error) {
             throw $error;
         } catch (\danog\MadelineProto\RPCErrorException $error) {
             return $error->rpc === 'USER_NOT_PARTICIPANT' ? false : null;
