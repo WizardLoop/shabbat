@@ -205,7 +205,7 @@ final class CommandMenusTest extends TestCase
         $menus = new CommandMenus(new Lang(), static function (string $method) use (&$calls, &$allowed): array {
             $calls[] = $method;
             $allowed = false;
-            return [['_'=>'botCommand', 'command'=>'settings', 'description'=>'Old settings']];
+            return [['_' => 'botCommand', 'command' => 'settings', 'description' => 'Old settings']];
         }, static function () use (&$allowed): bool {
             return $allowed;
         });
