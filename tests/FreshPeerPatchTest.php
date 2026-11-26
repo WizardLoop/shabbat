@@ -13,7 +13,7 @@ use Shabbat\Runtime\SingleInstance;
 
 final class FreshPeerPatchTest extends TestCase
 {
-    private const COMMIT = '49d3d8460257c7bfb1a7e12708e1bfdd59e898c1';
+    private const COMMIT = '2bcfa934f7bbb89f8509f9d0ba52d06e5bf3ef51';
     private string $root;
     private string $vendor;
     private string $target;
@@ -35,7 +35,7 @@ final class FreshPeerPatchTest extends TestCase
             copy($source . $file, dirname($this->manifest) . '/' . $file);
         }
         copy($source . 'baseline/PeerHandler.php', $this->target);
-        $this->installed('8.11.10', self::COMMIT);
+        $this->installed('8.23.1', self::COMMIT);
     }
 
     protected function tearDown(): void
@@ -98,7 +98,7 @@ final class FreshPeerPatchTest extends TestCase
     public function testUnapprovedVersionOrCommitDoNotMutateSource(): void
     {
         $before = file_get_contents($this->target);
-        foreach ([['8.6.5', self::COMMIT], ['8.11.10', str_repeat('0', 40)]] as [$version, $commit]) {
+        foreach ([['8.6.5', self::COMMIT], ['8.23.1', str_repeat('0', 40)]] as [$version, $commit]) {
             $this->installed($version, $commit);
             $this->rejected(fn (): string => $this->installer()->process(true));
             self::assertSame($before, file_get_contents($this->target));

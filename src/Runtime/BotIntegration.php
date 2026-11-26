@@ -121,14 +121,17 @@ trait BotIntegration
                 $message->reply($this->v3Text($user, 'provider_unavailable'));
             }return;
         }
-        $this->v3HandleUiMessage($event, fn(string $text, array $markup) => $message->reply($text, replyMarkup: $markup));
+        $this->v3HandleUiMessage($event, fn(string $text, array $markup) => $markup === [] ? $message->reply($text) : $message->reply($text, replyMarkup: $markup));
     }
     /** A rejected private reply gets one public start link, never another DM. */
     private function v3HandleUiMessage(array $event, callable $reply): void
     {
         $app = $this->v3App();
         try {
-            $app->ui->handleMessage($event);
+            $delivered = false;
+            $app->ui->handleMessage($event, static function () use (&$delivered): void {
+                $delivered = true;
+            });
         } catch (\Shabbat\Telegram\PrivateChatUnavailableException $error) {
             if ($error->userId !== (string)($event['user_id'] ?? '')) {
                 throw $error;
@@ -143,12 +146,28 @@ trait BotIntegration
                 'text' => $lang->text($locale, 'select_private'),
                 'url' => 'https://t.me/' . $app->gateway->botUsername() . '?start=g_' . $group,
             ]]]]);
+            return;
+        }
+        if (!$delivered) {
+            return;
+        }
+        $group = (string)$event['group_id'];
+        $locale = $app->settings->getGroup($group)['language'] ?? 'he';
+        $reply((new Lang())->text($locale, 'settings_private_sent'), []);
+        if ($app->gateway instanceof \Shabbat\Telegram\MessageMaintenanceGateway && isset($event['message_id']) && is_int($event['message_id']) && $event['message_id'] > 0) {
+            try {
+                $app->gateway->deleteMessages($group, [$event['message_id']]);
+            } catch (\Amp\CancelledException $error) {
+                throw $error;
+            } catch (\Throwable) {
+                // Telegram can deny deletion even after the panel was delivered.
+            }
         }
     }
     private function v3Rpc(string $method, array $parameters): mixed
     {
         [$namespace,$name] = explode('.', $method, 2);
-        if (!in_array($method, ['payments.exportInvoice','messages.setBotPrecheckoutResults','bots.setBotCommands'], true)) {
+        if (!in_array($method, ['payments.exportInvoice','messages.setBotPrecheckoutResults','bots.setBotCommands','bots.getBotCommands','bots.resetBotCommands'], true)) {
             throw new \InvalidArgumentException('Unsupported service RPC.');
         }
         if (array_key_exists('query_id', $parameters)) {

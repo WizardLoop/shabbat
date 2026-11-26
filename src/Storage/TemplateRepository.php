@@ -29,7 +29,7 @@ final class TemplateRepository
         if ($pdo !== $this->db->pdo()) {
             throw new \LogicException('Template mutation must use its repository database.');
         }
-        if (!in_array($kind, ['open','close','times_alert','zmanim','daf','tefillin','omer'], true)) {
+        if (!in_array($kind, ['open','close','holiday_open','holiday_close','times_alert','zmanim','daf','tefillin','omer'], true)) {
             throw new \InvalidArgumentException('Unsupported template kind.');
         }
         $text = $content['text'] ?? '';

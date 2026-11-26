@@ -330,7 +330,14 @@ final class UITest extends TestCase
         self::assertStringNotContainsString('Candle lighting:', $text);
         $this->ui->panel('1', $group);
         self::assertStringContainsString('Mode:', $this->last()['text']);
-        self::assertStringContainsString('Language', $this->last()['markup']['rows'][0]['buttons'][0]['text']);
+        $rows = $this->last()['markup']['rows'];
+        self::assertStringContainsString('Shabbat and holidays', $rows[0]['buttons'][0]['text']);
+        $language = array_filter(
+            array_merge(...array_column($rows, 'buttons')),
+            static fn(array $button): bool => str_ends_with($button['data'] ?? '', ':language')
+        );
+        self::assertCount(1, $language);
+        self::assertStringContainsString('Language', array_values($language)[0]['text']);
     }
     public function testDailyFormatsAndMissingValuesAreClear(): void
     {

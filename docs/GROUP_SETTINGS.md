@@ -182,3 +182,9 @@ Current default Shabbat/holiday output uses local `Y-m-d H:i` without a numeric 
 ## Keyboard format compatibility
 
 Saved Bot API and earlier native keyboards are normalized by the central current-layer compatibility boundary. Inline and reply keyboards stay distinct; old stored templates are not rewritten solely for this upgrade. See [keyboard compatibility](KEYBOARD_COMPATIBILITY.md) for supported actions, styles, icon fallback and verification limits.
+
+## Group settings and transition messages
+
+Send /settings in a group you administer. Once the private settings panel is delivered, the bot confirms delivery in the group and attempts to remove the command. If Telegram cannot deliver privately, follow the group prompt to start a chat with the bot. My Groups lists manageable groups five at a time.
+
+In Messages and design, customize Shabbat and holiday opening and closing messages separately. Existing shared customizations are copied during the upgrade. For an uninterrupted Shabbat/holiday interval, the closing message follows the first holy day and the opening message follows the final one.

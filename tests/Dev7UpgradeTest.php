@@ -39,7 +39,7 @@ final class Dev7UpgradeTest extends TestCase
             foreach (['groups', 'group_settings', 'users', 'user_preferences', 'group_lock_state', 'schema_migrations'] as $table) {
                 $before[$table] = $db->pdo()->query('SELECT * FROM ' . $table . ' ORDER BY 1')->fetchAll();
             }
-            self::assertSame(['013_permission_recovery.sql', '014_diagnostic_panels.sql', '015_permission_snapshot_provenance.sql', '016_delivery_safety.sql'], $db->migrate());
+            self::assertSame(['013_permission_recovery.sql', '014_diagnostic_panels.sql', '015_permission_snapshot_provenance.sql', '016_delivery_safety.sql', '017_holiday_templates.sql'], $db->migrate());
             self::assertSame([], $db->migrate());
             $db->assertCurrentSchema();
             foreach ($before as $table => $rows) {

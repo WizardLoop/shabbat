@@ -59,6 +59,14 @@ All below run **in private**. Bot-manager roles are separate from group administ
 | `/closegroups`, `/opengroups` | Group-operations mutation | Immediately apply a one-hour override to active registered groups; preserve prelocks/report conflicts. Real permission operations. |
 | `/restart` | Configured `ADMIN` owner only | Orderly runtime restart. |
 
-Menu languages: `all|he|en|ru|fr|es|pt-br`; scopes: `all|private|operators|groups|group_admins`; defaults: `all all`. Example: `/setcommands ru group_admins preview`. Group menus currently list `/settings`; other supported commands can be typed.
+Menu languages: `all|he|en|ru|fr|es|pt-br`; scopes: `all|private|operators|groups|group_admins`; defaults: `all all`. Example: `/setcommands ru group_admins preview`. The group administrator menu lists `/settings`. Other supported commands can be typed.
 
 [Administration](ADMIN_PANEL.md) · [Diagnostics](DIAGNOSTICS.md)
+
+## Group command menu upgrade
+
+After installing 3.2.0, an authorized bot operator sends `/setcommands all all` in private. An optional `/setcommands all all preview` shows the operation count without contacting Telegram. Apply again if any updates fail. Restarting the bot alone does not change menus already stored by Telegram.
+
+The group menu publishes `/settings` only to `botCommandScopeChatAdmins`. Telegram includes the group's creator and administrators in this scope. The bot checks current membership when somebody types the command or opens the panel. In private, manually typing `/settings` lists the groups the user can manage. The private command menu keeps its existing `/groups` and `/preferences` entries. The `groups` and `group_admins` selectors both update the administrator menu and clean the old public menus.
+
+For Hebrew, English, Russian, French, Spanish, Portuguese and the unlocalized fallback, the upgrade reads the default and all-group menus. If either contains `/settings`, it removes just that entry, preserves the order and descriptions of other commands, and clears an empty list. Telegram can give precedence to external per-peer or per-member overrides. The project has never published group-specific overrides; independently configured menus in those scopes or other languages need to be managed by their operator. See [Telegram command scopes](https://core.telegram.org/api/bots/commands) and [resetting a scope](https://core.telegram.org/method/bots.resetBotCommands).

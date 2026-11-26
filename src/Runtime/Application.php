@@ -78,7 +78,7 @@ final class Application
         }
         $http = new SharedJsonClient(new SqliteJsonClient(new \Shabbat\Http\ProviderCircuitClient(new AmpJsonClient(), $clock), $this->db, $clock), $clock);
         $this->calendar = $calendar ?? new CalendarService(new HebcalProvider($http), $clock);
-        $this->locks = new LockCoordinator($this->db, $clock, $gateway, $this->freshPermissionDesire(...), $this->permissionDesireStillCurrent(...));
+        $this->locks = new LockCoordinator($this->db, $clock, $gateway, $this->freshPermissionDesire(...), $this->permissionDesireStillCurrent(...), $this->enqueueTransition(...));
         $this->permissionRecovery = new \Shabbat\Scheduling\PermissionRecovery(
             $this->db,
             $clock,
@@ -249,14 +249,7 @@ final class Application
             $now = $this->clock->now();
             $event = $state['lock_event'] ?? $state['current_event'] ?? $state['next_event'] ?? null;
             $eventKey = $manual ? 'manual:' . $group['revision'] . ':' . $group['manual_override_until'] : ($event['event_key'] ?? 'ordinary');
-            $previousLock = $this->locks->state($group['group_id']);
-            $result = $this->locks->reconcile($group['group_id'], $eventKey, ManualGroups::desired($group, $state['should_group_be_locked'] ?? false, $now->getTimestamp()));
-            if ($result['changed']) {
-                $kind = $result['status'] === 'locked' ? 'close' : 'open';
-                $stamp = $this->clock->now()->getTimestamp();
-                // Rendering may fetch data. Never delay the next permission change for it.
-                $this->jobs->enqueue($group['group_id'], $kind, $kind . ':' . ($kind === 'open' ? ($previousLock['event_key'] ?? 'recovery') : ($event['event_key'] ?? $now->format('Y-m-d'))), $stamp, $stamp + 3600, $group['revision'], ['text' => ''], 1);
-            }
+            $this->locks->reconcile($group['group_id'], $eventKey, ManualGroups::desired($group, $state['should_group_be_locked'] ?? false, $now->getTimestamp()));
         } catch (\Amp\CancelledException $error) {
             throw $error;
         } catch (\Throwable $error) {
@@ -264,6 +257,16 @@ final class Application
         }
     }
 
+    /** Called inside the permission confirmation transaction. No provider or Telegram I/O. */
+    private function enqueueTransition(string $groupId, string $kind, string $eventKey): void
+    {
+        $group = $this->settings->getGroup($groupId);
+        if ($group === null || !$group['active'] || $group['mode'] !== 'lock_messages' || !$group[$kind . '_message_enabled']) {
+            return;
+        }
+        $stamp = $this->clock->now()->getTimestamp();
+        $this->jobs->enqueue($groupId, $kind, $kind . ':' . $eventKey, $stamp, $stamp + 3600, $group['revision'], ['text' => ''], 1);
+    }
     public function notificationTick(): void
     {
         if ($this->notifying || $this->isStopping()) {
@@ -354,6 +357,14 @@ final class Application
     {
         $zone = new \DateTimeZone($g['timezone_id']);
         $local = $now->setTimezone($zone);
+        // Messages-only mode still announces transitions; it does not claim permission changes.
+        if ($g['mode'] === 'messages') {
+            foreach ($state['operational_events'] as $event) {
+                foreach (['close' => 'close_at','open' => 'open_at'] as $kind => $field) {
+                    $this->enqueue($g, ['kind' => $kind,'run_at' => $event[$field],'expires_at' => $event[$field] + 3600,'event_key' => $kind . ':' . $event['event_key']]);
+                }
+            }
+        }
         foreach (($g['zmanim_enabled'] || $g['daf_enabled'] || $g['tefillin_enabled'] || $g['omer_enabled']) ? [-1,0,1] : [] as $offset) {
             $date = $local->modify('+' . $offset . ' day')->format('Y-m-d');
             $sun = $this->calendar->zmanim($g, $date)['times'];
@@ -404,14 +415,6 @@ final class Application
                 }break;
             }
         }
-        // Messages-only mode still announces transitions; it does not claim permission changes.
-        if ($g['mode'] === 'messages') {
-            foreach ($state['operational_events'] as $event) {
-                foreach (['close' => 'close_at','open' => 'open_at'] as $kind => $field) {
-                    $this->enqueue($g, ['kind' => $kind,'run_at' => $event[$field],'expires_at' => $event[$field] + 3600,'event_key' => $kind . ':' . $event['event_key']]);
-                }
-            }
-        }
     }
     private function enqueue(array $g, array $job): void
     {
@@ -421,14 +424,15 @@ final class Application
         $payload = ['text' => ''];
         $this->jobs->enqueue($g['group_id'], $job['kind'], $job['event_key'], $job['run_at'], $job['expires_at'], $g['revision'], $payload, in_array($job['kind'], ['close', 'open'], true) ? 1 : ($job['kind'] === 'tefillin' ? 50 : 100));
     }
-    public function payload(array $g, string $kind, \DateTimeImmutable $instant, ?array $templateOverride = null): array
+    public function payload(array $g, string $kind, \DateTimeImmutable $instant, ?array $templateOverride = null, ?array $transitionEvent = null): array
     {
         $zone = new \DateTimeZone($g['timezone_id']);
         $date = $instant->setTimezone($zone)->format('Y-m-d');
         $lang = new Lang();
         $t = fn(string $key, array $values = []): string=>$lang->text($g['language'], $key, $values);
         $text = match ($kind) {
-            'close'=>$t('group_close_notice'),'open'=>$t('group_open_notice'),default=>''
+            'close'=>$t('group_close_notice'),'open'=>$t('group_open_notice'),
+            'holiday_open'=>$t('group_holiday_open_notice'),'holiday_close'=>$t('group_holiday_close_notice'),default=>''
         };
         if ($kind === 'zmanim') {
             $text = $this->ui->renderView('0', $g, 'zmanim', $date);
@@ -489,8 +493,11 @@ final class Application
         if (str_contains($payload['text'], '{{')) {
             $z = $this->calendar->zmanim($g, $date);
             $sun = $z['times'];
-            $state = $this->calendar->snapshot($g, $instant);
-            $event = $state['current_event'] ?? $state['next_event'];
+            $event = $transitionEvent;
+            if ($event === null) {
+                $state = $this->calendar->snapshot($g, $instant);
+                $event = $state['current_event'] ?? $state['next_event'];
+            }
             $format = fn(?int $at): string=>$at === null ? '-' : (new \DateTimeImmutable('@' . $at))->setTimezone($zone)->format('H:i');
             $values = ['location' => $g['location_name'],'date' => $date,'hdate' => $z['hdate'] ?? '-','source' => 'Hebcal','daf' => $kind === 'daf' ? $dafPlain : $text,'omer' => $text,'sunset' => $format($sun['sunset'] ?? null),'remaining' => isset($sun['sunset']) ? (string)max(0, (int)ceil(($sun['sunset'] - $instant->getTimestamp()) / 60)) : '-','candles' => $format($event['candles_at'] ?? null),'havdalah' => $format($event['havdalah_at'] ?? null),'close' => $format($event['close_at'] ?? null),'open' => $format($event['open_at'] ?? null)];
             $payload = (new TemplateRenderer())->renderPayload($payload, $values);
@@ -510,8 +517,15 @@ final class Application
     private function preparePayload(array $job, array $g, \DateTimeImmutable $now): array
     {
         // A delayed announcement still names its scheduled sequence, not the next unrelated holiday.
-        $instant = $job['module'] === 'times_alert' ? new \DateTimeImmutable('@' . $job['run_at']) : $now;
-        $payload = $this->payload($g, $job['module'], $instant);
+        $kind = $job['module'];
+        $transition = in_array($kind, ['open','close'], true);
+        $instant = ($kind === 'times_alert' || $transition) ? new \DateTimeImmutable('@' . $job['run_at']) : $now;
+        // Eligibility just verified this event. Do not fetch a second snapshot for a basic notice.
+        $event = $this->dispatchWindows[$job['job_id']]['transition_event'] ?? null;
+        if ($event !== null && $event[$kind . '_is_yom_tov']) {
+            $kind = 'holiday_' . $kind;
+        }
+        $payload = $this->payload($g, $kind, $instant, transitionEvent: $event);
         return $this->tefillinAcknowledgements->preparePayload($job, $g, $instant, $payload);
     }
     public function incomingGroupMessage(string $group, int $messageId, int $sentAt, string $sender, bool $outgoing = false): bool
@@ -579,7 +593,7 @@ final class Application
             $state = $this->calendar->snapshotNow($settings);
             $instant = new \DateTimeImmutable('@' . $state['evaluated_at']);
             $latest = $this->settings->getGroup($group) ?? throw new \RuntimeException('Group disappeared during recovery.');
-            if ($latest['revision'] !== $settings['revision'] || $this->clock->now()->getTimestamp() !== $instant->getTimestamp()) {
+            if ($latest['revision'] !== $settings['revision']) {
                 continue;
             }
             if (Runner::isStopping()) {
@@ -598,8 +612,9 @@ final class Application
                     }
                 }
             }
-            if ($until <= $stamp) {
-                return false;
+            $now = $this->clock->now()->getTimestamp();
+            if ($now < $stamp || $now >= $until) {
+                continue;
             }
             if (count($this->recoveryWindows) >= 256) {
                 unset($this->recoveryWindows[array_key_first($this->recoveryWindows)]);
@@ -736,8 +751,12 @@ final class Application
         if (($g['manual_override_until'] ?? 0) > $stamp) {
             $until = min($until, $g['manual_override_until']);
         }
+        $transitionEvent = null;
         foreach (['events' => ['start_at', 'end_at'], 'operational_events' => ['close_at', 'open_at']] as $collection => $fields) {
             foreach ($state[$collection] as $event) {
+                if ($transition && $collection === 'operational_events' && $job['event_key'] === $kind . ':' . $event['event_key']) {
+                    $transitionEvent = $event;
+                }
                 foreach ($fields as $field) {
                     if ($event[$field] > $stamp) {
                         $until = min($until, $event[$field]);
@@ -784,7 +803,8 @@ final class Application
         if (count($this->dispatchWindows) >= 512) {
             unset($this->dispatchWindows[array_key_first($this->dispatchWindows)]);
         }
-        $this->dispatchWindows[$job['job_id']] = ['settings' => hash('sha256', Database::encode($g)), 'checked_at' => $stamp, 'until' => $until];
+        $this->dispatchWindows[$job['job_id']] = ['settings' => hash('sha256', Database::encode($g)), 'checked_at' => $stamp,
+            'until' => $until, 'transition_event' => $transitionEvent];
         // Additional provider work above may have crossed a boundary. Do not trust the
         // captured timestamp again, even before the gateway performs its own preflight.
         return $this->dispatchEligible($job, $g, $this->clock->now());

@@ -26,7 +26,14 @@ final class PermissionRecoveryController
     public function show(string $user, array $context, ?string $notice = null): void
     {
         $group = $this->groupId($context);
-        $frame = $this->recovery->inspect($group, $user);
+        try {
+            $frame = $this->recovery->inspect($group, $user);
+        } catch (\Amp\CancelledException $error) {
+            throw $error;
+        } catch (\RuntimeException) {
+            // A failed read must offer only refresh/navigation, never an action.
+            $frame = ['block_reason' => 'unknown'];
+        }
         if (($frame['status'] ?? '') === 'forbidden') {
             throw new \RuntimeException('Current administrator permission is required.');
         }
@@ -95,7 +102,7 @@ final class PermissionRecoveryController
             $rows[] = [$this->button($user, 'recovery_restore', 'sb:pa:' . $token . ':restore')];
         }
         $parent = $this->parent($context);
-        $rows[] = [$this->button($user, 'recovery_refresh', 'sb:pr:' . $token),
+        $rows[] = [$this->button($user, 'recovery_refresh', 'sb:pr:' . $this->groupId($context) . ':' . $parent),
             $this->button($user, 'back', $parent === 'group' ? 'sb:group:' . $token : 'sb:v:' . $token . ':' . $parent)];
         $text = $this->summary($user, $context, $frame);
         if ($notice !== null) {

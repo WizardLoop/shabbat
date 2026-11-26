@@ -33,7 +33,7 @@ final class BotController
         $this->authorizeOperator = $authorizeOperator === null ? static fn(string $user): bool => false : \Closure::fromCallable($authorizeOperator);
     }
     /** Message: user_id,text,private,group_id?,message_id?,location?. */
-    public function handleMessage(array $message): bool
+    public function handleMessage(array $message, ?callable $onGroupPanelSent = null): bool
     {
         $user = (string) ($message['user_id'] ?? '');
         if (!preg_match('/^[0-9]{1,20}$/D', $user)) {
@@ -77,6 +77,9 @@ final class BotController
                     $this->groupList($user);
                 } else {
                     $this->panel($user, $this->group($user, $group));
+                    if ($onGroupPanelSent !== null && !($message['private'] ?? false) && isset($message['group_id'])) {
+                        $onGroupPanelSent();
+                    }
                 }
                 return true;
             }
@@ -204,7 +207,13 @@ final class BotController
                 if ($this->permissionRecovery === null) {
                     throw new \RuntimeException('Permission recovery is unavailable.');
                 }
-                $context = $this->context($user, $token, in_array($action, ['pc', 'px'], true) ? 'permission_recovery_confirm' : 'panel');
+                if ($action === 'pr' && preg_match('/^-[1-9][0-9]{0,18}$/D', $token)) {
+                    // Opening a read-only review can outlive its original panel.
+                    $context = $this->group($user, $token);
+                    $context['_flow']['payload']['return_screen'] = $value;
+                } else {
+                    $context = $this->context($user, $token, in_array($action, ['pc', 'px'], true) ? 'permission_recovery_confirm' : 'panel');
+                }
                 $recovery = new PermissionRecoveryController($this->settings, $this->flows, $this->gateway, $this->permissionRecovery, $this->lang);
                 match ($action) {
                     'pr' => $recovery->show($user, $context),
@@ -218,12 +227,23 @@ final class BotController
             } elseif ($action === 'start') {
                 $this->start($user);
             } elseif ($action === 'groups') {
+                // Membership discovery can outlast Telegram's callback answer deadline.
+                $this->gateway->answerCallback((string)($query['query_id'] ?? ''), '');
                 $state = $this->flows->peek($token, $user, 'groups');
-                $this->groupList($user, $state['payload']['offset'] ?? 0, $state['payload']['search'] ?? '');
+                try {
+                    $this->groupList($user, $state['payload']['offset'] ?? 0, $state['payload']['search'] ?? '', $state['payload']['previous'] ?? []);
+                } catch (\Amp\CancelledException $error) {
+                    throw $error;
+                } catch (PanelEditException) {
+                    // The original private panel is no longer editable.
+                }
+                return true;
             } elseif ($action === 'personal') {
                 $this->panel($user, $this->settings->getUser($user));
             } elseif ($action === 'group') {
-                $this->panel($user, $this->context($user, $token, 'panel'));
+                $context = preg_match('/^-[1-9][0-9]{0,18}$/D', $token)
+                    ? $this->group($user, $token) : $this->context($user, $token, 'panel');
+                $this->panel($user, $context);
             } elseif ($action === 'help') {
                 $this->help($user, $token);
             } elseif ($action === 'show') {
@@ -554,10 +574,10 @@ final class BotController
         $rows = [];
         if (isset($context['group_id'])) {
             $this->group($user, (string) $context['group_id']);
-            $rows[] = [$this->button($user, 'language', 'sb:v:' . $token . ':language'), $this->button($user, 'location', 'sb:v:' . $token . ':location')];
             $shabbat = $this->button($user, 'shabbat', 'sb:v:' . $token . ':shabbat');
             $shabbat['text'] .= ' · ' . $this->t($user, 'mode_' . $context['mode']);
             $rows[] = [$shabbat];
+            $rows[] = [$this->button($user, 'messages', 'v3:templates:' . $context['group_id'])];
             foreach ([['zmanim', 'daf'], ['tefillin', 'omer']] as $screens) {
                 $row = [];
                 foreach ($screens as $screen) {
@@ -567,12 +587,12 @@ final class BotController
                 }
                 $rows[] = $row;
             }
-            $rows[] = [$this->button($user, 'moderation', 'sb:v:' . $token . ':moderation'),
-                $this->button($user, 'messages', 'v3:templates:' . $context['group_id'])];
+            $rows[] = [$this->button($user, 'language', 'sb:v:' . $token . ':language'), $this->button($user, 'location', 'sb:v:' . $token . ':location')];
+            $rows[] = [$this->button($user, 'moderation', 'sb:v:' . $token . ':moderation')];
             $rows[] = [$this->button($user, 'schedule', 'sb:v:' . $token . ':schedule'),
                 $this->button($user, 'status', 'sb:v:' . $token . ':status')];
             if ($this->permissionRecovery !== null) {
-                $rows[] = [$this->button($user, 'permission_recovery', 'sb:pr:' . $token)];
+                $rows[] = [$this->button($user, 'permission_recovery', 'sb:pr:' . $context['group_id'])];
             }
             $snapshot = $this->safeSnapshot($context);
             $next = isset($snapshot['next_close_at']) ? $this->time($snapshot['next_close_at'], $context) : $this->t($user, 'unavailable');
@@ -589,32 +609,66 @@ final class BotController
         $rows[] = [$this->button($user, 'back', 'sb:start')];
         $this->send($user, $text, $this->keyboard($rows));
     }
-    private function groupList(string $user, int $offset = 0, string $search = ''): void
+    private function groupList(string $user, int $offset = 0, string $search = '', array $previous = []): void
     {
         $this->flows->revokeAction($user, 'location_input');
         $this->flows->revokeAction($user, 'settings_wizard');
+        $directory = $this->gateway instanceof CallbackUiGateway ? $this->gateway->underlying() : $this->gateway;
+        $isAdmin = $directory instanceof GroupDiscoveryGateway ? $directory->isListedAdmin(...) : $directory->isGroupAdmin(...);
+        $pageSize = 5;
         $rows = [];
-        $groups = $this->settings->listGroups($offset, 20, $search);
-        foreach ($groups as $group) {
-            if (!$this->gateway->isGroupAdmin($user, (string) $group['group_id'])) {
-                continue;
+        $cursor = $offset;
+        $next = null;
+        do {
+            $batch = $this->settings->listGroups($cursor, 32, $search);
+            foreach (array_chunk($batch, 4) as $chunk) {
+                $checks = array_map(static fn(array $group) => \Amp\async($isAdmin, $user, (string)$group['group_id']), $chunk);
+                try {
+                    $authorized = \Amp\Future\await($checks);
+                } catch (\Shabbat\Telegram\RetryableTelegramException $error) {
+                    $this->send($user, $this->t($user, 'group_directory_retry', ['seconds' => $error->retryAfterSeconds]), $this->keyboard([
+                        [$this->button($user, 'groups', 'sb:groups')], [$this->button($user, 'back', 'sb:start')],
+                    ]));
+                    return;
+                }
+                foreach ($chunk as $i => $group) {
+                    $position = $cursor++;
+                    if (!$authorized[$i]) {
+                        continue;
+                    }
+                    if (count($rows) === $pageSize) {
+                        $next = $position;
+                        break 3;
+                    }
+                    $rows[] = [['text' => (string)($group['title'] ?: $group['group_id']), 'data' => 'sb:group:' . $group['group_id']]];
+                }
             }
-            $token = $this->token($user, $group, 'panel');
-            $rows[] = [['text' => (string) ($group['title'] ?: $group['group_id']), 'data' => 'sb:group:' . $token]];
+        } while (count($batch) === 32);
+
+        if ($rows === [] && $offset > 0) {
+            // A group was removed or an admin role changed between page visits.
+            $this->groupList($user, 0, $search);
+            return;
         }
+        $text = $this->t($user, $rows === [] ? 'no_groups' : 'settings_search');
         $paging = [];
-        if ($offset > 0) {
-            $prev = $this->token($user, $this->settings->getUser($user), 'groups', ['offset' => max(0, $offset - 20), 'search' => $search]);
-            $paging[] = $this->button($user, 'previous', 'sb:groups:' . $prev);
+        $personal = $this->settings->getUser($user);
+        if ($previous !== []) {
+            $history = $previous;
+            $back = array_pop($history);
+            $token = $this->token($user, $personal, 'groups', ['offset' => $back, 'previous' => $history, 'search' => $search]);
+            $paging[] = $this->button($user, 'previous', 'sb:groups:' . $token);
         }
-        if (count($groups) === 20) {
-            $next = $this->token($user, $this->settings->getUser($user), 'groups', ['offset' => $offset + 20, 'search' => $search]);
-            $paging[] = $this->button($user, 'next', 'sb:groups:' . $next);
+        if ($next !== null) {
+            $previous[] = $offset;
+            $token = $this->token($user, $personal, 'groups', ['offset' => $next, 'previous' => $previous, 'search' => $search]);
+            $paging[] = $this->button($user, 'next', 'sb:groups:' . $token);
         }
-        if ($paging) {
+        if ($paging !== []) {
             $rows[] = $paging;
-        } $rows[] = [$this->button($user, 'back', 'sb:start')];
-        $this->send($user, $this->t($user, count($rows) > 1 ? 'settings_search' : 'no_groups'), $this->keyboard($rows));
+        }
+        $rows[] = [$this->button($user, 'back', 'sb:start')];
+        $this->send($user, $text, $this->keyboard($rows));
     }
     private function screen(string $user, array $context, string $screen): void
     {
@@ -713,8 +767,15 @@ final class BotController
             $wizard = $this->token($user, $context, 'panel', ['wizard_module' => 'shabbat']);
             $rows = $this->wizardFieldButtons($user, $context, 'shabbat', $wizard, fields: SettingsWizard::sectionFields($screen));
             if ($screen === 'shabbat_messages') {
+                if (!in_array($context['mode'], ['messages', 'lock_messages'], true)) {
+                    $text .= "\n\n" . $this->t($user, 'settings_transition_mode_hint');
+                    array_unshift($rows, [['text' => $this->t($user, 'settings_mode_button', ['mode' => $this->t($user, 'mode_' . $context['mode'])]),
+                        'data' => 'sb:v:' . $token . ':shabbat_mode', 'style' => ['_' => 'keyboardButtonStyle', 'bg_primary' => true]]]);
+                }
                 $rows[] = [$this->button($user, 'template_kind_close', 'v3:templates:' . $context['group_id'] . ':close'),
                     $this->button($user, 'template_kind_open', 'v3:templates:' . $context['group_id'] . ':open')];
+                $rows[] = [$this->button($user, 'template_kind_holiday_close', 'v3:templates:' . $context['group_id'] . ':holiday_close'),
+                    $this->button($user, 'template_kind_holiday_open', 'v3:templates:' . $context['group_id'] . ':holiday_open')];
                 $rows[] = [$this->button($user, 'announcement_schedule', 'sb:v:' . $token . ':announcement')];
             } else {
                 $rows[] = [$this->button($user, 'preview', 'sb:p:' . $token . ':shabbat')];
@@ -781,7 +842,7 @@ final class BotController
             throw new \InvalidArgumentException('Unknown screen');
         }
         if ($this->permissionRecovery !== null && isset($context['group_id']) && in_array($screen, ['shabbat', 'moderation', 'restrictions', 'botpermissions', 'status'], true)) {
-            $rows[] = [$this->button($user, 'permission_recovery', 'sb:pr:' . $token)];
+            $rows[] = [$this->button($user, 'permission_recovery', 'sb:pr:' . $context['group_id'] . ':' . $screen)];
         }
         $parent = match ($screen) {
             'shabbat_mode', 'shabbat_timing', 'shabbat_messages', 'announcement', 'moderation' => 'shabbat',

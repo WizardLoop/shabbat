@@ -186,6 +186,8 @@
     "loginTitleWeb": "登录 Telegram",
     "loginLeadWeb": "选择此 MadelineProto 实例要使用的帐户或机器人。",
     "loginTypeWeb": "登录身份",
+    "loginSessionWeb": "会话",
+    "loginSessionSwitchWeb": "切换",
     "loginUserPhoneHintWeb": "请包含国家代码，例如 +39 123 456 7890。",
     "loginBotTokenHintWeb": "创建机器人时 @BotFather 提供给您的令牌。",
     "loginCodeTitleWeb": "输入登录码",
@@ -270,5 +272,14 @@
     "tweb.ACCESS_TOKEN_EXPIRED": "此机器人令牌已被撤销",
     "tweb.FIRSTNAME_INVALID": "名字无效",
     "tweb.LASTNAME_INVALID": "姓氏无效",
-    "tweb.Close": "关闭"
+    "tweb.Close": "关闭",
+    "webBotStarted": "机器人已启动！",
+    "apiIdLabelWeb": "API ID",
+    "apiHashLabelWeb": "API hash",
+    "myTelegramOrgNoApp": "尚未创建任何应用！",
+    "myTelegramOrgCreateFailed": "创建应用失败",
+    "myTelegramOrgNoCreationHash": "找不到创建应用所需的哈希！",
+    "myTelegramOrgNoApiId": "在 my.telegram.org 的应用页面中找不到 API ID 和 API hash",
+    "myTelegramOrgUnexpected": "来自 my.telegram.org 的意外响应",
+    "myTelegramOrgEmpty": "来自 my.telegram.org 的空响应"
 }

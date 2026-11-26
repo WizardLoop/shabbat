@@ -10,7 +10,7 @@ use Shabbat\UI\Lang;
 
 final class TemplateEditor
 {
-    private const KINDS = ['close','open','times_alert','zmanim','daf','tefillin','omer'];
+    private const KINDS = ['close','open','holiday_close','holiday_open','times_alert','zmanim','daf','tefillin','omer'];
     private Lang $lang;
     public function __construct(private Application $app)
     {
@@ -204,7 +204,32 @@ final class TemplateEditor
     {
         $template = $this->app->templates->get($group['group_id'], $kind);
         $rows = [];
-        foreach ([['edit', 'buttons'], ['preview', 'test'], ['remove_text', 'remove_media'], ['default_buttons', 'remove_buttons'], ['reset']] as $actions) {
+        $customText = ($template['text'] ?? '') !== '';
+        $hasMedia = ($template['media'] ?? null) !== null;
+        $buttonMode = $template['buttons_mode'] ?? 'inherit';
+        $actionsByRow = [['edit', 'buttons'], ['preview', 'test']];
+        $remove = [];
+        if ($customText) {
+            $remove[] = 'remove_text';
+        }
+        if ($hasMedia) {
+            $remove[] = 'remove_media';
+        }
+        if ($remove !== []) {
+            $actionsByRow[] = $remove;
+        }
+        $buttons = [];
+        if ($buttonMode !== 'inherit') {
+            $buttons[] = 'default_buttons';
+        }
+        if ($buttonMode !== 'none') {
+            $buttons[] = 'remove_buttons';
+        }
+        $actionsByRow[] = $buttons;
+        if ($customText || $hasMedia || $buttonMode !== 'inherit') {
+            $actionsByRow[] = ['reset'];
+        }
+        foreach ($actionsByRow as $actions) {
             $row = [];
             foreach ($actions as $action) {
                 $key = $action === 'remove_text' ? (($template['media'] ?? null) === null ? 'template_restore_text' : 'template_remove_caption') : 'template_' . $action;
@@ -216,7 +241,7 @@ final class TemplateEditor
         }
         $panel = $this->app->flows->create($user, 'group', $group['group_id'], $group['revision'], 'panel');
         $screen = match ($kind) {
-            'close', 'open' => 'shabbat_messages', 'times_alert' => 'announcement', default => $kind,
+            'close', 'open', 'holiday_close', 'holiday_open' => 'shabbat_messages', 'times_alert' => 'announcement', default => $kind,
         };
         $rows[] = [
             ['text' => $this->t($user, 'messages'), 'data' => 'v3:templates:' . $group['group_id']],

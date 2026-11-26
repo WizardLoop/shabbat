@@ -66,7 +66,8 @@ final class LegacyImportVerificationTest extends TestCase
     {
         $importer = new LegacyImporter($this->db, $this->clock);
         $preview = $importer->run($this->root);
-        self::assertSame(2, $preview['counts']['templates']);
+        self::assertSame(3, $preview['counts']['templates']);
+        self::assertContains('holiday_close', array_column($preview['templates'], 'kind'));
         self::assertSame('not_applied', $preview['verification']['status']);
         self::assertStringContainsString('malformed JSON', implode("\n", $preview['warnings']));
         self::assertSame(0, (int)$this->db->pdo()->query('SELECT COUNT(*) FROM groups')->fetchColumn());

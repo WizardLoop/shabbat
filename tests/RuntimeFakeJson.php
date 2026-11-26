@@ -9,12 +9,15 @@ use Shabbat\Http\JsonClient;
 
 final class RuntimeFakeJson implements JsonClient
 {
+    public function __construct(private readonly array $holidays = [])
+    {
+    }
     public function get(string $url, array $query = [], ?\Amp\Cancellation $cancellation = null): array
     {
         $start = $query['start'];
         $end = $query['end'];
         if (str_ends_with($url, '/hebcal')) {
-            return ['range' => ['start' => $start,'end' => $end],'items' => []];
+            return ['range' => ['start' => $start,'end' => $end],'items' => $this->holidays];
         }
         $times = [];
         $zone = new \DateTimeZone($query['tzid']);

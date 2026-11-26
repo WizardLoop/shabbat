@@ -121,7 +121,7 @@ final class SourceInputsTest extends TestCase
         sort($expected);
         sort($actual);
         self::assertSame($expected, $actual);
-        self::assertCount(105, $actual);
+        self::assertCount(108, $actual);
         self::assertArrayHasKey('additional-source/amphp-windows-process-wrapper/LICENSE', $manifest['preferred_source']);
         self::assertArrayHasKey('additional-source/madelineproto-build-inputs/LICENSE', $manifest['preferred_source']);
         self::assertSame('MIT', $manifest['additional_source']['license']);
@@ -137,12 +137,12 @@ final class SourceInputsTest extends TestCase
         $root = dirname(__DIR__);
         $manifest = $this->manifest();
         self::assertSame(83, $manifest['runtime_package_count']);
-        self::assertSame(4095, array_sum(array_column($manifest['runtime_packages'], 'file_count')));
+        self::assertSame(4272, array_sum(array_column($manifest['runtime_packages'], 'file_count')));
         $source = $manifest['madeline_generation_source'];
-        self::assertSame('49d3d8460257c7bfb1a7e12708e1bfdd59e898c1', $source['reference']);
-        self::assertSame('8.11.10', $source['upstream_provenance']['version']);
-        self::assertSame(84, $source['file_count']);
-        self::assertCount(84, $source['upstream_provenance']['source_files']);
+        self::assertSame('2bcfa934f7bbb89f8509f9d0ba52d06e5bf3ef51', $source['reference']);
+        self::assertSame('8.23.1', $source['upstream_provenance']['version']);
+        self::assertSame(87, $source['file_count']);
+        self::assertCount(87, $source['upstream_provenance']['source_files']);
         $paths = [];
         foreach ($source['upstream_provenance']['source_files'] as $file) {
             $archive = 'additional-source/madelineproto-build-inputs/' . $file['path'];
@@ -157,7 +157,7 @@ final class SourceInputsTest extends TestCase
         foreach (
             ['tools/build_tl.php', 'tools/TL/Builder.php', 'tools/TL/SecretBuilder.php',
             'tools/gen_filerefmap.php', 'tools/FileRefExtractor/FileRefGenerator.php',
-            'tools/translator.php', 'langs/en.json', 'schemas/TL_telegram_v232.tl',
+            'tools/translator.php', 'langs/en.json', 'schemas/TL_telegram_v234.tl',
             'schemas/TL_mtproto_v1.tl', 'schemas/TL_secret.tl', 'docs/template/disallow.json', 'LICENSE'] as $required
         ) {
             self::assertArrayHasKey($required, $paths);

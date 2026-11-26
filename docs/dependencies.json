@@ -1,6 +1,6 @@
 {
     "schema_version": 1,
-    "lock_sha256": "2b5d70795b5a6000769ea87b6f340667d9d743152ac5fefde8f7ae2ff9aecb14",
+    "lock_sha256": "0ec8a4a7327c3964730ea1f7c812fbb75573b38f3091a4e631572159c3bcb966",
     "packages": [
         {
             "name": "amphp/amp",
@@ -25,15 +25,15 @@
         },
         {
             "name": "amphp/byte-stream",
-            "version": "v2.1.2",
+            "version": "v2.1.4",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/amphp/byte-stream.git",
-            "source_commit": "55a6bd071aec26fa2a3e002618c20c35e3df1b46",
-            "source_permalink": "https://github.com/amphp/byte-stream/tree/55a6bd071aec26fa2a3e002618c20c35e3df1b46",
+            "source_commit": "de5b94a727c5fb970e018452e552ce20dc75aa16",
+            "source_permalink": "https://github.com/amphp/byte-stream/tree/de5b94a727c5fb970e018452e552ce20dc75aa16",
             "license_files": [
                 {
                     "file": "vendor/amphp/byte-stream/LICENSE",
@@ -67,15 +67,15 @@
         },
         {
             "name": "amphp/dns",
-            "version": "v2.4.1",
+            "version": "v2.4.2",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/amphp/dns.git",
-            "source_commit": "ec5948bfafac808f410406e18bc7b52a2d4629b7",
-            "source_permalink": "https://github.com/amphp/dns/tree/ec5948bfafac808f410406e18bc7b52a2d4629b7",
+            "source_commit": "2e2b4daa214a18b1528919d6781988ea65a9a47d",
+            "source_permalink": "https://github.com/amphp/dns/tree/2e2b4daa214a18b1528919d6781988ea65a9a47d",
             "license_files": [
                 {
                     "file": "vendor/amphp/dns/LICENSE",
@@ -151,15 +151,15 @@
         },
         {
             "name": "amphp/http-client",
-            "version": "v5.3.6",
+            "version": "v5.3.8",
             "direct": true,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/amphp/http-client.git",
-            "source_commit": "ca155026acafa74a612d776a97202d53077fee86",
-            "source_permalink": "https://github.com/amphp/http-client/tree/ca155026acafa74a612d776a97202d53077fee86",
+            "source_commit": "be5bf6a84e7b02bcf763020358833824f414c3bb",
+            "source_permalink": "https://github.com/amphp/http-client/tree/be5bf6a84e7b02bcf763020358833824f414c3bb",
             "license_files": [
                 {
                     "file": "vendor/amphp/http-client/LICENSE",
@@ -193,15 +193,15 @@
         },
         {
             "name": "amphp/http-server",
-            "version": "v3.4.7",
+            "version": "v3.4.10",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/amphp/http-server.git",
-            "source_commit": "aa96ca38c5f822a827236543d5417d0c2a782ef0",
-            "source_permalink": "https://github.com/amphp/http-server/tree/aa96ca38c5f822a827236543d5417d0c2a782ef0",
+            "source_commit": "cb929c33d7413d824dd17023c3e8f22c46c77667",
+            "source_permalink": "https://github.com/amphp/http-server/tree/cb929c33d7413d824dd17023c3e8f22c46c77667",
             "license_files": [
                 {
                     "file": "vendor/amphp/http-server/LICENSE",
@@ -235,15 +235,15 @@
         },
         {
             "name": "amphp/mysql",
-            "version": "v3.1.1",
+            "version": "v3.1.2",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/amphp/mysql.git",
-            "source_commit": "ea3a5e07dc3dddc267669337ded2a98f02d86223",
-            "source_permalink": "https://github.com/amphp/mysql/tree/ea3a5e07dc3dddc267669337ded2a98f02d86223",
+            "source_commit": "916d04a2724050cd241aa76a47cdaee498a13c40",
+            "source_permalink": "https://github.com/amphp/mysql/tree/916d04a2724050cd241aa76a47cdaee498a13c40",
             "license_files": [
                 {
                     "file": "vendor/amphp/mysql/LICENSE",
@@ -319,15 +319,15 @@
         },
         {
             "name": "amphp/postgres",
-            "version": "v2.2.1",
+            "version": "v2.2.2",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/amphp/postgres.git",
-            "source_commit": "b68c4d5929d0ec1701781dbbb0bb81dd8d0a42d7",
-            "source_permalink": "https://github.com/amphp/postgres/tree/b68c4d5929d0ec1701781dbbb0bb81dd8d0a42d7",
+            "source_commit": "147d6e284fd0d2bd2f4a62b23942b34b23830b73",
+            "source_permalink": "https://github.com/amphp/postgres/tree/147d6e284fd0d2bd2f4a62b23942b34b23830b73",
             "license_files": [
                 {
                     "file": "vendor/amphp/postgres/LICENSE",
@@ -340,15 +340,15 @@
         },
         {
             "name": "amphp/process",
-            "version": "v2.1.0",
+            "version": "v2.1.2",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/amphp/process.git",
-            "source_commit": "583959df17d00304ad7b0b32285373f985935643",
-            "source_permalink": "https://github.com/amphp/process/tree/583959df17d00304ad7b0b32285373f985935643",
+            "source_commit": "acfd64f68df5fa7f2d674c93d1986b2bf5d02770",
+            "source_permalink": "https://github.com/amphp/process/tree/acfd64f68df5fa7f2d674c93d1986b2bf5d02770",
             "license_files": [
                 {
                     "file": "vendor/amphp/process/LICENSE",
@@ -403,15 +403,15 @@
         },
         {
             "name": "amphp/socket",
-            "version": "v2.4.1",
+            "version": "v2.4.2",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/amphp/socket.git",
-            "source_commit": "b347be5aff6b2cc025208bb4d896607eb470c018",
-            "source_permalink": "https://github.com/amphp/socket/tree/b347be5aff6b2cc025208bb4d896607eb470c018",
+            "source_commit": "6e881835c73b75a0a4251a7f58441bc90b9f6c8a",
+            "source_permalink": "https://github.com/amphp/socket/tree/6e881835c73b75a0a4251a7f58441bc90b9f6c8a",
             "license_files": [
                 {
                     "file": "vendor/amphp/socket/LICENSE",
@@ -445,15 +445,15 @@
         },
         {
             "name": "amphp/sql-common",
-            "version": "v2.0.4",
+            "version": "v2.0.5",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/amphp/sql-common.git",
-            "source_commit": "735da17ef0a66e7139c9f7584af5c3f9827f83c0",
-            "source_permalink": "https://github.com/amphp/sql-common/tree/735da17ef0a66e7139c9f7584af5c3f9827f83c0",
+            "source_commit": "8b22b3de392fbaf19c060e3bf89d37396a87d7b5",
+            "source_permalink": "https://github.com/amphp/sql-common/tree/8b22b3de392fbaf19c060e3bf89d37396a87d7b5",
             "license_files": [
                 {
                     "file": "vendor/amphp/sql-common/LICENSE",
@@ -466,15 +466,15 @@
         },
         {
             "name": "amphp/sync",
-            "version": "v2.3.0",
+            "version": "v2.3.1",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/amphp/sync.git",
-            "source_commit": "217097b785130d77cfcc58ff583cf26cd1770bf1",
-            "source_permalink": "https://github.com/amphp/sync/tree/217097b785130d77cfcc58ff583cf26cd1770bf1",
+            "source_commit": "2f711b6651270449d59c770ffb518698655022f7",
+            "source_permalink": "https://github.com/amphp/sync/tree/2f711b6651270449d59c770ffb518698655022f7",
             "license_files": [
                 {
                     "file": "vendor/amphp/sync/LICENSE",
@@ -487,19 +487,19 @@
         },
         {
             "name": "amphp/websocket",
-            "version": "v2.0.4",
+            "version": "v2.0.5",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/amphp/websocket.git",
-            "source_commit": "963904b6a883c4b62d9222d1d9749814fac96a3b",
-            "source_permalink": "https://github.com/amphp/websocket/tree/963904b6a883c4b62d9222d1d9749814fac96a3b",
+            "source_commit": "578856dbfe15802d084f21ff157a347270e4d8ca",
+            "source_permalink": "https://github.com/amphp/websocket/tree/578856dbfe15802d084f21ff157a347270e4d8ca",
             "license_files": [
                 {
                     "file": "vendor/amphp/websocket/LICENSE",
-                    "sha256": "93dc2b2aae85651379265cbb4906d2b054020ac9cc4ee70e5040f79751e34651"
+                    "sha256": "2881e4bd9785442c84ad1bd44052feb43eb27e9bdb8636400f10a54c0238a49f"
                 }
             ],
             "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
@@ -571,15 +571,15 @@
         },
         {
             "name": "danog/async-orm",
-            "version": "1.1.6",
+            "version": "1.3.0",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "Apache-2.0"
             ],
             "source_url": "https://github.com/danog/AsyncOrm.git",
-            "source_commit": "4a2a7a54c5002bef6cdf80b338085e9e131bf719",
-            "source_permalink": "https://github.com/danog/AsyncOrm/tree/4a2a7a54c5002bef6cdf80b338085e9e131bf719",
+            "source_commit": "e51cce03d15619ddb7d41e272199a64d72a4c696",
+            "source_permalink": "https://github.com/danog/AsyncOrm/tree/e51cce03d15619ddb7d41e272199a64d72a4c696",
             "license_files": [
                 {
                     "file": "vendor/danog/async-orm/LICENSE",
@@ -642,15 +642,15 @@
         },
         {
             "name": "danog/ipc",
-            "version": "1.1.0",
+            "version": "1.2.0",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/danog/ipc.git",
-            "source_commit": "eea6de6a57273f32a4f90a652ae1409786be18a0",
-            "source_permalink": "https://github.com/danog/ipc/tree/eea6de6a57273f32a4f90a652ae1409786be18a0",
+            "source_commit": "dc44b12276c08fb6c1403b72e3289f069f68331a",
+            "source_permalink": "https://github.com/danog/ipc/tree/dc44b12276c08fb6c1403b72e3289f069f68331a",
             "license_files": [
                 {
                     "file": "vendor/danog/ipc/LICENSE",
@@ -705,15 +705,15 @@
         },
         {
             "name": "danog/madelineproto",
-            "version": "8.11.10",
+            "version": "8.23.1",
             "direct": true,
             "scope": "runtime",
             "spdx": [
                 "AGPL-3.0-only"
             ],
             "source_url": "https://github.com/danog/MadelineProto.git",
-            "source_commit": "49d3d8460257c7bfb1a7e12708e1bfdd59e898c1",
-            "source_permalink": "https://github.com/danog/MadelineProto/tree/49d3d8460257c7bfb1a7e12708e1bfdd59e898c1",
+            "source_commit": "2bcfa934f7bbb89f8509f9d0ba52d06e5bf3ef51",
+            "source_permalink": "https://github.com/danog/MadelineProto/tree/2bcfa934f7bbb89f8509f9d0ba52d06e5bf3ef51",
             "license_files": [
                 {
                     "file": "vendor/danog/madelineproto/LICENSE",
@@ -752,15 +752,15 @@
         },
         {
             "name": "danog/php-rtc-codecs",
-            "version": "1.1.19",
+            "version": "1.1.20",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "BSD-3-Clause"
             ],
             "source_url": "https://github.com/danog/php-rtc-codecs.git",
-            "source_commit": "00836382276949099077e19659ff6648b823284f",
-            "source_permalink": "https://github.com/danog/php-rtc-codecs/tree/00836382276949099077e19659ff6648b823284f",
+            "source_commit": "dd6493e1f23209b27bf44cfe897cdde9f2c265f4",
+            "source_permalink": "https://github.com/danog/php-rtc-codecs/tree/dd6493e1f23209b27bf44cfe897cdde9f2c265f4",
             "license_files": [
                 {
                     "file": "vendor/danog/php-rtc-codecs/LICENSE",
@@ -794,15 +794,15 @@
         },
         {
             "name": "danog/php-rtc-dtls",
-            "version": "2.0.20",
+            "version": "2.0.22",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "BSD-3-Clause"
             ],
             "source_url": "https://github.com/danog/php-rtc-dtls.git",
-            "source_commit": "794180b0c3cf54842df44b7bcb44f8fb50f199c8",
-            "source_permalink": "https://github.com/danog/php-rtc-dtls/tree/794180b0c3cf54842df44b7bcb44f8fb50f199c8",
+            "source_commit": "be95f7e71a1fbef96ad30c7962ef8981c078436b",
+            "source_permalink": "https://github.com/danog/php-rtc-dtls/tree/be95f7e71a1fbef96ad30c7962ef8981c078436b",
             "license_files": [
                 {
                     "file": "vendor/danog/php-rtc-dtls/LICENSE",
@@ -836,15 +836,15 @@
         },
         {
             "name": "danog/php-rtc-ice",
-            "version": "2.0.18",
+            "version": "2.0.19",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "BSD-3-Clause"
             ],
             "source_url": "https://github.com/danog/php-rtc-ice.git",
-            "source_commit": "91c53e982f334cf3bfe64a9e298d874bba51a3f1",
-            "source_permalink": "https://github.com/danog/php-rtc-ice/tree/91c53e982f334cf3bfe64a9e298d874bba51a3f1",
+            "source_commit": "d7a55b3f499517980d6c803e834b57ac0cddd7dd",
+            "source_permalink": "https://github.com/danog/php-rtc-ice/tree/d7a55b3f499517980d6c803e834b57ac0cddd7dd",
             "license_files": [
                 {
                     "file": "vendor/danog/php-rtc-ice/LICENSE",
@@ -899,15 +899,15 @@
         },
         {
             "name": "danog/php-rtc-ntp",
-            "version": "1.1.15",
+            "version": "1.1.16",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "BSD-3-Clause"
             ],
             "source_url": "https://github.com/danog/php-rtc-ntp.git",
-            "source_commit": "d70dc01410dba146cb808b9c2bf3c28ed1199d20",
-            "source_permalink": "https://github.com/danog/php-rtc-ntp/tree/d70dc01410dba146cb808b9c2bf3c28ed1199d20",
+            "source_commit": "043b52f9009eaf7e908b1d310f9c3d266d16b579",
+            "source_permalink": "https://github.com/danog/php-rtc-ntp/tree/043b52f9009eaf7e908b1d310f9c3d266d16b579",
             "license_files": [
                 {
                     "file": "vendor/danog/php-rtc-ntp/LICENSE",
@@ -941,15 +941,15 @@
         },
         {
             "name": "danog/php-rtc-rtp",
-            "version": "2.0.23",
+            "version": "2.0.26",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "BSD-3-Clause"
             ],
             "source_url": "https://github.com/danog/php-rtc-rtp.git",
-            "source_commit": "e9bee7a5aae91f6abec1fe9a599eefbce219d967",
-            "source_permalink": "https://github.com/danog/php-rtc-rtp/tree/e9bee7a5aae91f6abec1fe9a599eefbce219d967",
+            "source_commit": "99493f1e508246a53ce800191d8a98f6870c53df",
+            "source_permalink": "https://github.com/danog/php-rtc-rtp/tree/99493f1e508246a53ce800191d8a98f6870c53df",
             "license_files": [
                 {
                     "file": "vendor/danog/php-rtc-rtp/LICENSE",
@@ -983,15 +983,15 @@
         },
         {
             "name": "danog/php-rtc-sctp",
-            "version": "2.0.14",
+            "version": "2.0.16",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "BSD-3-Clause"
             ],
             "source_url": "https://github.com/danog/php-rtc-sctp.git",
-            "source_commit": "741697e355abd7eb8e8134b115fab775bb5ccd06",
-            "source_permalink": "https://github.com/danog/php-rtc-sctp/tree/741697e355abd7eb8e8134b115fab775bb5ccd06",
+            "source_commit": "3c52b9ec2aff2da51c6e0d095c9f2ae2a9359de9",
+            "source_permalink": "https://github.com/danog/php-rtc-sctp/tree/3c52b9ec2aff2da51c6e0d095c9f2ae2a9359de9",
             "license_files": [
                 {
                     "file": "vendor/danog/php-rtc-sctp/LICENSE",
@@ -1025,15 +1025,15 @@
         },
         {
             "name": "danog/php-rtc-srtp",
-            "version": "1.1.16",
+            "version": "1.1.18",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "BSD-3-Clause"
             ],
             "source_url": "https://github.com/danog/php-rtc-srtp.git",
-            "source_commit": "b19959292663d8933a0a48cd1fda05788fb5c542",
-            "source_permalink": "https://github.com/danog/php-rtc-srtp/tree/b19959292663d8933a0a48cd1fda05788fb5c542",
+            "source_commit": "aab145749bd2eefa32425585554e669653ca95de",
+            "source_permalink": "https://github.com/danog/php-rtc-srtp/tree/aab145749bd2eefa32425585554e669653ca95de",
             "license_files": [
                 {
                     "file": "vendor/danog/php-rtc-srtp/LICENSE",
@@ -1046,15 +1046,15 @@
         },
         {
             "name": "danog/php-rtc-stats",
-            "version": "1.1.7",
+            "version": "1.1.8",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "BSD-3-Clause"
             ],
             "source_url": "https://github.com/danog/php-rtc-stats.git",
-            "source_commit": "137934d7d57e97184d5b6b2fb58e571e0d3f9fbd",
-            "source_permalink": "https://github.com/danog/php-rtc-stats/tree/137934d7d57e97184d5b6b2fb58e571e0d3f9fbd",
+            "source_commit": "4586fb16e757b195390c263ed02bd759c5a1ac61",
+            "source_permalink": "https://github.com/danog/php-rtc-stats/tree/4586fb16e757b195390c263ed02bd759c5a1ac61",
             "license_files": [
                 {
                     "file": "vendor/danog/php-rtc-stats/LICENSE",
@@ -1067,15 +1067,15 @@
         },
         {
             "name": "danog/php-rtc-stun",
-            "version": "2.0.18",
+            "version": "2.0.19",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "BSD-3-Clause"
             ],
             "source_url": "https://github.com/danog/php-rtc-stun.git",
-            "source_commit": "7f1b48a736e6d7a9ad174e7dc58b794168befed4",
-            "source_permalink": "https://github.com/danog/php-rtc-stun/tree/7f1b48a736e6d7a9ad174e7dc58b794168befed4",
+            "source_commit": "38785e55398435eb4f8d35cbacad53c1af53dcc2",
+            "source_permalink": "https://github.com/danog/php-rtc-stun/tree/38785e55398435eb4f8d35cbacad53c1af53dcc2",
             "license_files": [
                 {
                     "file": "vendor/danog/php-rtc-stun/LICENSE",
@@ -1088,15 +1088,15 @@
         },
         {
             "name": "danog/php-rtc-turn",
-            "version": "2.0.9",
+            "version": "2.0.10",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "BSD-3-Clause"
             ],
             "source_url": "https://github.com/danog/php-rtc-turn.git",
-            "source_commit": "5789c0d4b23c6097c72812fa8f9e9930ac288bc6",
-            "source_permalink": "https://github.com/danog/php-rtc-turn/tree/5789c0d4b23c6097c72812fa8f9e9930ac288bc6",
+            "source_commit": "f9add143d3620ede54b1ae0cd9b02e92ca9ff03d",
+            "source_permalink": "https://github.com/danog/php-rtc-turn/tree/f9add143d3620ede54b1ae0cd9b02e92ca9ff03d",
             "license_files": [
                 {
                     "file": "vendor/danog/php-rtc-turn/LICENSE",
@@ -1151,15 +1151,15 @@
         },
         {
             "name": "danog/telegram-entities",
-            "version": "1.1.0",
+            "version": "1.1.1",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "Apache-2.0"
             ],
             "source_url": "https://github.com/danog/telegram-entities.git",
-            "source_commit": "92ca7621594b7a6c4a820c3b557e66ee1d439273",
-            "source_permalink": "https://github.com/danog/telegram-entities/tree/92ca7621594b7a6c4a820c3b557e66ee1d439273",
+            "source_commit": "397081fce44f497c5cb6b8daa79920f27ce6e375",
+            "source_permalink": "https://github.com/danog/telegram-entities/tree/397081fce44f497c5cb6b8daa79920f27ce6e375",
             "license_files": [
                 {
                     "file": "vendor/danog/telegram-entities/LICENSE",
@@ -1285,15 +1285,15 @@
         },
         {
             "name": "league/uri",
-            "version": "7.8.1",
+            "version": "7.10.0",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/thephpleague/uri.git",
-            "source_commit": "08cf38e3924d4f56238125547b5720496fac8fd4",
-            "source_permalink": "https://github.com/thephpleague/uri/tree/08cf38e3924d4f56238125547b5720496fac8fd4",
+            "source_commit": "be89e2382e37acdef232259071ade5180821397b",
+            "source_permalink": "https://github.com/thephpleague/uri/tree/be89e2382e37acdef232259071ade5180821397b",
             "license_files": [
                 {
                     "file": "vendor/league/uri/LICENSE",
@@ -1306,15 +1306,15 @@
         },
         {
             "name": "league/uri-components",
-            "version": "7.8.1",
+            "version": "7.10.0",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/thephpleague/uri-components.git",
-            "source_commit": "848ff9db2f0be06229d6034b7c2e33d41b4fd675",
-            "source_permalink": "https://github.com/thephpleague/uri-components/tree/848ff9db2f0be06229d6034b7c2e33d41b4fd675",
+            "source_commit": "2a790e66948d3504a2f2cd42b80d4b8874601540",
+            "source_permalink": "https://github.com/thephpleague/uri-components/tree/2a790e66948d3504a2f2cd42b80d4b8874601540",
             "license_files": [
                 {
                     "file": "vendor/league/uri-components/LICENSE",
@@ -1327,15 +1327,15 @@
         },
         {
             "name": "league/uri-interfaces",
-            "version": "7.8.1",
+            "version": "7.10.0",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/thephpleague/uri-interfaces.git",
-            "source_commit": "85d5c77c5d6d3af6c54db4a78246364908f3c928",
-            "source_permalink": "https://github.com/thephpleague/uri-interfaces/tree/85d5c77c5d6d3af6c54db4a78246364908f3c928",
+            "source_commit": "ea66240cff4ae9a56ce85d577a04d038b771e51c",
+            "source_permalink": "https://github.com/thephpleague/uri-interfaces/tree/ea66240cff4ae9a56ce85d577a04d038b771e51c",
             "license_files": [
                 {
                     "file": "vendor/league/uri-interfaces/LICENSE",
@@ -1348,15 +1348,15 @@
         },
         {
             "name": "monolog/monolog",
-            "version": "3.12.1",
+            "version": "3.13.0",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/Seldaek/monolog.git",
-            "source_commit": "d7059e4c691d05ea1222b5124bed0f961be46e15",
-            "source_permalink": "https://github.com/Seldaek/monolog/tree/d7059e4c691d05ea1222b5124bed0f961be46e15",
+            "source_commit": "1f5f55bb4a9a230ff6d8a4ceccea31d10b0142ac",
+            "source_permalink": "https://github.com/Seldaek/monolog/tree/1f5f55bb4a9a230ff6d8a4ceccea31d10b0142ac",
             "license_files": [
                 {
                     "file": "vendor/monolog/monolog/LICENSE",
@@ -1390,15 +1390,15 @@
         },
         {
             "name": "paragonie/constant_time_encoding",
-            "version": "v3.1.3",
+            "version": "v3.1.5",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/paragonie/constant_time_encoding.git",
-            "source_commit": "d5b01a39b3415c2cd581d3bd3a3575c1ebbd8e77",
-            "source_permalink": "https://github.com/paragonie/constant_time_encoding/tree/d5b01a39b3415c2cd581d3bd3a3575c1ebbd8e77",
+            "source_commit": "ceed38ba49d98b85808edfc4f04750ff61eb9739",
+            "source_permalink": "https://github.com/paragonie/constant_time_encoding/tree/ceed38ba49d98b85808edfc4f04750ff61eb9739",
             "license_files": [
                 {
                     "file": "vendor/paragonie/constant_time_encoding/LICENSE.txt",
@@ -1411,19 +1411,19 @@
         },
         {
             "name": "phpseclib/phpseclib",
-            "version": "4.0.2",
+            "version": "4.0.4",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/phpseclib/phpseclib.git",
-            "source_commit": "1fe20b9acb08ce810cec24d8a9d02e7c13426e4c",
-            "source_permalink": "https://github.com/phpseclib/phpseclib/tree/1fe20b9acb08ce810cec24d8a9d02e7c13426e4c",
+            "source_commit": "44303c95a83b6071229cdea56cdcd52712730476",
+            "source_permalink": "https://github.com/phpseclib/phpseclib/tree/44303c95a83b6071229cdea56cdcd52712730476",
             "license_files": [
                 {
                     "file": "vendor/phpseclib/phpseclib/LICENSE",
-                    "sha256": "fa986c1ac53f7bd83e30fe296f8dced7003ab0a05ec11945b5aea4a4ebd626dd"
+                    "sha256": "65ca9f593302c0f280815ef88147ae4e11cf266d1455cb31de427ee1f016c33f"
                 }
             ],
             "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
@@ -1537,19 +1537,19 @@
         },
         {
             "name": "ramsey/uuid",
-            "version": "4.9.4",
+            "version": "4.10.0",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/ramsey/uuid.git",
-            "source_commit": "75d73f48d02797c2c285a7e9f348fadc0102ffe2",
-            "source_permalink": "https://github.com/ramsey/uuid/tree/75d73f48d02797c2c285a7e9f348fadc0102ffe2",
+            "source_commit": "f9aa3efc8015fcbc013d84d699583b268ccb593a",
+            "source_permalink": "https://github.com/ramsey/uuid/tree/f9aa3efc8015fcbc013d84d699583b268ccb593a",
             "license_files": [
                 {
                     "file": "vendor/ramsey/uuid/LICENSE",
-                    "sha256": "9e8bf008e16a9ee5cc2d3bfe60701ec2351a2ddf29e9092275f71441a6d5a167"
+                    "sha256": "c391b91a0ff3b0f3746980661bb23754f1c185881a4a56c49591015ddda41a94"
                 }
             ],
             "attribution": "Preserve distributed license and copyright notices; additional source obligations depend on the declared license.",
@@ -1558,15 +1558,15 @@
         },
         {
             "name": "revolt/event-loop",
-            "version": "v1.0.9",
+            "version": "v1.1.0",
             "direct": true,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/revoltphp/event-loop.git",
-            "source_commit": "44061cf513e53c6200372fc935ac42271566295d",
-            "source_permalink": "https://github.com/revoltphp/event-loop/tree/44061cf513e53c6200372fc935ac42271566295d",
+            "source_commit": "93999a4ffca70aaa3890c553001e9f8313a1895c",
+            "source_permalink": "https://github.com/revoltphp/event-loop/tree/93999a4ffca70aaa3890c553001e9f8313a1895c",
             "license_files": [
                 {
                     "file": "vendor/revolt/event-loop/LICENSE",
@@ -1600,15 +1600,15 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.43.0",
+            "version": "v1.43.3",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/symfony/polyfill-mbstring.git",
-            "source_commit": "4d5d331bf731e0aedbc6b2f5e61135b7b7996a72",
-            "source_permalink": "https://github.com/symfony/polyfill-mbstring/tree/4d5d331bf731e0aedbc6b2f5e61135b7b7996a72",
+            "source_commit": "122889ed24dc000165bcbfd77ec412f15cbdfc6a",
+            "source_permalink": "https://github.com/symfony/polyfill-mbstring/tree/122889ed24dc000165bcbfd77ec412f15cbdfc6a",
             "license_files": [
                 {
                     "file": "vendor/symfony/polyfill-mbstring/LICENSE",
@@ -1684,15 +1684,15 @@
         },
         {
             "name": "symfony/polyfill-php85",
-            "version": "v1.43.0",
+            "version": "v1.44.0",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/symfony/polyfill-php85.git",
-            "source_commit": "86a42cbcc07adc331481a5ab310a4024bfc227f6",
-            "source_permalink": "https://github.com/symfony/polyfill-php85/tree/86a42cbcc07adc331481a5ab310a4024bfc227f6",
+            "source_commit": "94c794cb5ba51784bc259f11e9f128593297d8dc",
+            "source_permalink": "https://github.com/symfony/polyfill-php85/tree/94c794cb5ba51784bc259f11e9f128593297d8dc",
             "license_files": [
                 {
                     "file": "vendor/symfony/polyfill-php85/LICENSE",
@@ -1726,15 +1726,15 @@
         },
         {
             "name": "webmozart/assert",
-            "version": "2.5.0",
+            "version": "2.5.1",
             "direct": false,
             "scope": "runtime",
             "spdx": [
                 "MIT"
             ],
             "source_url": "https://github.com/webmozarts/assert.git",
-            "source_commit": "8a163706bbcac613733dba03f51e13b5eb1bb819",
-            "source_permalink": "https://github.com/webmozarts/assert/tree/8a163706bbcac613733dba03f51e13b5eb1bb819",
+            "source_commit": "e578132c01bd0c64108386ab20d8217cd175ddec",
+            "source_permalink": "https://github.com/webmozarts/assert/tree/e578132c01bd0c64108386ab20d8217cd175ddec",
             "license_files": [
                 {
                     "file": "vendor/webmozart/assert/LICENSE",
@@ -1831,15 +1831,15 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.3.1",
+            "version": "2.3.7",
             "direct": true,
             "scope": "dev",
             "spdx": [
                 "MIT"
             ],
-            "source_url": "https://api.github.com/repos/phpstan/phpstan/zipball/6155239b488e95d26d1ebd95c6b4bb294d7f09db",
-            "source_commit": "6155239b488e95d26d1ebd95c6b4bb294d7f09db",
-            "source_permalink": "https://api.github.com/repos/phpstan/phpstan/zipball/6155239b488e95d26d1ebd95c6b4bb294d7f09db/tree/6155239b488e95d26d1ebd95c6b4bb294d7f09db",
+            "source_url": "https://api.github.com/repos/phpstan/phpstan/zipball/90c91c2498849ab8cc4e873864bbf1cb2bf6ea12",
+            "source_commit": "90c91c2498849ab8cc4e873864bbf1cb2bf6ea12",
+            "source_permalink": "https://api.github.com/repos/phpstan/phpstan/zipball/90c91c2498849ab8cc4e873864bbf1cb2bf6ea12/tree/90c91c2498849ab8cc4e873864bbf1cb2bf6ea12",
             "license_files": [
                 {
                     "file": "vendor/phpstan/phpstan/LICENSE",
@@ -1957,15 +1957,15 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "12.5.39",
+            "version": "12.5.45",
             "direct": true,
             "scope": "dev",
             "spdx": [
                 "BSD-3-Clause"
             ],
             "source_url": "https://github.com/sebastianbergmann/phpunit.git",
-            "source_commit": "4e8cbead3741cc57f16d142f4c5dc73c2747820a",
-            "source_permalink": "https://github.com/sebastianbergmann/phpunit/tree/4e8cbead3741cc57f16d142f4c5dc73c2747820a",
+            "source_commit": "ca97be2931de6a0adf824da12889cbf935a016e9",
+            "source_permalink": "https://github.com/sebastianbergmann/phpunit/tree/ca97be2931de6a0adf824da12889cbf935a016e9",
             "license_files": [
                 {
                     "file": "vendor/phpunit/phpunit/LICENSE",
@@ -2230,15 +2230,15 @@
         },
         {
             "name": "sebastian/version",
-            "version": "6.0.1",
+            "version": "6.0.2",
             "direct": false,
             "scope": "dev",
             "spdx": [
                 "BSD-3-Clause"
             ],
             "source_url": "https://github.com/sebastianbergmann/version.git",
-            "source_commit": "9e935a16187e14f39b0e79910dabd614972cdb26",
-            "source_permalink": "https://github.com/sebastianbergmann/version/tree/9e935a16187e14f39b0e79910dabd614972cdb26",
+            "source_commit": "a8b6643a19ba6c8125a473623e45fb8cbb0e4159",
+            "source_permalink": "https://github.com/sebastianbergmann/version/tree/a8b6643a19ba6c8125a473623e45fb8cbb0e4159",
             "license_files": [
                 {
                     "file": "vendor/sebastian/version/LICENSE",
@@ -2405,13 +2405,13 @@
     "local_patches": [
         {
             "manifest": "patches/madelineproto-fresh-peer/manifest.json",
-            "sha256": "e274407689d5d6cad6638fca6edff5429540a99624265882aa7bc374de181119",
+            "sha256": "64258887ac6043542cf9c631864b5e3ddffa872b7527f5514b5c22512593a9e6",
             "package": "danog/madelineproto",
             "target": "src/MTProtoTools/PeerHandler.php",
             "approved": [
                 {
-                    "version": "8.11.10",
-                    "commit": "49d3d8460257c7bfb1a7e12708e1bfdd59e898c1",
+                    "version": "8.23.1",
+                    "commit": "2bcfa934f7bbb89f8509f9d0ba52d06e5bf3ef51",
                     "mode": "patch",
                     "baseline": "baseline/PeerHandler.php",
                     "reviewed_output": "reviewed/PeerHandler.php",

@@ -186,6 +186,8 @@
     "loginTitleWeb": "ورود به Telegram",
     "loginLeadWeb": "حساب یا رباتی را انتخاب کنید که این نمونه MadelineProto با آن اجرا خواهد شد.",
     "loginTypeWeb": "ورود به عنوان",
+    "loginSessionWeb": "نشست",
+    "loginSessionSwitchWeb": "تغییر",
     "loginUserPhoneHintWeb": "همراه با کد کشور، مانند +39 123 456 7890.",
     "loginBotTokenHintWeb": "توکنی که @BotFather هنگام ساخت ربات به شما داد.",
     "loginCodeTitleWeb": "کد ورود را وارد کنید",
@@ -270,5 +272,14 @@
     "tweb.ACCESS_TOKEN_EXPIRED": "این توکن ربات باطل شده است",
     "tweb.FIRSTNAME_INVALID": "نام نامعتبر است",
     "tweb.LASTNAME_INVALID": "نام خانوادگی نامعتبر است",
-    "tweb.Close": "بستن"
+    "tweb.Close": "بستن",
+    "webBotStarted": "ربات اجرا شد!",
+    "apiIdLabelWeb": "API ID",
+    "apiHashLabelWeb": "API HASH",
+    "myTelegramOrgNoApp": "هنوز هیچ برنامه‌ای ساخته نشده است!",
+    "myTelegramOrgCreateFailed": "ساخت برنامه ناموفق بود",
+    "myTelegramOrgNoCreationHash": "هش ساخت برنامه پیدا نشد!",
+    "myTelegramOrgNoApiId": "API ID و API HASH در صفحه برنامه در my.telegram.org پیدا نشد",
+    "myTelegramOrgUnexpected": "پاسخ غیرمنتظره از my.telegram.org",
+    "myTelegramOrgEmpty": "پاسخ خالی از my.telegram.org"
 }

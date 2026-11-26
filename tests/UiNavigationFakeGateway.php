@@ -18,11 +18,12 @@ final class UiNavigationFakeGateway implements UiGateway, PanelPayloadGateway
     public array $inline = [];
     public array $payloads = [];
     public bool $admin = true;
+    public array $adminGroups = ['-1001', '-1002'];
     public ?\Closure $onEdit = null;
 
     public function isGroupAdmin(string $userId, string $groupId): bool
     {
-        return $this->admin && $userId === '1' && in_array($groupId, ['-1001', '-1002'], true);
+        return $this->admin && $userId === '1' && in_array($groupId, $this->adminGroups, true);
     }
 
     public function sendPrivate(string $userId, string $text, array $markup = []): void

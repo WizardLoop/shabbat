@@ -10,15 +10,15 @@
   ],
   "require": {
     "php": "~8.3.36 || ~8.4.27 || ~8.5.12",
+    "ext-mbstring": "*",
     "ext-pdo": "*",
     "ext-pdo_sqlite": "*",
-    "ext-mbstring": "*",
-    "danog/madelineproto": "^8.11.10",
-    "wizardloop/broadcastmanager": "~3.2.2",
     "amphp/amp": "^3.1.1",
     "amphp/file": "^3.2",
     "amphp/http-client": "^5.3.4",
-    "revolt/event-loop": "^1.0.7"
+    "danog/madelineproto": "8.23.1",
+    "revolt/event-loop": "^1.0.7",
+    "wizardloop/broadcastmanager": "~3.2.2"
   },
   "require-dev": {
     "phpstan/phpstan": "^2.1",

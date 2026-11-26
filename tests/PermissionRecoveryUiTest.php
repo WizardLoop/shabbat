@@ -64,6 +64,38 @@ final class PermissionRecoveryUiTest extends TestCase
         );
     }
 
+    public function testOldNavigationLoadsLatestRevisionAndUnreadablePermissionsCanBeRefreshed(): void
+    {
+        $this->click('sb:group:' . $this->panelToken());
+        $review = $this->button('sb:pr:');
+        $group = $this->settings->getGroup('-1001');
+        $this->settings->updateGroup('-1001', $group['revision'], ['candle_minutes' => 49], '1');
+        $this->telegram->onGet = static function (): void {
+            throw new \RuntimeException('temporarily unavailable');
+        };
+        $this->click($review);
+        self::assertStringContainsString((new Lang())->text('he', 'recovery_block_unknown'), $this->last()['text']);
+        self::assertFalse($this->hasButton('sb:pa:'));
+        $this->telegram->onGet = null;
+        $this->click($this->button('sb:pr:'));
+        self::assertTrue($this->hasButton('sb:pa:'));
+        self::assertSame(0, $this->telegram->writes);
+    }
+
+    public function testOpeningReviewAfterNavigationExpiresStillChecksCurrentRole(): void
+    {
+        $this->click('sb:group:' . $this->panelToken());
+        $review = $this->button('sb:pr:');
+        $this->clock->set($this->clock->now()->modify('+1 hour'));
+        $this->click($review);
+        self::assertTrue($this->hasButton('sb:pa:'));
+        $readCount = $this->telegram->reads;
+        $this->gateway->admin = false;
+        $this->click($review);
+        self::assertSame($readCount, $this->telegram->reads);
+        self::assertSame((new Lang())->text('he', 'denied'), $this->lastAnswer());
+    }
+
     public static function languageActions(): array
     {
         $cases = [];

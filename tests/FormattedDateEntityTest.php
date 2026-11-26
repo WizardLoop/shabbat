@@ -179,8 +179,8 @@ final class FormattedDateEntityTest extends TestCase
     public function testActualStrToolsPreservesOfficialDateHtmlAndText(): void
     {
         foreach ([false, true] as $allowTags) {
-            self::assertSame($allowTags ? '😀<tg-time unix="1792000000" format="wDt">date</tg-time>&lt;&gt;' : '😀date&lt;&gt;', StrTools::entitiesToHtml('😀date<>', [self::raw(50, 2, 4)], $allowTags));
-            self::assertSame($allowTags ? '😀<tg-time unix="1792000000" format="wDt"><b>date</b></tg-time>&lt;&gt;' : '😀<b>date</b>&lt;&gt;', StrTools::entitiesToHtml('😀date<>', [
+            self::assertSame($allowTags ? '😀<tg-time unix="1792000000" format="wDt">date</tg-time>&lt;&gt;' : '😀<time datetime="2026-10-14T17:46:40+00:00">date</time>&lt;&gt;', StrTools::entitiesToHtml('😀date<>', [self::raw(50, 2, 4)], $allowTags));
+            self::assertSame($allowTags ? '😀<tg-time unix="1792000000" format="wDt"><b>date</b></tg-time>&lt;&gt;' : '😀<time datetime="2026-10-14T17:46:40+00:00"><b>date</b></time>&lt;&gt;', StrTools::entitiesToHtml('😀date<>', [
                 self::raw(50, 2, 4), ['_' => 'messageEntityBold', 'offset' => 2, 'length' => 4],
             ], $allowTags));
         }
