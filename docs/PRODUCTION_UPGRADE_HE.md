@@ -1,5 +1,7 @@
 <div dir="rtl">
 
+לעדכון בוט שכבר רץ עם SQLite לגרסה 3.2.0 השתמשו ב[מדריך העדכון הנוכחי](UPDATE_3_2.md). התהליך בהמשך מתעד את המעבר מהבוט הישן לגרסה 3.1.1.
+
 # שדרוג בטוח ל־3.1.1
 
 [English](PRODUCTION_UPGRADE.md) · [README בעברית](../readme-he.md) · [מיפוי הייבוא](MIGRATION.md) · [התאוששות הרשאות](PERMISSION_RECOVERY.md)

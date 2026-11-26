@@ -6,7 +6,7 @@ declare(strict_types=1);
 
 namespace Shabbat\Telegram;
 
-/** Read-only diagnostic catalog from the locked Telegram layer 232 constructor. */
+/** Read-only diagnostic catalog from the locked Telegram layer 234 constructor. */
 final class AdminRights
 {
     public const FLAGS = [

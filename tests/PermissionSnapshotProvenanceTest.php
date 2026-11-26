@@ -202,7 +202,7 @@ final class PermissionSnapshotProvenanceTest extends TestCase
             $db->pdo()->prepare("INSERT INTO group_lock_state(group_id,event_key,status,snapshot_json,snapshot_sha256,applied_json,prepared_at,last_error) VALUES('-1','old','conflict',?,?,?,1,'old topic mismatch')")
                 ->execute([$oldSnapshot,hash('sha256', $oldSnapshot),Database::encode(Permissions::locked(json_decode($oldSnapshot, true)))]);
             $before = $db->pdo()->query('SELECT * FROM group_lock_state')->fetch();
-            self::assertCount(16 - $from, $db->migrate());
+            self::assertCount(17 - $from, $db->migrate());
             self::assertSame([], $db->migrate());
             $after = $db->pdo()->query('SELECT * FROM group_lock_state')->fetch();
             self::assertSame($before, array_intersect_key($after, $before));

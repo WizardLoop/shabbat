@@ -34,6 +34,30 @@ final class GroupModerationStorageTest extends TestCase
         $this->settings->ensureGroup('-1');
         $this->gateway = new SchedulerFakeGateway();
     }
+    public function testExistingSharedDesignIsCopiedOnceWithAllContentAndIndependentRevisions(): void
+    {
+        $db = \Shabbat\Storage\Database::open(':memory:');
+        $pdo = $db->pdo();
+        foreach (glob(dirname(__DIR__) . '/migrations/*.sql') as $file) {
+            if (basename($file) === '017_holiday_templates.sql') {
+                break;
+            }
+            $pdo->exec(file_get_contents($file));
+        }
+        $pdo->exec("INSERT INTO groups(group_id,created_at,updated_at) VALUES('-1',1,1)");
+        $pdo->prepare('INSERT INTO message_templates(group_id,kind,text,entities_json,media_json,buttons_json,buttons_mode,revision,updated_at,imported_at) VALUES(?,?,?,?,?,?,?,?,?,?)')
+            ->execute(['-1','open','Welcome','[{"_":"messageEntityBold","offset":0,"length":7}]','{"type":"photo"}','[[{"text":"Page","url":"https://example.org"}]]','custom',9,123,45]);
+        $original = $pdo->query("SELECT * FROM message_templates WHERE kind='open'")->fetch();
+        $pdo->exec(file_get_contents(dirname(__DIR__) . '/migrations/017_holiday_templates.sql'));
+        self::assertSame($original, $pdo->query("SELECT * FROM message_templates WHERE kind='open'")->fetch());
+        $holiday = $pdo->query("SELECT * FROM message_templates WHERE kind='holiday_open'")->fetch();
+        self::assertNotSame($original['template_id'], $holiday['template_id']);
+        unset($original['template_id'], $holiday['template_id'], $original['kind'], $holiday['kind']);
+        self::assertSame($original, $holiday);
+        $pdo->exec("UPDATE message_templates SET text='Festival' WHERE kind='holiday_open'");
+        self::assertSame('Welcome', $pdo->query("SELECT text FROM message_templates WHERE kind='open'")->fetchColumn());
+    }
+
     public function testRestrictionCatalogExactlyMatchesLockedNativeSchema(): void
     {
         $tl = file_get_contents((new \danog\MadelineProto\Settings\TLSchema())->getAPISchema());
@@ -209,7 +233,7 @@ final class GroupModerationStorageTest extends TestCase
             foreach (['groups','group_settings','user_preferences','message_templates','group_lock_state','scheduled_jobs','delivery_log'] as $table) {
                 $snapshots[$table] = $old->pdo()->query('SELECT * FROM ' . $table)->fetchAll();
             }
-            self::assertSame(['008_group_moderation.sql', '009_admin_roles_links.sql', '010_subscriber_directory.sql', '011_custom_star_amounts.sql', '012_tefillin_acknowledgements.sql', '013_permission_recovery.sql', '014_diagnostic_panels.sql', '015_permission_snapshot_provenance.sql', '016_delivery_safety.sql'], $old->migrate());
+            self::assertSame(['008_group_moderation.sql', '009_admin_roles_links.sql', '010_subscriber_directory.sql', '011_custom_star_amounts.sql', '012_tefillin_acknowledgements.sql', '013_permission_recovery.sql', '014_diagnostic_panels.sql', '015_permission_snapshot_provenance.sql', '016_delivery_safety.sql', '017_holiday_templates.sql'], $old->migrate());
             foreach ($snapshots as $table => $rows) {
                 $current = $old->pdo()->query('SELECT * FROM ' . $table . ' ORDER BY 1')->fetchAll();
                 foreach ($rows as $index => $row) {

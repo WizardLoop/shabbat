@@ -352,7 +352,7 @@ final class UITemplateTest extends TestCase
 
     public function testDirectTefillinAndAnnouncementDesignsRemainIndependentAndSecured(): void
     {
-        foreach (['tefillin','times_alert'] as $kind) {
+        foreach (['tefillin','times_alert','holiday_open','holiday_close'] as $kind) {
             $this->click('v3:templates:-1001:' . $kind);
             self::assertStringContainsString('tpl:edit:', json_encode($this->last(), JSON_THROW_ON_ERROR));
             $token = substr($this->last()['markup']['rows'][0]['buttons'][0]['data'], 9);

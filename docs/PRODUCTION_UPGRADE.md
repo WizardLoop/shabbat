@@ -1,5 +1,7 @@
 # Production upgrade to 3.1.1
 
+For the 3.2.0 update of a running SQLite installation, use [the current update guide](UPDATE_3_2.md). The procedure below documents the 3.1.1 legacy cutover.
+
 [עברית](PRODUCTION_UPGRADE_HE.md) · [README](../README.md) · [Import mapping](MIGRATION.md) · [Permission recovery](PERMISSION_RECOVERY.md)
 
 This is a manual runbook, not an executed deployment. Use the released, verified 3.1.1 assets after required checks pass. The requested path is **/root/shabbat**; older instructions used **/root/shabat**. Verify the real container and directory before changing either. Never use the test bot's data.

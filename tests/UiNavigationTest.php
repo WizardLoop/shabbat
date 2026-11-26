@@ -79,6 +79,37 @@ final class UiNavigationTest extends TestCase
         return array_merge(...array_map(static fn(array $row): array => $row['buttons'], $panel['markup']['rows']));
     }
 
+    public function testMyGroupsPaginatesVerifiedGroupsAcrossDatabaseBatches(): void
+    {
+        for ($i = 100; $i < 160; $i++) {
+            $this->settings->ensureGroup('-1000' . $i, 'Other ' . $i);
+        }
+        $this->click('sb:groups');
+        $buttons = $this->buttons($this->last());
+        self::assertSame(['First group', 'Second group'], array_slice(array_column($buttons, 'text'), 0, 2));
+        self::assertCount(3, $buttons); // Two groups and Back.
+        foreach (range(3, 6) as $i) {
+            $id = '-100' . $i;
+            $this->settings->ensureGroup($id, 'Choice ' . $i);
+            $this->gateway->adminGroups[] = $id;
+        }
+        $this->click('sb:groups');
+        $first = $this->buttons($this->last());
+        self::assertCount(7, $first);
+        $this->click($first[5]['data']);
+        $second = $this->buttons($this->last());
+        self::assertCount(3, $second);
+        self::assertSame('Choice 6', $second[0]['text']);
+        $this->click($second[1]['data']);
+        self::assertSame(array_column($first, 'text'), array_column($this->buttons($this->last()), 'text'));
+        array_pop($this->gateway->adminGroups);
+        $this->click('sb:groups');
+        self::assertCount(6, $this->buttons($this->last())); // Exactly five and Back.
+        $this->gateway->admin = false;
+        $this->click('sb:groups');
+        self::assertCount(1, $this->buttons($this->last()));
+    }
+
     public function testInitialCommandsSendOnePanelEachAndButtonsEditIt(): void
     {
         foreach (['/start', '/preferences', '/help'] as $command) {

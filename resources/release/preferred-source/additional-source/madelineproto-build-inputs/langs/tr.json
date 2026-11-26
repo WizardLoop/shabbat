@@ -186,6 +186,8 @@
     "loginTitleWeb": "Telegram'da oturum açın",
     "loginLeadWeb": "Bu MadelineProto örneğinin hangi hesap veya bot olarak çalışacağını seçin.",
     "loginTypeWeb": "Şu olarak oturum aç",
+    "loginSessionWeb": "Oturum",
+    "loginSessionSwitchWeb": "Değiştir",
     "loginUserPhoneHintWeb": "Ülke koduyla birlikte, örneğin +39 123 456 7890.",
     "loginBotTokenHintWeb": "Botu oluşturduğunuzda @BotFather'ın size verdiği token.",
     "loginCodeTitleWeb": "Giriş kodunu girin",
@@ -270,5 +272,14 @@
     "tweb.ACCESS_TOKEN_EXPIRED": "Bu bot token'ı iptal edildi",
     "tweb.FIRSTNAME_INVALID": "Geçersiz ad",
     "tweb.LASTNAME_INVALID": "Geçersiz soyad",
-    "tweb.Close": "Kapat"
+    "tweb.Close": "Kapat",
+    "webBotStarted": "Bot başlatıldı!",
+    "apiIdLabelWeb": "API ID",
+    "apiHashLabelWeb": "API hash",
+    "myTelegramOrgNoApp": "Henüz hiçbir uygulama oluşturulmadı!",
+    "myTelegramOrgCreateFailed": "Uygulama oluşturulamadı",
+    "myTelegramOrgNoCreationHash": "Uygulama oluşturma hash'i bulunamadı!",
+    "myTelegramOrgNoApiId": "my.telegram.org'daki uygulama sayfasında API ID ve API hash bulunamadı",
+    "myTelegramOrgUnexpected": "my.telegram.org'dan beklenmeyen yanıt",
+    "myTelegramOrgEmpty": "my.telegram.org'dan boş yanıt"
 }

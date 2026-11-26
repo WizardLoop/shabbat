@@ -12,9 +12,13 @@ use PHPUnit\Framework\TestCase;
 /** Exercises official worker descriptors with a local PHP child; no Telegram or SDK session is started. */
 final class SdkWorkerIsolationTest extends TestCase
 {
-    public function testStandardWorkerPipesRemainAvailable(): void
+    public function testWorkerUsesPlatformSpecificStandardDescriptors(): void
     {
         $descriptors = ProcessRunner::getWorkerDescriptors();
+        if (PHP_OS_FAMILY === 'Windows') {
+            self::assertSame([['null'], ['null'], ['null']], $descriptors);
+            return;
+        }
         self::assertSame([['pipe', 'r'], ['pipe', 'w'], ['pipe', 'w']], array_slice($descriptors, 0, 3, true));
         foreach (array_slice($descriptors, 3, null, true) as $number => $specification) {
             self::assertGreaterThan(2, $number);

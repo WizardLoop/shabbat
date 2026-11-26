@@ -8,9 +8,9 @@
 
 [![License: AGPL-3.0-only](https://img.shields.io/badge/license-AGPL--3.0--only-blue)](LICENSE)
 [![PHP 8.3–8.5](https://img.shields.io/badge/PHP-8.3%E2%80%938.5-777BB4)](composer.json)
-[![MadelineProto 8.11.10](https://img.shields.io/badge/MadelineProto-8.11.10-2CA5E0)](composer.lock)
+[![MadelineProto 8.23.1](https://img.shields.io/badge/MadelineProto-8.23.1-2CA5E0)](composer.lock)
 
-**גרסה 3.1.1.** דרישות השחרור ומגבלות האימות מתוארות ב[מצב המימוש](docs/IMPLEMENTATION_STATUS.md). להתקנה קיימת התחילו ב[מדריך השדרוג בעברית](docs/PRODUCTION_UPGRADE_HE.md) ([English](docs/PRODUCTION_UPGRADE.md)); הפקודות שבהמשך יוצרות מסד נתונים חדש.
+**גרסה 3.2.0.** דרישות השחרור ומגבלות האימות מתוארות ב[מצב המימוש](docs/IMPLEMENTATION_STATUS.md). לעדכון בוט שכבר רץ עם SQLite השתמשו ב[הוראות העדכון עם Docker Compose](docs/UPDATE_3_2.md); הפקודות שבהמשך יוצרות מסד נתונים חדש.
 
 [יכולות](#features) · [דרישות](#requirements) · [התקנה](#install) · [הגדרה](#configure) · [שימוש ראשון](#first-use) · [תפעול ועדכון](#operate) · [תיעוד](#documentation) · [רישיון](#license)
 
@@ -53,21 +53,21 @@ Docker מספק PHP 8.4.27,‏ Composer,‏ SQLite,‏ igbinary 3.2.16 לתאי�
 <a id="install"></a>
 ## 1. חילוץ התקנה חדשה
 
-הורידו את `shabbat-3.1.1.zip` ואת `SHA256SUMS` מ[שחרור GitHub המתאים](https://github.com/WizardLoop/shabbat/releases). הריצו ב־**Bash בשרת**, מתיקיית ההעלאה ועם גישה ל־Docker. אימות הקובץ חייב להחזיר `OK`.
+הורידו את `shabbat-3.2.0.zip` ואת `SHA256SUMS` מ[שחרור GitHub המתאים](https://github.com/WizardLoop/shabbat/releases). הריצו ב־**Bash בשרת**, מתיקיית ההעלאה ועם גישה ל־Docker. אימות הקובץ חייב להחזיר `OK`.
 
 <div dir="ltr">
 
 ~~~sh
 set -euo pipefail
 umask 077
-awk '$2 == "shabbat-3.1.1.zip" {
+awk '$2 == "shabbat-3.2.0.zip" {
   if (NF != 2 || length($1) != 64 || $1 ~ /[^0-9a-f]/) exit 1
   print; n++
 } END { if (n != 1) exit 1 }' SHA256SUMS > deployment.sha256
 sha256sum --check deployment.sha256
-test ! -e shabbat-3.1.1
-unzip -q shabbat-3.1.1.zip -d shabbat-3.1.1
-cd shabbat-3.1.1
+test ! -e shabbat-3.2.0
+unzip -q shabbat-3.2.0.zip -d shabbat-3.2.0
+cd shabbat-3.2.0
 cp .env.example .env
 chmod 600 .env
 unset BUILD_COMMIT
@@ -90,7 +90,7 @@ API_HASH=replace_with_your_32_character_api_hash
 BOT_TOKEN=replace_with_your_bot_token
 ADMIN=123456789
 GEONAMES_USERNAME=your_geonames_username
-SOURCE_URL=https://github.com/WizardLoop/shabbat/releases/tag/v3.1.1
+SOURCE_URL=https://github.com/WizardLoop/shabbat/releases/tag/v3.2.0
 ~~~
 
 </div>

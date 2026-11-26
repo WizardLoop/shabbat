@@ -1,13 +1,13 @@
 # Third-party notices
 
-WizardLoop Shabbat **3.1.1** uses **AGPL-3.0-only** for the combined application. Dependencies, historical source and data retain their own grants and notices. The complete application license is in [LICENSE](LICENSE); exact versions, source revisions, license files and findings are in the [dependency inventory](docs/dependencies.json).
+WizardLoop Shabbat **3.2.0** uses **AGPL-3.0-only** for the combined application. Dependencies, historical source and data retain their own grants and notices. The complete application license is in [LICENSE](LICENSE); exact versions, source revisions, license files and findings are in the [dependency inventory](docs/dependencies.json).
 
 ## Code and tools
 
 | Component | Source and license evidence | Attribution and local changes |
 |---|---|---|
 | Original WizardLoop Shabbat | [WizardLoop/shabbat](https://github.com/WizardLoop/shabbat), historical MIT | Copyright (c) 2024 WizardLoop. The original [MIT grant](LICENSES/SHABBAT-LEGACY-MIT.txt) remains effective. |
-| MadelineProto 8.11.10 | [Pinned source](https://github.com/danog/MadelineProto/tree/49d3d8460257c7bfb1a7e12708e1bfdd59e898c1), metadata AGPL-3.0-only; source headers version 3 or later | Preserve original notices. One local PeerHandler patch exposes fresh full-peer response evidence. Official UpdateLoop, GeoPoint and FormattedDate source replaces those former local patches. |
+| MadelineProto 8.23.1 | [Pinned source](https://github.com/danog/MadelineProto/tree/2bcfa934f7bbb89f8509f9d0ba52d06e5bf3ef51), metadata AGPL-3.0-only; source headers version 3 or later | Preserve original notices. One local PeerHandler patch exposes fresh full-peer response evidence. Official UpdateLoop, GeoPoint and FormattedDate source replaces those former local patches. |
 | WizardLoop BroadcastManager 3.2.2 | [Pinned source](https://github.com/WizardLoop/BroadcastManager/tree/f2792a383416b66bb68e55f09414563e540538d6), AGPL-3.0-only | Preserve WizardLoop notices. The local patch supplies presentation, transport, authorization, cancellation and joined-worker lifecycle hooks. |
 | Amp and Revolt | [Amp](https://github.com/amphp), [Revolt](https://github.com/revoltphp/event-loop), MIT | Original package notices remain attached; Windows helper source is supplied separately with its MIT license. |
 | PHP RTC components | [danog repositories](https://github.com/danog), exact pins in the inventory | Most declare BSD-3-Clause. **php-rtc-av declares MIT in metadata but distributes a BSD-3-Clause LICENSE and BSD source headers.** Both are preserved; the MIT declaration is not confirmed by its distributed license. Optional FFmpeg/native libraries are not included. |

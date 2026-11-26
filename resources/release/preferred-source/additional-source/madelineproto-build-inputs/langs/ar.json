@@ -186,6 +186,8 @@
     "loginTitleWeb": "تسجيل الدخول إلى Telegram",
     "loginLeadWeb": "اختر الحساب أو البوت الذي ستعمل به نسخة MadelineProto هذه.",
     "loginTypeWeb": "تسجيل الدخول كـ",
+    "loginSessionWeb": "الجلسة",
+    "loginSessionSwitchWeb": "تبديل",
     "loginUserPhoneHintWeb": "مع رمز الدولة، مثل +39 123 456 7890.",
     "loginBotTokenHintWeb": "التوكن الذي أعطاك إياه @BotFather عند إنشاء البوت.",
     "loginCodeTitleWeb": "أدخل رمز تسجيل الدخول",
@@ -270,5 +272,14 @@
     "tweb.ACCESS_TOKEN_EXPIRED": "تم إبطال توكن البوت هذا",
     "tweb.FIRSTNAME_INVALID": "الاسم الأول غير صالح",
     "tweb.LASTNAME_INVALID": "اسم العائلة غير صالح",
-    "tweb.Close": "إغلاق"
+    "tweb.Close": "إغلاق",
+    "webBotStarted": "تم تشغيل البوت!",
+    "apiIdLabelWeb": "API ID",
+    "apiHashLabelWeb": "API hash",
+    "myTelegramOrgNoApp": "لم يتم إنشاء أي تطبيق بعد!",
+    "myTelegramOrgCreateFailed": "فشل إنشاء التطبيق",
+    "myTelegramOrgNoCreationHash": "تعذر العثور على رمز إنشاء التطبيق!",
+    "myTelegramOrgNoApiId": "تعذر العثور على API ID وAPI hash في صفحة التطبيق على my.telegram.org",
+    "myTelegramOrgUnexpected": "استجابة غير متوقعة من my.telegram.org",
+    "myTelegramOrgEmpty": "استجابة فارغة من my.telegram.org"
 }

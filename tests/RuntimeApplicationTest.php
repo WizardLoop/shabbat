@@ -62,6 +62,78 @@ final class RuntimeApplicationTest extends TestCase
         self::assertSame(2, $this->gateway->mutations);
         self::assertNotFalse(file_get_contents($this->heartbeat));
     }
+    public function testVerifiedRestorationAnnouncesOnceAfterLostTelegramReplyAndRestart(): void
+    {
+        $app = $this->app();
+        $app->settings->ensureGroup('-1001', 'Example', [
+            'mode' => 'lock_messages','open_message_enabled' => true,'close_message_enabled' => false,'language' => 'en',
+        ]);
+        $app->tick();
+        $this->clock->set(new \DateTimeImmutable('2026-10-17T19:00:00+03:00'));
+        $this->gateway->beforeSetPermissions = function (string $group, array $rights): void {
+            $this->gateway->rights[$group] = $rights;
+            throw new \RuntimeException('Fixture: server applied the write but the response was lost.');
+        };
+        $app->tick();
+        self::assertFalse($this->gateway->rights['-1001']['send_messages']);
+        self::assertSame([], $this->gateway->sent);
+        $this->gateway->beforeSetPermissions = null;
+        $restarted = $this->app();
+        $restarted->tick();
+        $restarted->tick();
+        self::assertCount(1, $this->gateway->sent);
+        self::assertSame((new \Shabbat\UI\Lang())->text('en', 'group_open_notice'), $this->gateway->sent[0][1]['text']);
+        self::assertSame(1, (int)$this->db->pdo()->query("SELECT count(*) FROM scheduled_jobs WHERE module='open' AND status='sent'")->fetchColumn());
+    }
+
+    public function testManualWeekdayRestorationQueuesConfiguredOpeningNotice(): void
+    {
+        $this->clock->set(new \DateTimeImmutable('2026-10-20T12:00:00+03:00'));
+        $app = new Application($this->gateway, $this->clock, $this->db, $this->calendar, authorizeOperator: static fn(string $user): bool => $user === '42');
+        $app->settings->ensureGroup('-1001', 'Example', [
+            'mode' => 'lock_messages','open_message_enabled' => true,'close_message_enabled' => false,'language' => 'en',
+        ]);
+        self::assertSame(1, $app->manualGroups->apply(true, '42')['changed']);
+        self::assertSame(1, $app->manualGroups->apply(false, '42')['changed']);
+        $app->notificationTick();
+        self::assertSame((new \Shabbat\UI\Lang())->text('en', 'group_open_notice'), $this->gateway->sent[0][1]['text']);
+        $app->tick();
+        self::assertCount(1, $this->gateway->sent);
+    }
+
+    public static function transitionBoundaries(): array
+    {
+        return [
+            'Shabbat into festival' => ['2026-10-18', '2026-10-16T17:45:00+03:00', '2026-10-17T21:00:00+03:00', '2026-10-18T19:00:00+03:00', 'close', 'holiday_open'],
+            'festival into Shabbat' => ['2026-10-16', '2026-10-15T17:45:00+03:00', '2026-10-16T21:00:00+03:00', '2026-10-17T19:00:00+03:00', 'holiday_close', 'open'],
+            'festival on Shabbat' => ['2026-10-17', '2026-10-16T17:45:00+03:00', '2026-10-17T12:00:00+03:00', '2026-10-17T19:00:00+03:00', 'holiday_close', 'holiday_open'],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('transitionBoundaries')]
+    public function testMergedSequencesSelectIndependentBoundaryTemplates(string $day, string $start, string $middle, string $end, string $close, string $open): void
+    {
+        $this->clock->set(new \DateTimeImmutable($start));
+        $provider = new RuntimeFakeJson([['date' => $day,'category' => 'holiday','yomtov' => true,'title' => 'Festival','hebrew' => 'חג']]);
+        $this->calendar = new CalendarService(new HebcalProvider($provider), $this->clock);
+        $app = $this->app();
+        $app->settings->ensureGroup('-1001', 'Example', [
+            'mode' => 'lock_messages','open_message_enabled' => true,'close_message_enabled' => true,
+        ]);
+        foreach (['open','close','holiday_open','holiday_close'] as $kind) {
+            $app->templates->save('-1001', $kind, ['text' => $kind], '42');
+        }
+        $app->tick();
+        self::assertSame($close, $this->gateway->sent[0][1]['text']);
+        $this->clock->set(new \DateTimeImmutable($middle));
+        $app->tick();
+        self::assertCount(1, $this->gateway->sent);
+        $this->clock->set(new \DateTimeImmutable($end));
+        $app->tick();
+        self::assertCount(2, $this->gateway->sent);
+        self::assertSame($open, $this->gateway->sent[1][1]['text']);
+    }
+
     public function testOneGroupFailureDoesNotPreventOtherGroupsLocking(): void
     {
         $app = $this->app();

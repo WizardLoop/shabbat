@@ -105,6 +105,44 @@ final class PrivateChatUnavailableTest extends TestCase
         return count(array_filter($transport->calls, static fn(array $call): bool => $call[0] === 'messages.sendMessage'));
     }
 
+    public function testGroupAcknowledgesOnlySuccessfulAuthorizedPrivateDeliveryAndAttemptsCleanup(): void
+    {
+        $transport = new GatewayFixtureTransport();
+        $transport->responses['channels.getParticipant'] = ['participant' => ['_' => 'channelParticipantAdmin']];
+        $app = $this->app($transport);
+        $replies = [];
+        $event = ['user_id' => '1', 'group_id' => '-1001', 'private' => false, 'text' => '/settings', 'message_id' => 47];
+        $reply = static function (string $text, array $markup) use (&$replies): void {
+            $replies[] = [$text, $markup];
+        };
+        // Fixture rejects the deletion receipt; the confirmation is still delivered.
+        $this->bridge($app, $event, $reply);
+        self::assertSame([[(new Lang())->text('en', 'settings_private_sent'), []]], $replies);
+        $deletes = array_values(array_filter($transport->calls, static fn(array $call) => $call[0] === 'channels.deleteMessages'));
+        self::assertCount(1, $deletes);
+        self::assertSame([47], $deletes[0][1]['id']);
+        $transport->calls = [];
+        $transport->responses['channels.getParticipant'] = ['participant' => ['_' => 'channelParticipant']];
+        $this->bridge($app, $event, $reply);
+        self::assertCount(1, $replies);
+        self::assertNotContains('channels.deleteMessages', array_column($transport->calls, 0));
+    }
+
+    public function testDirectoryCachesOnlyNegativeResultsAndNeverAuthorizesActions(): void
+    {
+        $transport = new GatewayFixtureTransport();
+        $gateway = new MadelineGateway($transport);
+        $transport->responses['channels.getParticipant'] = ['participant' => ['_' => 'channelParticipant']];
+        self::assertFalse($gateway->isListedAdmin('1', '-1001'));
+        self::assertFalse($gateway->isListedAdmin('1', '-1001'));
+        self::assertCount(1, $transport->calls);
+        $transport->responses['channels.getParticipant'] = ['participant' => ['_' => 'channelParticipantCreator']];
+        self::assertTrue($gateway->isGroupAdmin('1', '-1001'));
+        self::assertTrue($gateway->isListedAdmin('1', '-1001'));
+        $transport->responses['channels.getParticipant'] = ['participant' => ['_' => 'channelParticipant']];
+        self::assertFalse($gateway->isListedAdmin('1', '-1001'));
+    }
+
     public function testGroupSettingsDoesNotSendSecondPrivateError(): void
     {
         $original = $this->rpc('PEER_ID_INVALID');

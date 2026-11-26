@@ -16,9 +16,11 @@ final class LockCoordinator
     private readonly string $owner;
     private readonly ?\Closure $freshDesired;
     private readonly ?\Closure $localDesired;
+    private readonly ?\Closure $onTransition;
     private readonly PermissionRecoveryJournal $journal;
-    public function __construct(private readonly Database $db, private readonly Clock $clock, private readonly TelegramGateway $gateway, ?callable $freshDesired = null, ?callable $localDesired = null)
+    public function __construct(private readonly Database $db, private readonly Clock $clock, private readonly TelegramGateway $gateway, ?callable $freshDesired = null, ?callable $localDesired = null, ?callable $onTransition = null)
     {
+        $this->onTransition = $onTransition === null ? null : \Closure::fromCallable($onTransition);
         $this->owner = bin2hex(random_bytes(16));
         $this->journal = new PermissionRecoveryJournal($db, $clock);
         $this->freshDesired = $freshDesired === null ? null : \Closure::fromCallable($freshDesired);
@@ -184,8 +186,14 @@ final class LockCoordinator
         if (!Permissions::equal($observed, $applied)) {
             return $this->conflict($group, $observed, $applied, true);
         }
-        $this->confirmed($group, "status='locked',locked_at=?,previous_applied_json=NULL,last_error=NULL,retry_at=NULL", [$this->now()]);
-        if ($hasDebt && !Permissions::equal($current, $snapshot)) {
+        $newClose = !$hasDebt || Permissions::equal($current, $snapshot);
+        $this->db->transaction(function () use ($group, $eventKey, $newClose): void {
+            $this->confirmed($group, "status='locked',locked_at=?,previous_applied_json=NULL,last_error=NULL,retry_at=NULL", [$this->now()]);
+            if ($newClose && $this->onTransition !== null) {
+                ($this->onTransition)($group, 'close', $eventKey);
+            }
+        });
+        if (!$newClose) {
             return ['status' => 'locked','changed' => false,'permissions_updated' => true];
         }
         return ['status' => 'locked','changed' => true];
@@ -373,7 +381,11 @@ final class LockCoordinator
         }
         [$snapshot,$applied,$previous] = $this->snapshot($state);
         if (Permissions::equal($current, $snapshot)) {
-            $this->confirmed($group, "status='restored',restored_at=?,previous_applied_json=NULL,last_error=NULL,retry_at=NULL", [$this->now()]);
+            // A lost RPC reply can leave Telegram open while the durable operation awaits readback.
+            $operation = $this->journal->latest($group);
+            $ours = ($operation['action'] ?? null) === 'restore' && $operation['outcome'] === 'confirmed'
+                && $operation['original_sha256'] === $state['snapshot_sha256'];
+            $this->finishRestore($group, $state['event_key'], $ours);
             return ['status' => 'restored','changed' => false];
         }
         if (!Permissions::equal($current, $applied) && ($previous === null || !Permissions::equal($current, $previous))) {
@@ -402,8 +414,17 @@ final class LockCoordinator
         if (!Permissions::equal($observed, $snapshot)) {
             return $this->conflict($group, $observed, $snapshot, true);
         }
-        $this->confirmed($group, "status='restored',restored_at=?,previous_applied_json=NULL,last_error=NULL,retry_at=NULL", [$this->now()]);
+        $this->finishRestore($group, $state['event_key'], true);
         return ['status' => 'restored','changed' => true];
+    }
+    private function finishRestore(string $group, string $eventKey, bool $announce): void
+    {
+        $this->db->transaction(function () use ($group, $eventKey, $announce): void {
+            $this->confirmed($group, "status='restored',restored_at=?,previous_applied_json=NULL,last_error=NULL,retry_at=NULL", [$this->now()]);
+            if ($announce && $this->onTransition !== null) {
+                ($this->onTransition)($group, 'open', $eventKey);
+            }
+        });
     }
     private function snapshot(array $state): array
     {

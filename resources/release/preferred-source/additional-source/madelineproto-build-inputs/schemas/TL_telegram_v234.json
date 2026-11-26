@@ -778,6 +778,64 @@
             "type": "InputMedia"
         },
         {
+            "id": "1157021774",
+            "predicate": "inputMediaWidget",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "allow_queries",
+                    "type": "flags.0?true"
+                },
+                {
+                    "name": "shared_widget",
+                    "type": "flags.1?true"
+                },
+                {
+                    "name": "width",
+                    "type": "int"
+                },
+                {
+                    "name": "height",
+                    "type": "int"
+                },
+                {
+                    "name": "html",
+                    "type": "string"
+                },
+                {
+                    "name": "public_data",
+                    "type": "flags.2?string"
+                },
+                {
+                    "name": "chat_data",
+                    "type": "flags.3?string"
+                }
+            ],
+            "type": "InputMedia"
+        },
+        {
+            "id": "2089114805",
+            "predicate": "inputMediaWidgetId",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "widget_id",
+                    "type": "long"
+                },
+                {
+                    "name": "chat_data",
+                    "type": "flags.0?string"
+                }
+            ],
+            "type": "InputMedia"
+        },
+        {
             "id": "480546647",
             "predicate": "inputChatPhotoEmpty",
             "params": [],
@@ -1317,6 +1375,10 @@
                     "type": "flags2.20?true"
                 },
                 {
+                    "name": "bot_forum_sidebar",
+                    "type": "flags2.22?true"
+                },
+                {
                     "name": "id",
                     "type": "long"
                 },
@@ -1737,6 +1799,10 @@
                 {
                     "name": "in_news",
                     "type": "flags2.21?true"
+                },
+                {
+                    "name": "forum_sidebar",
+                    "type": "flags2.23?true"
                 },
                 {
                     "name": "id",
@@ -2341,7 +2407,7 @@
             "type": "ChatFull"
         },
         {
-            "id": "-877157113",
+            "id": "1885799163",
             "predicate": "communityFull",
             "params": [
                 {
@@ -2363,6 +2429,10 @@
                 {
                     "name": "linked_peers",
                     "type": "Vector<CommunityPeer>"
+                },
+                {
+                    "name": "notify_settings",
+                    "type": "flags.3?PeerNotifySettings"
                 },
                 {
                     "name": "admins_count",
@@ -3339,6 +3409,57 @@
                 {
                     "name": "call",
                     "type": "InputGroupCall"
+                }
+            ],
+            "type": "MessageMedia"
+        },
+        {
+            "id": "574157332",
+            "predicate": "messageMediaWidget",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "is_copy",
+                    "type": "flags.0?true"
+                },
+                {
+                    "name": "can_query",
+                    "type": "flags.1?true"
+                },
+                {
+                    "name": "background_query",
+                    "type": "flags.2?true"
+                },
+                {
+                    "name": "width",
+                    "type": "int"
+                },
+                {
+                    "name": "height",
+                    "type": "int"
+                },
+                {
+                    "name": "payload",
+                    "type": "bytes"
+                },
+                {
+                    "name": "public_data",
+                    "type": "flags.3?string"
+                },
+                {
+                    "name": "public_data_hash",
+                    "type": "flags.3?long"
+                },
+                {
+                    "name": "chat_data",
+                    "type": "flags.4?string"
+                },
+                {
+                    "name": "widget_id",
+                    "type": "flags.5?long"
                 }
             ],
             "type": "MessageMedia"
@@ -4712,7 +4833,7 @@
             "type": "MessageAction"
         },
         {
-            "id": "-1825969613",
+            "id": "888697961",
             "predicate": "messageActionGramTransfer",
             "params": [
                 {
@@ -4738,6 +4859,10 @@
                 {
                     "name": "comment",
                     "type": "flags.0?string"
+                },
+                {
+                    "name": "onramp_provider_name",
+                    "type": "flags.2?string"
                 }
             ],
             "type": "MessageAction"
@@ -4785,6 +4910,88 @@
             "id": "-1043140154",
             "predicate": "messageActionNoPaidMessagesTokenUsed",
             "params": [],
+            "type": "MessageAction"
+        },
+        {
+            "id": "1145726312",
+            "predicate": "messageActionStarGiftOnchainOffer",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "accepted",
+                    "type": "flags.0?true"
+                },
+                {
+                    "name": "declined",
+                    "type": "flags.1?true"
+                },
+                {
+                    "name": "cancelled",
+                    "type": "flags.2?true"
+                },
+                {
+                    "name": "expired",
+                    "type": "flags.3?true"
+                },
+                {
+                    "name": "settled",
+                    "type": "flags.6?true"
+                },
+                {
+                    "name": "buyer",
+                    "type": "flags.7?true"
+                },
+                {
+                    "name": "cancelling",
+                    "type": "flags.8?true"
+                },
+                {
+                    "name": "offer_id",
+                    "type": "long"
+                },
+                {
+                    "name": "gift",
+                    "type": "StarGift"
+                },
+                {
+                    "name": "amount",
+                    "type": "long"
+                },
+                {
+                    "name": "fee_bps",
+                    "type": "int"
+                },
+                {
+                    "name": "expires_at",
+                    "type": "int"
+                },
+                {
+                    "name": "offer_address",
+                    "type": "string"
+                },
+                {
+                    "name": "buyer_refund",
+                    "type": "flags.4?long"
+                },
+                {
+                    "name": "fine",
+                    "type": "flags.5?long"
+                }
+            ],
+            "type": "MessageAction"
+        },
+        {
+            "id": "-452349573",
+            "predicate": "messageActionBotInvite",
+            "params": [
+                {
+                    "name": "inviter_id",
+                    "type": "long"
+                }
+            ],
             "type": "MessageAction"
         },
         {
@@ -5409,7 +5616,7 @@
             "type": "PeerNotifySettings"
         },
         {
-            "id": "-193510921",
+            "id": "608290891",
             "predicate": "peerSettings",
             "params": [
                 {
@@ -5499,6 +5706,14 @@
                 {
                     "name": "photo_change_date",
                     "type": "flags.18?int"
+                },
+                {
+                    "name": "bot_inviter_id",
+                    "type": "flags.19?long"
+                },
+                {
+                    "name": "bot_owner_id",
+                    "type": "flags.20?long"
                 }
             ],
             "type": "PeerSettings"
@@ -6028,9 +6243,17 @@
             "type": "contacts.Blocked"
         },
         {
-            "id": "364538944",
+            "id": "771611027",
             "predicate": "messages.dialogs",
             "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "topics",
+                    "type": "flags.0?Vector<ForumTopic>"
+                },
                 {
                     "name": "dialogs",
                     "type": "Vector<Dialog>"
@@ -6051,12 +6274,20 @@
             "type": "messages.Dialogs"
         },
         {
-            "id": "1910543603",
+            "id": "-780898236",
             "predicate": "messages.dialogsSlice",
             "params": [
                 {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
                     "name": "count",
                     "type": "int"
+                },
+                {
+                    "name": "topics",
+                    "type": "flags.0?Vector<ForumTopic>"
                 },
                 {
                     "name": "dialogs",
@@ -6878,7 +7109,7 @@
             "type": "Update"
         },
         {
-            "id": "277713951",
+            "id": "256790106",
             "predicate": "updateChannelTooLong",
             "params": [
                 {
@@ -6892,6 +7123,14 @@
                 {
                     "name": "pts",
                     "type": "flags.0?int"
+                },
+                {
+                    "name": "last_msg_id",
+                    "type": "flags.1?int"
+                },
+                {
+                    "name": "last_msg_date",
+                    "type": "flags.1?int"
                 }
             ],
             "type": "Update"
@@ -9598,6 +9837,236 @@
             "type": "Update"
         },
         {
+            "id": "593913436",
+            "predicate": "updateEditForumTopic",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "peer",
+                    "type": "Peer"
+                },
+                {
+                    "name": "topic_id",
+                    "type": "int"
+                },
+                {
+                    "name": "title",
+                    "type": "flags.0?string"
+                },
+                {
+                    "name": "icon_emoji_id",
+                    "type": "flags.1?long"
+                },
+                {
+                    "name": "closed",
+                    "type": "flags.2?Bool"
+                },
+                {
+                    "name": "hidden",
+                    "type": "flags.3?Bool"
+                }
+            ],
+            "type": "Update"
+        },
+        {
+            "id": "-1284243864",
+            "predicate": "updateBotWidgetQuery",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "query_id",
+                    "type": "long"
+                },
+                {
+                    "name": "query_type",
+                    "type": "WidgetQueryType"
+                },
+                {
+                    "name": "user_id",
+                    "type": "long"
+                },
+                {
+                    "name": "peer",
+                    "type": "Peer"
+                },
+                {
+                    "name": "msg_id",
+                    "type": "int"
+                },
+                {
+                    "name": "chat_instance",
+                    "type": "long"
+                },
+                {
+                    "name": "chat_type",
+                    "type": "string"
+                },
+                {
+                    "name": "data",
+                    "type": "bytes"
+                },
+                {
+                    "name": "widget_id",
+                    "type": "flags.0?long"
+                },
+                {
+                    "name": "wallet_card",
+                    "type": "flags.1?wallet.Card"
+                }
+            ],
+            "type": "Update"
+        },
+        {
+            "id": "-1510965752",
+            "predicate": "updateInlineBotWidgetQuery",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "query_id",
+                    "type": "long"
+                },
+                {
+                    "name": "query_type",
+                    "type": "WidgetQueryType"
+                },
+                {
+                    "name": "user_id",
+                    "type": "long"
+                },
+                {
+                    "name": "inline_message_id",
+                    "type": "InputBotInlineMessageID"
+                },
+                {
+                    "name": "chat_instance",
+                    "type": "long"
+                },
+                {
+                    "name": "chat_type",
+                    "type": "string"
+                },
+                {
+                    "name": "data",
+                    "type": "bytes"
+                },
+                {
+                    "name": "widget_id",
+                    "type": "flags.0?long"
+                },
+                {
+                    "name": "wallet_card",
+                    "type": "flags.1?wallet.Card"
+                }
+            ],
+            "type": "Update"
+        },
+        {
+            "id": "-91635977",
+            "predicate": "updateBotWidgetCopyQuery",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "query_id",
+                    "type": "long"
+                },
+                {
+                    "name": "query_type",
+                    "type": "WidgetQueryType"
+                },
+                {
+                    "name": "user_id",
+                    "type": "long"
+                },
+                {
+                    "name": "data",
+                    "type": "bytes"
+                },
+                {
+                    "name": "widget_id",
+                    "type": "long"
+                },
+                {
+                    "name": "wallet_card",
+                    "type": "flags.1?wallet.Card"
+                }
+            ],
+            "type": "Update"
+        },
+        {
+            "id": "-1146062627",
+            "predicate": "updateMessageWidgetData",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "peer",
+                    "type": "Peer"
+                },
+                {
+                    "name": "msg_id",
+                    "type": "int"
+                },
+                {
+                    "name": "public_data",
+                    "type": "flags.0?string"
+                },
+                {
+                    "name": "public_data_hash",
+                    "type": "flags.0?long"
+                },
+                {
+                    "name": "chat_data",
+                    "type": "flags.1?string"
+                },
+                {
+                    "name": "pts",
+                    "type": "int"
+                },
+                {
+                    "name": "pts_count",
+                    "type": "int"
+                }
+            ],
+            "type": "Update"
+        },
+        {
+            "id": "1934372475",
+            "predicate": "updateTranscribedAudioFile",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "pending",
+                    "type": "flags.0?true"
+                },
+                {
+                    "name": "transcription_id",
+                    "type": "long"
+                },
+                {
+                    "name": "text",
+                    "type": "string"
+                }
+            ],
+            "type": "Update"
+        },
+        {
             "id": "-1519637954",
             "predicate": "updates.state",
             "params": [
@@ -9640,9 +10109,17 @@
             "type": "updates.Difference"
         },
         {
-            "id": "16030880",
+            "id": "-1215313344",
             "predicate": "updates.difference",
             "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "topics",
+                    "type": "flags.0?Vector<ForumTopic>"
+                },
                 {
                     "name": "new_messages",
                     "type": "Vector<Message>"
@@ -9671,9 +10148,17 @@
             "type": "updates.Difference"
         },
         {
-            "id": "-1459938943",
+            "id": "130363219",
             "predicate": "updates.differenceSlice",
             "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "topics",
+                    "type": "flags.0?Vector<ForumTopic>"
+                },
                 {
                     "name": "new_messages",
                     "type": "Vector<Message>"
@@ -10153,6 +10638,10 @@
                 {
                     "name": "force_try_ipv6",
                     "type": "flags.14?true"
+                },
+                {
+                    "name": "fpnv_allowed",
+                    "type": "flags.17?true"
                 },
                 {
                     "name": "date",
@@ -13334,7 +13823,7 @@
             "type": "updates.ChannelDifference"
         },
         {
-            "id": "-1531132162",
+            "id": "364083073",
             "predicate": "updates.channelDifferenceTooLong",
             "params": [
                 {
@@ -13348,6 +13837,10 @@
                 {
                     "name": "timeout",
                     "type": "flags.1?int"
+                },
+                {
+                    "name": "topics",
+                    "type": "flags.2?Vector<ForumTopic>"
                 },
                 {
                     "name": "dialog",
@@ -13369,7 +13862,7 @@
             "type": "updates.ChannelDifference"
         },
         {
-            "id": "543450958",
+            "id": "-761405123",
             "predicate": "updates.channelDifference",
             "params": [
                 {
@@ -13387,6 +13880,10 @@
                 {
                     "name": "timeout",
                     "type": "flags.1?int"
+                },
+                {
+                    "name": "topics",
+                    "type": "flags.2?Vector<ForumTopic>"
                 },
                 {
                     "name": "new_messages",
@@ -14067,6 +14564,96 @@
             "type": "InputBotInlineMessage"
         },
         {
+            "id": "-174611472",
+            "predicate": "inputBotInlineMessageWidget",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "allow_queries",
+                    "type": "flags.0?true"
+                },
+                {
+                    "name": "shared_widget",
+                    "type": "flags.1?true"
+                },
+                {
+                    "name": "invert_media",
+                    "type": "flags.6?true"
+                },
+                {
+                    "name": "width",
+                    "type": "int"
+                },
+                {
+                    "name": "height",
+                    "type": "int"
+                },
+                {
+                    "name": "html",
+                    "type": "string"
+                },
+                {
+                    "name": "public_data",
+                    "type": "flags.2?string"
+                },
+                {
+                    "name": "chat_data",
+                    "type": "flags.3?string"
+                },
+                {
+                    "name": "reply_markup",
+                    "type": "flags.4?ReplyMarkup"
+                },
+                {
+                    "name": "message",
+                    "type": "string"
+                },
+                {
+                    "name": "entities",
+                    "type": "flags.5?Vector<MessageEntity>"
+                }
+            ],
+            "type": "InputBotInlineMessage"
+        },
+        {
+            "id": "-24413909",
+            "predicate": "inputBotInlineMessageWidgetId",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "invert_media",
+                    "type": "flags.3?true"
+                },
+                {
+                    "name": "widget_id",
+                    "type": "long"
+                },
+                {
+                    "name": "chat_data",
+                    "type": "flags.0?string"
+                },
+                {
+                    "name": "reply_markup",
+                    "type": "flags.1?ReplyMarkup"
+                },
+                {
+                    "name": "message",
+                    "type": "string"
+                },
+                {
+                    "name": "entities",
+                    "type": "flags.2?Vector<MessageEntity>"
+                }
+            ],
+            "type": "InputBotInlineMessage"
+        },
+        {
             "id": "-2000710887",
             "predicate": "inputBotInlineResult",
             "params": [
@@ -14450,6 +15037,61 @@
                 {
                     "name": "rich_message",
                     "type": "RichMessage"
+                }
+            ],
+            "type": "BotInlineMessage"
+        },
+        {
+            "id": "-1163823052",
+            "predicate": "botInlineMessageWidget",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "invert_media",
+                    "type": "flags.5?true"
+                },
+                {
+                    "name": "width",
+                    "type": "int"
+                },
+                {
+                    "name": "height",
+                    "type": "int"
+                },
+                {
+                    "name": "payload",
+                    "type": "bytes"
+                },
+                {
+                    "name": "public_data",
+                    "type": "flags.0?string"
+                },
+                {
+                    "name": "public_data_hash",
+                    "type": "flags.0?long"
+                },
+                {
+                    "name": "chat_data",
+                    "type": "flags.1?string"
+                },
+                {
+                    "name": "reply_markup",
+                    "type": "flags.2?ReplyMarkup"
+                },
+                {
+                    "name": "widget_id",
+                    "type": "flags.3?long"
+                },
+                {
+                    "name": "message",
+                    "type": "string"
+                },
+                {
+                    "name": "entities",
+                    "type": "flags.4?Vector<MessageEntity>"
                 }
             ],
             "type": "BotInlineMessage"
@@ -14988,9 +15630,17 @@
             "type": "InlineBotSwitchPM"
         },
         {
-            "id": "863093588",
+            "id": "-1488325659",
             "predicate": "messages.peerDialogs",
             "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "topics",
+                    "type": "flags.0?Vector<ForumTopic>"
+                },
                 {
                     "name": "dialogs",
                     "type": "Vector<Dialog>"
@@ -15140,7 +15790,7 @@
             "type": "contacts.TopPeers"
         },
         {
-            "id": "453805082",
+            "id": "583289800",
             "predicate": "draftMessageEmpty",
             "params": [
                 {
@@ -15150,12 +15800,16 @@
                 {
                     "name": "date",
                     "type": "flags.0?int"
+                },
+                {
+                    "name": "ai_style",
+                    "type": "flags.1?InputAiComposeStyle"
                 }
             ],
             "type": "DraftMessage"
         },
         {
-            "id": "1627271828",
+            "id": "-1666067206",
             "predicate": "draftMessage",
             "params": [
                 {
@@ -15201,6 +15855,10 @@
                 {
                     "name": "rich_message",
                     "type": "flags.9?RichMessage"
+                },
+                {
+                    "name": "ai_style",
+                    "type": "flags.10?InputAiComposeStyle"
                 }
             ],
             "type": "DraftMessage"
@@ -16576,9 +17234,17 @@
             "type": "PageBlock"
         },
         {
-            "id": "242108356",
+            "id": "638843030",
             "predicate": "pageBlockBlockquoteBlocks",
             "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "collapsed",
+                    "type": "flags.0?true"
+                },
                 {
                     "name": "blocks",
                     "type": "Vector<PageBlock>"
@@ -25595,7 +26261,7 @@
             "type": "ForumTopic"
         },
         {
-            "id": "913709011",
+            "id": "-1446089067",
             "predicate": "messages.forumTopics",
             "params": [
                 {
@@ -25605,6 +26271,10 @@
                 {
                     "name": "order_by_create_date",
                     "type": "flags.0?true"
+                },
+                {
+                    "name": "top_icons",
+                    "type": "flags.1?Vector<long>"
                 },
                 {
                     "name": "count",
@@ -30117,7 +30787,7 @@
             "type": "StarGift"
         },
         {
-            "id": "-2047825459",
+            "id": "-2027863662",
             "predicate": "starGiftUnique",
             "params": [
                 {
@@ -30143,6 +30813,26 @@
                 {
                     "name": "crafted",
                     "type": "flags.15?true"
+                },
+                {
+                    "name": "onchain_sale",
+                    "type": "flags.17?true"
+                },
+                {
+                    "name": "fixed_sale",
+                    "type": "flags.19?true"
+                },
+                {
+                    "name": "my_sale",
+                    "type": "flags.21?true"
+                },
+                {
+                    "name": "offer_min_amount",
+                    "type": "flags.18?long"
+                },
+                {
+                    "name": "fee_bps",
+                    "type": "flags.20?int"
                 },
                 {
                     "name": "id",
@@ -34065,6 +34755,17 @@
             "type": "WalletTransactionPeer"
         },
         {
+            "id": "1257549816",
+            "predicate": "walletTransactionPeerOnchainGift",
+            "params": [
+                {
+                    "name": "action",
+                    "type": "WalletOnchainGiftAction"
+                }
+            ],
+            "type": "WalletTransactionPeer"
+        },
+        {
             "id": "-1792163517",
             "predicate": "walletTransaction",
             "params": [
@@ -34091,6 +34792,10 @@
                 {
                     "name": "comment_encrypted",
                     "type": "flags.6?true"
+                },
+                {
+                    "name": "suspected_spam",
+                    "type": "flags.8?true"
                 },
                 {
                     "name": "id",
@@ -34774,6 +35479,494 @@
                 }
             ],
             "type": "payments.StarGiftDepositPayload"
+        },
+        {
+            "id": "1162684215",
+            "predicate": "userWallet",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "address",
+                    "type": "string"
+                },
+                {
+                    "name": "balance",
+                    "type": "long"
+                },
+                {
+                    "name": "public_key",
+                    "type": "flags.0?bytes"
+                },
+                {
+                    "name": "state_init",
+                    "type": "flags.0?bytes"
+                }
+            ],
+            "type": "UserWallet"
+        },
+        {
+            "id": "383307531",
+            "predicate": "widgetQueryTypeData",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "with_wallet",
+                    "type": "flags.0?true"
+                }
+            ],
+            "type": "WidgetQueryType"
+        },
+        {
+            "id": "421545948",
+            "predicate": "widgetQueryTypeSignData",
+            "params": [
+                {
+                    "name": "wallet",
+                    "type": "UserWallet"
+                },
+                {
+                    "name": "sign_data",
+                    "type": "DataJSON"
+                }
+            ],
+            "type": "WidgetQueryType"
+        },
+        {
+            "id": "-12897356",
+            "predicate": "widgetQueryTypeSentTransaction",
+            "params": [
+                {
+                    "name": "wallet",
+                    "type": "UserWallet"
+                },
+                {
+                    "name": "msg_hash",
+                    "type": "string"
+                }
+            ],
+            "type": "WidgetQueryType"
+        },
+        {
+            "id": "-1783156701",
+            "predicate": "messages.botWidgetQueryAnswer",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "result",
+                    "type": "flags.0?string"
+                }
+            ],
+            "type": "messages.BotWidgetQueryAnswer"
+        },
+        {
+            "id": "-1189515689",
+            "predicate": "messages.widgetPublicDataNotModified",
+            "params": [
+                {
+                    "name": "period",
+                    "type": "int"
+                }
+            ],
+            "type": "messages.WidgetPublicData"
+        },
+        {
+            "id": "71908351",
+            "predicate": "messages.widgetPublicData",
+            "params": [
+                {
+                    "name": "hash",
+                    "type": "long"
+                },
+                {
+                    "name": "data",
+                    "type": "string"
+                },
+                {
+                    "name": "period",
+                    "type": "int"
+                }
+            ],
+            "type": "messages.WidgetPublicData"
+        },
+        {
+            "id": "-114117331",
+            "predicate": "walletOnchainGiftActionBuy",
+            "params": [],
+            "type": "WalletOnchainGiftAction"
+        },
+        {
+            "id": "-1710739570",
+            "predicate": "walletOnchainGiftActionDelist",
+            "params": [],
+            "type": "WalletOnchainGiftAction"
+        },
+        {
+            "id": "1208637885",
+            "predicate": "walletOnchainGiftActionChangePrice",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "old_price",
+                    "type": "flags.0?long"
+                },
+                {
+                    "name": "new_price",
+                    "type": "long"
+                }
+            ],
+            "type": "WalletOnchainGiftAction"
+        },
+        {
+            "id": "-451948018",
+            "predicate": "walletOnchainGiftActionOfferCreate",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "offer_address",
+                    "type": "string"
+                },
+                {
+                    "name": "counterparty_address",
+                    "type": "flags.0?string"
+                },
+                {
+                    "name": "price",
+                    "type": "long"
+                },
+                {
+                    "name": "amount",
+                    "type": "long"
+                },
+                {
+                    "name": "service_fee",
+                    "type": "long"
+                },
+                {
+                    "name": "expires_at",
+                    "type": "flags.1?int"
+                }
+            ],
+            "type": "WalletOnchainGiftAction"
+        },
+        {
+            "id": "-187298232",
+            "predicate": "walletOnchainGiftActionOfferAccept",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "buyer",
+                    "type": "flags.0?true"
+                },
+                {
+                    "name": "offer_address",
+                    "type": "string"
+                },
+                {
+                    "name": "counterparty_address",
+                    "type": "string"
+                },
+                {
+                    "name": "price",
+                    "type": "long"
+                },
+                {
+                    "name": "service_fee",
+                    "type": "long"
+                }
+            ],
+            "type": "WalletOnchainGiftAction"
+        },
+        {
+            "id": "1707653005",
+            "predicate": "walletOnchainGiftActionOfferCancel",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "offer_address",
+                    "type": "string"
+                },
+                {
+                    "name": "counterparty_address",
+                    "type": "flags.0?string"
+                },
+                {
+                    "name": "price",
+                    "type": "flags.1?long"
+                },
+                {
+                    "name": "refund_amount",
+                    "type": "long"
+                },
+                {
+                    "name": "fine",
+                    "type": "flags.2?long"
+                }
+            ],
+            "type": "WalletOnchainGiftAction"
+        },
+        {
+            "id": "-978823956",
+            "predicate": "walletOnchainGiftActionOfferDecline",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "offer_address",
+                    "type": "string"
+                },
+                {
+                    "name": "counterparty_address",
+                    "type": "flags.0?string"
+                },
+                {
+                    "name": "price",
+                    "type": "flags.1?long"
+                },
+                {
+                    "name": "refund_amount",
+                    "type": "long"
+                }
+            ],
+            "type": "WalletOnchainGiftAction"
+        },
+        {
+            "id": "-628781360",
+            "predicate": "walletOnchainGiftActionOfferExpire",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "offer_address",
+                    "type": "string"
+                },
+                {
+                    "name": "counterparty_address",
+                    "type": "flags.0?string"
+                },
+                {
+                    "name": "price",
+                    "type": "flags.1?long"
+                },
+                {
+                    "name": "refund_amount",
+                    "type": "long"
+                }
+            ],
+            "type": "WalletOnchainGiftAction"
+        },
+        {
+            "id": "1024677616",
+            "predicate": "payments.starGiftOnchainSalePayload",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "gasless_available",
+                    "type": "flags.0?true"
+                },
+                {
+                    "name": "nft_address",
+                    "type": "string"
+                },
+                {
+                    "name": "amount",
+                    "type": "long"
+                },
+                {
+                    "name": "payload",
+                    "type": "bytes"
+                }
+            ],
+            "type": "payments.StarGiftOnchainSalePayload"
+        },
+        {
+            "id": "-2097560905",
+            "predicate": "payments.starGiftOnchainFixedSalePayload",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "sale_address",
+                    "type": "string"
+                },
+                {
+                    "name": "messages",
+                    "type": "Vector<payments.StarGiftOnchainOfferTxMessage>"
+                },
+                {
+                    "name": "gasless_messages",
+                    "type": "flags.0?Vector<payments.StarGiftOnchainOfferTxMessage>"
+                }
+            ],
+            "type": "payments.StarGiftOnchainSalePayload"
+        },
+        {
+            "id": "148300917",
+            "predicate": "payments.starGiftOnchainOfferTxInitState",
+            "params": [
+                {
+                    "name": "code",
+                    "type": "bytes"
+                },
+                {
+                    "name": "data",
+                    "type": "bytes"
+                }
+            ],
+            "type": "payments.StarGiftOnchainOfferTxInitState"
+        },
+        {
+            "id": "-2003007979",
+            "predicate": "payments.starGiftOnchainOfferTxMessage",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "destination",
+                    "type": "string"
+                },
+                {
+                    "name": "value",
+                    "type": "long"
+                },
+                {
+                    "name": "mode",
+                    "type": "int"
+                },
+                {
+                    "name": "body",
+                    "type": "bytes"
+                },
+                {
+                    "name": "init_state",
+                    "type": "flags.0?payments.StarGiftOnchainOfferTxInitState"
+                }
+            ],
+            "type": "payments.StarGiftOnchainOfferTxMessage"
+        },
+        {
+            "id": "-27885105",
+            "predicate": "payments.starGiftOnchainOfferTx",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "offer_id",
+                    "type": "long"
+                },
+                {
+                    "name": "offer_address",
+                    "type": "string"
+                },
+                {
+                    "name": "expires_at",
+                    "type": "int"
+                },
+                {
+                    "name": "message",
+                    "type": "payments.StarGiftOnchainOfferTxMessage"
+                },
+                {
+                    "name": "gasless_message",
+                    "type": "flags.3?payments.StarGiftOnchainOfferTxMessage"
+                },
+                {
+                    "name": "rent_budget",
+                    "type": "flags.0?long"
+                },
+                {
+                    "name": "execution_allowance",
+                    "type": "flags.0?long"
+                },
+                {
+                    "name": "forward_amount",
+                    "type": "flags.1?long"
+                },
+                {
+                    "name": "fine",
+                    "type": "flags.2?long"
+                }
+            ],
+            "type": "payments.StarGiftOnchainOfferTx"
+        },
+        {
+            "id": "-1474231824",
+            "predicate": "inputAiComposeStyle",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "emojify",
+                    "type": "flags.2?true"
+                },
+                {
+                    "name": "proofread",
+                    "type": "flags.3?true"
+                },
+                {
+                    "name": "tone",
+                    "type": "flags.0?InputAiComposeTone"
+                },
+                {
+                    "name": "to_lang",
+                    "type": "flags.1?string"
+                }
+            ],
+            "type": "InputAiComposeStyle"
+        },
+        {
+            "id": "12676885",
+            "predicate": "transcriptionModel",
+            "params": [
+                {
+                    "name": "document",
+                    "type": "Document"
+                },
+                {
+                    "name": "languages",
+                    "type": "Vector<string>"
+                },
+                {
+                    "name": "version",
+                    "type": "int"
+                }
+            ],
+            "type": "TranscriptionModel"
         }
     ],
     "methods": [
@@ -42876,7 +44069,7 @@
             "type": "Updates"
         },
         {
-            "id": "1000635391",
+            "id": "-963894886",
             "method": "messages.getForumTopics",
             "params": [
                 {
@@ -42890,6 +44083,14 @@
                 {
                     "name": "q",
                     "type": "flags.0?string"
+                },
+                {
+                    "name": "icon_emoji_id",
+                    "type": "flags.1?long"
+                },
+                {
+                    "name": "closed",
+                    "type": "flags.2?Bool"
                 },
                 {
                     "name": "offset_date",
@@ -43522,6 +44723,192 @@
                 }
             ],
             "type": "ShareThemeBackdrops"
+        },
+        {
+            "id": "1549075833",
+            "method": "messages.getBotWidgetQueryAnswer",
+            "params": [
+                {
+                    "name": "peer",
+                    "type": "InputPeer"
+                },
+                {
+                    "name": "msg_id",
+                    "type": "int"
+                },
+                {
+                    "name": "query_type",
+                    "type": "WidgetQueryType"
+                },
+                {
+                    "name": "data",
+                    "type": "bytes"
+                }
+            ],
+            "type": "messages.BotWidgetQueryAnswer"
+        },
+        {
+            "id": "-120722326",
+            "method": "messages.setBotWidgetQueryAnswer",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "query_id",
+                    "type": "long"
+                },
+                {
+                    "name": "result",
+                    "type": "flags.0?string"
+                }
+            ],
+            "type": "Bool"
+        },
+        {
+            "id": "-165364706",
+            "method": "messages.editMessageWidgetData",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "peer",
+                    "type": "InputPeer"
+                },
+                {
+                    "name": "id",
+                    "type": "int"
+                },
+                {
+                    "name": "public_data",
+                    "type": "flags.0?string"
+                },
+                {
+                    "name": "chat_data",
+                    "type": "flags.1?string"
+                }
+            ],
+            "type": "Updates"
+        },
+        {
+            "id": "1670827563",
+            "method": "messages.editInlineBotMessageWidgetData",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "id",
+                    "type": "InputBotInlineMessageID"
+                },
+                {
+                    "name": "public_data",
+                    "type": "flags.0?string"
+                },
+                {
+                    "name": "chat_data",
+                    "type": "flags.1?string"
+                }
+            ],
+            "type": "Bool"
+        },
+        {
+            "id": "-356301888",
+            "method": "messages.editWidgetData",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "widget_id",
+                    "type": "long"
+                },
+                {
+                    "name": "public_data",
+                    "type": "string"
+                },
+                {
+                    "name": "cache_time",
+                    "type": "flags.0?int"
+                }
+            ],
+            "type": "Bool"
+        },
+        {
+            "id": "1875194241",
+            "method": "messages.getWidgetPublicData",
+            "params": [
+                {
+                    "name": "peer",
+                    "type": "InputPeer"
+                },
+                {
+                    "name": "msg_id",
+                    "type": "int"
+                },
+                {
+                    "name": "hash",
+                    "type": "long"
+                }
+            ],
+            "type": "messages.WidgetPublicData"
+        },
+        {
+            "id": "120401655",
+            "method": "messages.transcribeAudioFile",
+            "params": [
+                {
+                    "name": "file",
+                    "type": "InputFile"
+                }
+            ],
+            "type": "messages.TranscribedAudio"
+        },
+        {
+            "id": "-1167271510",
+            "method": "messages.getTranscriptionLangs",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "peer",
+                    "type": "flags.0?InputPeer"
+                }
+            ],
+            "type": "Vector<string>"
+        },
+        {
+            "id": "498593787",
+            "method": "messages.inviteUsersToBot",
+            "params": [
+                {
+                    "name": "bot",
+                    "type": "InputUser"
+                },
+                {
+                    "name": "users",
+                    "type": "Vector<InputUser>"
+                }
+            ],
+            "type": "Bool"
+        },
+        {
+            "id": "136274721",
+            "method": "messages.getTranscriptionModels",
+            "params": [
+                {
+                    "name": "version",
+                    "type": "int"
+                }
+            ],
+            "type": "Vector<TranscriptionModel>"
         },
         {
             "id": "-304838614",
@@ -44854,7 +46241,7 @@
             "type": "Bool"
         },
         {
-            "id": "1073174324",
+            "id": "-1567282348",
             "method": "channels.toggleForum",
             "params": [
                 {
@@ -44867,6 +46254,10 @@
                 },
                 {
                     "name": "tabs",
+                    "type": "Bool"
+                },
+                {
+                    "name": "sidebar",
                     "type": "Bool"
                 }
             ],
@@ -46713,6 +48104,14 @@
                     "type": "flags.5?true"
                 },
                 {
+                    "name": "ton_only",
+                    "type": "flags.6?true"
+                },
+                {
+                    "name": "fragment_only",
+                    "type": "flags.7?true"
+                },
+                {
                     "name": "attributes_hash",
                     "type": "flags.0?long"
                 },
@@ -47254,6 +48653,146 @@
                 }
             ],
             "type": "Bool"
+        },
+        {
+            "id": "1461184265",
+            "method": "payments.withdrawStarsRevenueToWallet",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "ton",
+                    "type": "flags.0?true"
+                },
+                {
+                    "name": "peer",
+                    "type": "InputPeer"
+                },
+                {
+                    "name": "amount",
+                    "type": "flags.1?long"
+                },
+                {
+                    "name": "tmp_password",
+                    "type": "bytes"
+                }
+            ],
+            "type": "Bool"
+        },
+        {
+            "id": "1551278953",
+            "method": "payments.buyStarGiftOnchain",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "show_name",
+                    "type": "flags.2?true"
+                },
+                {
+                    "name": "slug",
+                    "type": "string"
+                },
+                {
+                    "name": "expected_amount",
+                    "type": "long"
+                },
+                {
+                    "name": "peer",
+                    "type": "flags.0?InputPeer"
+                },
+                {
+                    "name": "message",
+                    "type": "flags.1?TextWithEntities"
+                }
+            ],
+            "type": "payments.StarGiftOnchainSalePayload"
+        },
+        {
+            "id": "-1035934769",
+            "method": "payments.updateStarGiftOnchainPrice",
+            "params": [
+                {
+                    "name": "slug",
+                    "type": "string"
+                },
+                {
+                    "name": "amount",
+                    "type": "long"
+                }
+            ],
+            "type": "payments.StarGiftOnchainSalePayload"
+        },
+        {
+            "id": "-1571862214",
+            "method": "payments.cancelStarGiftOnchainSale",
+            "params": [
+                {
+                    "name": "slug",
+                    "type": "string"
+                }
+            ],
+            "type": "payments.StarGiftOnchainSalePayload"
+        },
+        {
+            "id": "-1250062274",
+            "method": "payments.sendStarGiftOnchainOffer",
+            "params": [
+                {
+                    "name": "slug",
+                    "type": "string"
+                },
+                {
+                    "name": "amount",
+                    "type": "long"
+                },
+                {
+                    "name": "duration",
+                    "type": "int"
+                },
+                {
+                    "name": "random_id",
+                    "type": "long"
+                }
+            ],
+            "type": "payments.StarGiftOnchainOfferTx"
+        },
+        {
+            "id": "-71655714",
+            "method": "payments.acceptStarGiftOnchainOffer",
+            "params": [
+                {
+                    "name": "offer_msg_id",
+                    "type": "int"
+                }
+            ],
+            "type": "payments.StarGiftOnchainOfferTx"
+        },
+        {
+            "id": "1511098022",
+            "method": "payments.declineStarGiftOnchainOffer",
+            "params": [
+                {
+                    "name": "offer_msg_id",
+                    "type": "int"
+                }
+            ],
+            "type": "Updates"
+        },
+        {
+            "id": "470989500",
+            "method": "payments.cancelStarGiftOnchainOffer",
+            "params": [
+                {
+                    "name": "offer_msg_id",
+                    "type": "int"
+                }
+            ],
+            "type": "payments.StarGiftOnchainOfferTx"
         },
         {
             "id": "-1876841625",
@@ -49754,6 +51293,25 @@
                 }
             ],
             "type": "AiComposeToneExample"
+        },
+        {
+            "id": "1570322880",
+            "method": "aicompose.setChatStyle",
+            "params": [
+                {
+                    "name": "flags",
+                    "type": "#"
+                },
+                {
+                    "name": "peer",
+                    "type": "InputPeer"
+                },
+                {
+                    "name": "style",
+                    "type": "flags.0?InputAiComposeStyle"
+                }
+            ],
+            "type": "Bool"
         },
         {
             "id": "-1506256404",

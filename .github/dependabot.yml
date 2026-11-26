@@ -4,6 +4,10 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
+    # PHPUnit 13 requires PHP 8.4; the application also tests PHP 8.3.
+    ignore:
+      - dependency-name: "phpunit/phpunit"
+        versions: [">=13.0.0 <14.0.0"]
   - package-ecosystem: github-actions
     directory: "/"
     schedule:

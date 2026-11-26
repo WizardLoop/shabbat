@@ -32,12 +32,12 @@ final class PatchInstallTest extends TestCase
         mkdir(dirname($this->target), 0700, true);
         mkdir($this->fixture . '/composer');
         copy($this->root . '/patches/madelineproto-fresh-peer/baseline/PeerHandler.php', $this->target);
-        $this->installed('8.11.10');
+        $this->installed('8.23.1');
     }
 
     private function installed(string $version): void
     {
-        file_put_contents($this->fixture . '/composer/installed.json', json_encode(['packages' => [['name' => 'danog/madelineproto', 'version' => $version, 'source' => ['reference' => '49d3d8460257c7bfb1a7e12708e1bfdd59e898c1']]]], JSON_THROW_ON_ERROR));
+        file_put_contents($this->fixture . '/composer/installed.json', json_encode(['packages' => [['name' => 'danog/madelineproto', 'version' => $version, 'source' => ['reference' => '2bcfa934f7bbb89f8509f9d0ba52d06e5bf3ef51']]]], JSON_THROW_ON_ERROR));
     }
 
     protected function tearDown(): void
@@ -173,7 +173,7 @@ final class PatchInstallTest extends TestCase
     public function testReviewedOfficialModeIsNoOp(): void
     {
         $manifest = $this->fixture . '/test-manifest.json';
-        file_put_contents($manifest, json_encode(['approved' => [['version' => '8.11.10', 'commit' => '49d3d8460257c7bfb1a7e12708e1bfdd59e898c1', 'mode' => 'official', 'sha256' => hash_file('sha256', $this->target)]]], JSON_THROW_ON_ERROR));
+        file_put_contents($manifest, json_encode(['approved' => [['version' => '8.23.1', 'commit' => '2bcfa934f7bbb89f8509f9d0ba52d06e5bf3ef51', 'mode' => 'official', 'sha256' => hash_file('sha256', $this->target)]]], JSON_THROW_ON_ERROR));
         $before = file_get_contents($this->target);
         self::assertSame('official-verified', ($this->manager($manifest))->process(true));
         self::assertSame($before, file_get_contents($this->target));

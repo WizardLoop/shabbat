@@ -14,20 +14,20 @@ jobs:
         php: ["8.3", "8.4", "8.5"]
         include:
           - php: "8.3"
-            version: "8.3.36"
+            version: "8.3.37"
           - php: "8.4"
-            version: "8.4.27"
+            version: "8.4.28"
           - php: "8.5"
-            version: "8.5.12"
+            version: "8.5.13"
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-      - uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
         env:
           update: true
         with:
           php-version: ${{ matrix.version }}
           extensions: pdo_sqlite, mbstring, xml, dom, fileinfo, zlib, zip, igbinary
-          tools: composer:2.10.3
+          tools: composer:2.11.3
           coverage: none
       - name: Verify exact security-patched PHP runtime
         env:
@@ -67,7 +67,7 @@ jobs:
           docker run --rm shabbat-archive-ci php bin/self-check.php --release
           docker run --rm shabbat-archive-ci php bin/igbinary-check.php
           docker run --rm -e EXPECTED_COMMIT shabbat-archive-ci php -r '$m=json_decode(file_get_contents("/app/build-info.json"),true,flags:JSON_THROW_ON_ERROR); if ($m["commit"]!==getenv("EXPECTED_COMMIT") || $m["local_changes"]!==false) { exit(1); } echo "Archive identity retained.\n";'
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: matrix.php == '8.4'
         with:
           name: release-archives-${{ github.sha }}
@@ -76,7 +76,7 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - run: docker build --build-arg BUILD_COMMIT="${{ github.sha }}" -t shabbat-ci .
       - run: docker run --rm shabbat-ci php bin/runtime-permissions.php --require-non-root
       - run: docker run --rm shabbat-ci php bin/self-check.php --release

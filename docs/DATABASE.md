@@ -13,7 +13,7 @@ The application uses PDO SQLite, separate from MadelineProto's session storage. 
 | groups / group_settings | Subscription, typed per-group options and monotonically increasing revision |
 | users / user_preferences | Personal preferences independent of group settings |
 | locations | Verified provider location metadata |
-| message_templates | Text, entities, media and buttons with revision protection |
+| message_templates | Text, entities, media and buttons with revision protection. Migration 017 copies existing group opening/closing designs to independent festival templates, preserving media, native entities and button choices. |
 | notification_rules | Typed fixed, interval and relative rule storage |
 | calendar_cache | Provider payloads, expiry and explicit coverage bounds |
 | scheduled_jobs | Durable outbox, event uniqueness, UTC run/cutoff times, leases and retries |

@@ -121,7 +121,7 @@ final class LegacyImporter
                 $this->settings->ensureGroup($id, '', $this->legacyDefaults($data, $id));
                 $this->db->pdo()->prepare('UPDATE group_settings SET imported_at=? WHERE group_id=?')->execute([$this->clock->now()->getTimestamp(),$id]);
             }
-            foreach (['open' => 'MsgOpener','close' => 'MsgCloser'] as $kind => $prefix) {
+            foreach (['open' => 'MsgOpener','close' => 'MsgCloser','holiday_open' => 'MsgOpener','holiday_close' => 'MsgCloser'] as $kind => $prefix) {
                 $template = $this->template($data . '/' . $id, $prefix, $report['warnings']);
                 if ($template === null) {
                     continue;

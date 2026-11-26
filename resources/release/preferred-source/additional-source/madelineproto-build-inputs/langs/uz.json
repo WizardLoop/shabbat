@@ -186,6 +186,8 @@
     "loginTitleWeb": "Telegramga kirish",
     "loginLeadWeb": "Ushbu MadelineProto nusxasi qaysi akkaunt yoki bot sifatida ishlashini tanlang.",
     "loginTypeWeb": "Kim sifatida kirish",
+    "loginSessionWeb": "Seans",
+    "loginSessionSwitchWeb": "Almashtirish",
     "loginUserPhoneHintWeb": "Davlat kodi bilan, masalan +39 123 456 7890.",
     "loginBotTokenHintWeb": "Botni yaratganingizda @BotFather bergan token.",
     "loginCodeTitleWeb": "Kirish kodini kiriting",
@@ -270,5 +272,14 @@
     "tweb.ACCESS_TOKEN_EXPIRED": "Bu bot tokeni bekor qilingan",
     "tweb.FIRSTNAME_INVALID": "Ism notoʻgʻri",
     "tweb.LASTNAME_INVALID": "Familiya notoʻgʻri",
-    "tweb.Close": "Yopish"
+    "tweb.Close": "Yopish",
+    "webBotStarted": "Bot ishga tushirildi!",
+    "apiIdLabelWeb": "API ID",
+    "apiHashLabelWeb": "API hash",
+    "myTelegramOrgNoApp": "Hali hech qanday ilova yaratilmagan!",
+    "myTelegramOrgCreateFailed": "Ilovani yaratib bo'lmadi",
+    "myTelegramOrgNoCreationHash": "Ilova yaratish hash'i topilmadi!",
+    "myTelegramOrgNoApiId": "my.telegram.org dagi ilova sahifasida API ID va API hash topilmadi",
+    "myTelegramOrgUnexpected": "my.telegram.org dan kutilmagan javob",
+    "myTelegramOrgEmpty": "my.telegram.org dan bo'sh javob"
 }

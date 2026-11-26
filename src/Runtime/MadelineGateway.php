@@ -17,12 +17,15 @@ use Shabbat\Telegram\SentMessageIds;
 use Shabbat\UI\UiGateway;
 use Shabbat\UI\Presentation;
 
-final class MadelineGateway implements TelegramGateway, \Shabbat\Telegram\GuardedTelegramGateway, UiGateway, MessageMaintenanceGateway, \Shabbat\UI\PanelPayloadGateway, \Shabbat\UI\DiagnosticsGateway
+final class MadelineGateway implements TelegramGateway, \Shabbat\Telegram\GuardedTelegramGateway, UiGateway, \Shabbat\UI\GroupDiscoveryGateway, MessageMaintenanceGateway, \Shabbat\UI\PanelPayloadGateway, \Shabbat\UI\DiagnosticsGateway
 {
     private MadelineTransport $transport;
+    private array $directoryMisses = [];
+    private readonly \Amp\Sync\LocalSemaphore $directorySlots;
 
     public function __construct(\danog\MadelineProto\SimpleEventHandler|MadelineTransport $bot, private bool $customEmojiEnabled = true, private ?array $customEmojiAlternatives = null)
     {
+        $this->directorySlots = new \Amp\Sync\LocalSemaphore(4);
         $this->transport = $bot instanceof MadelineTransport ? $bot : new EventHandlerTransport($bot);
     }
 
@@ -237,29 +240,66 @@ final class MadelineGateway implements TelegramGateway, \Shabbat\Telegram\Guarde
         }
     }
 
+    public function isListedAdmin(string $userId, string $groupId): bool
+    {
+        $key = $userId . ':' . $groupId;
+        if (($this->directoryMisses[$key] ?? 0) > hrtime(true)) {
+            return false;
+        }
+        $slot = $this->directorySlots->acquire();
+        try {
+            $admin = $this->readGroupAdmin($userId, $groupId);
+            if ($admin === false) {
+                // Briefly reuse definitive negative answers for navigation only.
+                if (count($this->directoryMisses) >= 4096) {
+                    unset($this->directoryMisses[array_key_first($this->directoryMisses)]);
+                }
+                $this->directoryMisses[$key] = hrtime(true) + 30_000_000_000;
+            }
+            return $admin === true;
+        } finally {
+            $slot->release();
+        }
+    }
+
     public function isGroupAdmin(string $userId, string $groupId): bool
     {
-        if (!ctype_digit($userId) || (int) $userId <= 0) {
+        $admin = $this->readGroupAdmin($userId, $groupId) === true;
+        if ($admin) {
+            unset($this->directoryMisses[$userId . ':' . $groupId]);
+        }
+        return $admin;
+    }
+
+    private function readGroupAdmin(string $userId, string $groupId): ?bool
+    {
+        if (!ctype_digit($userId) || (int)$userId <= 0) {
             return false;
         }
         try {
             $info = $this->transport->info($groupId);
             if (($info['type'] ?? '') === 'chat') {
                 $full = $this->invoke(fn () => $this->transport->fullInfo($groupId));
-                foreach ($full['full']['participants']['participants'] ?? [] as $participant) {
-                    if ((string) ($participant['user_id'] ?? '') === $userId) {
+                $participants = $full['full']['participants']['participants'] ?? null;
+                if (!is_array($participants)) {
+                    return null;
+                }
+                foreach ($participants as $participant) {
+                    if ((string)($participant['user_id'] ?? '') === $userId) {
                         return in_array($participant['_'] ?? '', ['chatParticipantAdmin', 'chatParticipantCreator'], true);
                     }
                 }
                 return false;
             }
             $response = $this->call('channels.getParticipant', ['channel' => $groupId, 'participant' => $userId]);
-            return in_array($response['participant']['_'] ?? '', ['channelParticipantAdmin', 'channelParticipantCreator'], true);
+            $type = $response['participant']['_'] ?? null;
+            return is_string($type) ? in_array($type, ['channelParticipantAdmin', 'channelParticipantCreator'], true) : null;
         } catch (CancelledException $error) {
             throw $error;
+        } catch (\danog\MadelineProto\RPCErrorException $error) {
+            return $error->rpc === 'USER_NOT_PARTICIPANT' ? false : null;
         } catch (\Throwable) {
-            // No network error or unverifiable identity grants permission.
-            return false;
+            return null;
         }
     }
 

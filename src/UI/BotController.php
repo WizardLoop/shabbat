@@ -33,7 +33,7 @@ final class BotController
         $this->authorizeOperator = $authorizeOperator === null ? static fn(string $user): bool => false : \Closure::fromCallable($authorizeOperator);
     }
     /** Message: user_id,text,private,group_id?,message_id?,location?. */
-    public function handleMessage(array $message): bool
+    public function handleMessage(array $message, ?callable $onGroupPanelSent = null): bool
     {
         $user = (string) ($message['user_id'] ?? '');
         if (!preg_match('/^[0-9]{1,20}$/D', $user)) {
@@ -77,6 +77,9 @@ final class BotController
                     $this->groupList($user);
                 } else {
                     $this->panel($user, $this->group($user, $group));
+                    if ($onGroupPanelSent !== null && !($message['private'] ?? false) && isset($message['group_id'])) {
+                        $onGroupPanelSent();
+                    }
                 }
                 return true;
             }
@@ -204,7 +207,13 @@ final class BotController
                 if ($this->permissionRecovery === null) {
                     throw new \RuntimeException('Permission recovery is unavailable.');
                 }
-                $context = $this->context($user, $token, in_array($action, ['pc', 'px'], true) ? 'permission_recovery_confirm' : 'panel');
+                if ($action === 'pr' && preg_match('/^-[1-9][0-9]{0,18}$/D', $token)) {
+                    // Opening a read-only review can outlive its original panel.
+                    $context = $this->group($user, $token);
+                    $context['_flow']['payload']['return_screen'] = $value;
+                } else {
+                    $context = $this->context($user, $token, in_array($action, ['pc', 'px'], true) ? 'permission_recovery_confirm' : 'panel', refresh: $action === 'pr');
+                }
                 $recovery = new PermissionRecoveryController($this->settings, $this->flows, $this->gateway, $this->permissionRecovery, $this->lang);
                 match ($action) {
                     'pr' => $recovery->show($user, $context),
@@ -218,12 +227,21 @@ final class BotController
             } elseif ($action === 'start') {
                 $this->start($user);
             } elseif ($action === 'groups') {
+                // Membership discovery can outlast Telegram's callback answer deadline.
+                $this->gateway->answerCallback((string)($query['query_id'] ?? ''), '');
                 $state = $this->flows->peek($token, $user, 'groups');
-                $this->groupList($user, $state['payload']['offset'] ?? 0, $state['payload']['search'] ?? '');
+                try {
+                    $this->groupList($user, $state['payload']['offset'] ?? 0, $state['payload']['search'] ?? '', $state['payload']['previous'] ?? []);
+                } catch (\Amp\CancelledException $error) {
+                    throw $error;
+                } catch (PanelEditException) {
+                    // The original private panel is no longer editable.
+                }
+                return true;
             } elseif ($action === 'personal') {
                 $this->panel($user, $this->settings->getUser($user));
             } elseif ($action === 'group') {
-                $this->panel($user, $this->context($user, $token, 'panel'));
+                $this->panel($user, $this->context($user, $token, 'panel', refresh: true));
             } elseif ($action === 'help') {
                 $this->help($user, $token);
             } elseif ($action === 'show') {
@@ -554,10 +572,10 @@ final class BotController
         $rows = [];
         if (isset($context['group_id'])) {
             $this->group($user, (string) $context['group_id']);
-            $rows[] = [$this->button($user, 'language', 'sb:v:' . $token . ':language'), $this->button($user, 'location', 'sb:v:' . $token . ':location')];
             $shabbat = $this->button($user, 'shabbat', 'sb:v:' . $token . ':shabbat');
             $shabbat['text'] .= ' · ' . $this->t($user, 'mode_' . $context['mode']);
             $rows[] = [$shabbat];
+            $rows[] = [$this->button($user, 'messages', 'v3:templates:' . $context['group_id'])];
             foreach ([['zmanim', 'daf'], ['tefillin', 'omer']] as $screens) {
                 $row = [];
                 foreach ($screens as $screen) {
@@ -567,12 +585,12 @@ final class BotController
                 }
                 $rows[] = $row;
             }
-            $rows[] = [$this->button($user, 'moderation', 'sb:v:' . $token . ':moderation'),
-                $this->button($user, 'messages', 'v3:templates:' . $context['group_id'])];
+            $rows[] = [$this->button($user, 'language', 'sb:v:' . $token . ':language'), $this->button($user, 'location', 'sb:v:' . $token . ':location')];
+            $rows[] = [$this->button($user, 'moderation', 'sb:v:' . $token . ':moderation')];
             $rows[] = [$this->button($user, 'schedule', 'sb:v:' . $token . ':schedule'),
                 $this->button($user, 'status', 'sb:v:' . $token . ':status')];
             if ($this->permissionRecovery !== null) {
-                $rows[] = [$this->button($user, 'permission_recovery', 'sb:pr:' . $token)];
+                $rows[] = [$this->button($user, 'permission_recovery', 'sb:pr:' . $context['group_id'])];
             }
             $snapshot = $this->safeSnapshot($context);
             $next = isset($snapshot['next_close_at']) ? $this->time($snapshot['next_close_at'], $context) : $this->t($user, 'unavailable');
@@ -589,32 +607,60 @@ final class BotController
         $rows[] = [$this->button($user, 'back', 'sb:start')];
         $this->send($user, $text, $this->keyboard($rows));
     }
-    private function groupList(string $user, int $offset = 0, string $search = ''): void
+    private function groupList(string $user, int $offset = 0, string $search = '', array $previous = []): void
     {
         $this->flows->revokeAction($user, 'location_input');
         $this->flows->revokeAction($user, 'settings_wizard');
+        $directory = $this->gateway instanceof CallbackUiGateway ? $this->gateway->underlying() : $this->gateway;
+        $isAdmin = $directory instanceof GroupDiscoveryGateway ? $directory->isListedAdmin(...) : $directory->isGroupAdmin(...);
+        $pageSize = 5;
         $rows = [];
-        $groups = $this->settings->listGroups($offset, 20, $search);
-        foreach ($groups as $group) {
-            if (!$this->gateway->isGroupAdmin($user, (string) $group['group_id'])) {
-                continue;
+        $cursor = $offset;
+        $next = null;
+        do {
+            $batch = $this->settings->listGroups($cursor, 32, $search);
+            foreach (array_chunk($batch, 4) as $chunk) {
+                $checks = array_map(static fn(array $group) => \Amp\async($isAdmin, $user, (string)$group['group_id']), $chunk);
+                $authorized = \Amp\Future\await($checks);
+                foreach ($chunk as $i => $group) {
+                    $position = $cursor++;
+                    if (!$authorized[$i]) {
+                        continue;
+                    }
+                    if (count($rows) === $pageSize) {
+                        $next = $position;
+                        break 3;
+                    }
+                    $token = $this->token($user, $group, 'panel');
+                    $rows[] = [['text' => (string)($group['title'] ?: $group['group_id']), 'data' => 'sb:group:' . $token]];
+                }
             }
-            $token = $this->token($user, $group, 'panel');
-            $rows[] = [['text' => (string) ($group['title'] ?: $group['group_id']), 'data' => 'sb:group:' . $token]];
+        } while (count($batch) === 32);
+
+        if ($rows === [] && $offset > 0) {
+            // A group was removed or an admin role changed between page visits.
+            $this->groupList($user, 0, $search);
+            return;
         }
+        $text = $this->t($user, $rows === [] ? 'no_groups' : 'settings_search');
         $paging = [];
-        if ($offset > 0) {
-            $prev = $this->token($user, $this->settings->getUser($user), 'groups', ['offset' => max(0, $offset - 20), 'search' => $search]);
-            $paging[] = $this->button($user, 'previous', 'sb:groups:' . $prev);
+        $personal = $this->settings->getUser($user);
+        if ($previous !== []) {
+            $history = $previous;
+            $back = array_pop($history);
+            $token = $this->token($user, $personal, 'groups', ['offset' => $back, 'previous' => $history, 'search' => $search]);
+            $paging[] = $this->button($user, 'previous', 'sb:groups:' . $token);
         }
-        if (count($groups) === 20) {
-            $next = $this->token($user, $this->settings->getUser($user), 'groups', ['offset' => $offset + 20, 'search' => $search]);
-            $paging[] = $this->button($user, 'next', 'sb:groups:' . $next);
+        if ($next !== null) {
+            $previous[] = $offset;
+            $token = $this->token($user, $personal, 'groups', ['offset' => $next, 'previous' => $previous, 'search' => $search]);
+            $paging[] = $this->button($user, 'next', 'sb:groups:' . $token);
         }
-        if ($paging) {
+        if ($paging !== []) {
             $rows[] = $paging;
-        } $rows[] = [$this->button($user, 'back', 'sb:start')];
-        $this->send($user, $this->t($user, count($rows) > 1 ? 'settings_search' : 'no_groups'), $this->keyboard($rows));
+        }
+        $rows[] = [$this->button($user, 'back', 'sb:start')];
+        $this->send($user, $text, $this->keyboard($rows));
     }
     private function screen(string $user, array $context, string $screen): void
     {
@@ -715,6 +761,8 @@ final class BotController
             if ($screen === 'shabbat_messages') {
                 $rows[] = [$this->button($user, 'template_kind_close', 'v3:templates:' . $context['group_id'] . ':close'),
                     $this->button($user, 'template_kind_open', 'v3:templates:' . $context['group_id'] . ':open')];
+                $rows[] = [$this->button($user, 'template_kind_holiday_close', 'v3:templates:' . $context['group_id'] . ':holiday_close'),
+                    $this->button($user, 'template_kind_holiday_open', 'v3:templates:' . $context['group_id'] . ':holiday_open')];
                 $rows[] = [$this->button($user, 'announcement_schedule', 'sb:v:' . $token . ':announcement')];
             } else {
                 $rows[] = [$this->button($user, 'preview', 'sb:p:' . $token . ':shabbat')];
@@ -781,7 +829,7 @@ final class BotController
             throw new \InvalidArgumentException('Unknown screen');
         }
         if ($this->permissionRecovery !== null && isset($context['group_id']) && in_array($screen, ['shabbat', 'moderation', 'restrictions', 'botpermissions', 'status'], true)) {
-            $rows[] = [$this->button($user, 'permission_recovery', 'sb:pr:' . $token)];
+            $rows[] = [$this->button($user, 'permission_recovery', 'sb:pr:' . $context['group_id'] . ':' . $screen)];
         }
         $parent = match ($screen) {
             'shabbat_mode', 'shabbat_timing', 'shabbat_messages', 'announcement', 'moderation' => 'shabbat',
@@ -1387,7 +1435,7 @@ final class BotController
             return $translate('provider_unavailable');
         }
     }
-    private function context(string $user, string $token, string $action): array
+    private function context(string $user, string $token, string $action, bool $refresh = false): array
     {
         $flow = $this->flows->peek($token, $user, $action) ?? throw new \RuntimeException('Settings context expired or belongs to another user');
         if (isset($flow['payload']['source_wizard_token'])) {
@@ -1403,7 +1451,7 @@ final class BotController
             }
         }
         $context = in_array($flow['scope'], ['group','share'], true) ? $this->group($user, (string) $flow['group_id']) : $this->settings->getUser($user);
-        if ((int) $context['revision'] !== (int) $flow['revision']) {
+        if (!$refresh && (int) $context['revision'] !== (int) $flow['revision']) {
             throw new \RuntimeException('Settings changed; reopen the panel');
         } $context['_flow'] = $flow;
         return $context;
@@ -1630,10 +1678,4 @@ final class BotController
     {
         if ($error instanceof \Shabbat\Telegram\PrivateChatUnavailableException) {
             // The original private reply was rejected. Sending an error to the
-            // same unreachable peer would fail again and flood operator logs.
-            throw $error;
-        }
-        $key = $error instanceof \Shabbat\Location\LocationException ? ($this->geo->configured() ? 'unavailable' : 'geonames_missing') : ($error instanceof \InvalidArgumentException ? (str_contains($error->getMessage(), 'YYYY-MM-DD') ? 'date_invalid' : 'hours_invalid') : 'denied');
-        $this->send($user, $this->t($user, $key));
-    }
-}
+            // same unreachable peer would fail again and fl

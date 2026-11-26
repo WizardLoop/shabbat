@@ -2,7 +2,7 @@
 
 **Release policy: publication requires successful mandatory checks on the exact final commit. Use the matching GitHub Actions run and release manifest to verify the tested source and artifacts.**
 
-Version: **3.1.1**, targeting the locked official MadelineProto 8.11.10 / TL layer 232 release. Existing PHP/SQLite bot capabilities and migration bytes are retained. This page distinguishes implemented behavior, previous acceptance and checks still required on the final new tree.
+Version: **3.2.0**, targeting the locked official MadelineProto 8.23.1 / TL layer 234 release. Existing PHP/SQLite bot capabilities and migration bytes are retained. This page distinguishes implemented behavior, previous acceptance and checks still required on the final new tree.
 
 ## Implemented paths and limits
 
@@ -36,7 +36,7 @@ The reviewed implementation at `0f08f0548e85518e1d15b83975dcfbf03b2dc9e8` in [PR
 
 Shutdown coverage exercises official SDK loop recovery/stop behavior and real disconnect/finalize methods with an in-memory transport and modeled delayed flush. The lock barrier must retain writer ownership until finalization completes. Loop `stop()` prevents rescheduling after the current body returns; it does not promise immediate cancellation of that body. These fixtures do not serialize a real session or exercise Telegram, an IPC daemon or Linux signals. Platform-specific worker checks must be evaluated on the relevant operating system.
 
-The suites exercise fake transports, provider fixtures, controlled clocks, isolated databases, migration/restore, patch lifecycle and simulated load. Run them against the final reviewed 3.1.1 commit and locked installation. Earlier 3.0.0 hosted results do not replace this version's mandatory clean-install, regression, analysis, image and artifact checks. Publication requires those gates to pass on the exact final commit. Release manifests, SHA-256 sums and the matching GitHub Actions run identify the tested source/artifacts. Local checks directories are external evidence, not runtime source.
+The suites exercise fake transports, provider fixtures, controlled clocks, isolated databases, migration/restore, patch lifecycle and simulated load. Run them against the final reviewed 3.2.0 commit and locked installation. Earlier 3.0.0 hosted results do not replace this version's mandatory clean-install, regression, analysis, image and artifact checks. Publication requires those gates to pass on the exact final commit. Release manifests, SHA-256 sums and the matching GitHub Actions run identify the tested source/artifacts. Local checks directories are external evidence, not runtime source.
 
 Local Windows limitations include unavailable Docker and POSIX-only/symlink-dependent coverage. Earlier local PHP 8.5.0 / SQLite 3.45.2 results remain historical compatibility evidence. The current isolated local verifier uses PHP 8.5.12 but lacks igbinary, so its extension-dependent self-check cannot establish deployment readiness; the hosted Linux image checks supply that evidence. The [22 October 2026 baseline](INSTALLATION.md#php-security-baseline) requires PHP 8.3.36+, 8.4.27+ or 8.5.12+ within those branches. Docker targets PHP 8.4.27 and SQLite 3.51.3 and must pass the release gate. Do not describe an unexecuted image build, CI run or Telegram operation as successful. See [publication status](PUBLICATION_STATUS.md) for source scope and [release preparation](RELEASE.md) for gates.
 

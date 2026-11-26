@@ -1,10 +1,10 @@
 # Offline patch installation
 
-Only two patch sets are active in 3.1.1:
+Only two patch sets are active in 3.2.0:
 
 | Package | Local change | Reviewed source |
 |---|---|---|
-| MadelineProto 8.11.10 | Fresh full-peer response evidence for safe group permission snapshots | [Provenance and tests](../patches/madelineproto-fresh-peer/README.md) |
+| MadelineProto 8.23.1 | Fresh full-peer response evidence for safe group permission snapshots | [Provenance and tests](../patches/madelineproto-fresh-peer/README.md) |
 | BroadcastManager 3.2.2 | Application delivery hooks and localized status | [Provenance and tests](../patches/broadcastmanager/README.md) |
 
 Composer lifecycle scripts and Docker builds apply local immutable diffs and
@@ -27,7 +27,7 @@ and an already patched no-op remain available. Do not modify an active container
 ignore a verification error, download a floating patch, or use `composer update`
 as a routine deployment command.
 
-## Official compatibility in 8.11.10
+## Official compatibility in 8.23.1
 
 The old local UpdateLoop, GeoPoint and FormattedDate patch trees were removed.
 Official date entities and fractional coordinates now have direct compatibility

@@ -64,6 +64,23 @@ final class PermissionRecoveryUiTest extends TestCase
         );
     }
 
+    public function testOldNavigationLoadsLatestRevisionAndUnreadablePermissionsCanBeRefreshed(): void
+    {
+        $token = $this->panelToken();
+        $group = $this->settings->getGroup('-1001');
+        $this->settings->updateGroup('-1001', $group['revision'], ['candle_minutes' => 49], '1');
+        $this->telegram->onGet = static function (): void {
+            throw new \RuntimeException('temporarily unavailable');
+        };
+        $this->click('sb:pr:' . $token);
+        self::assertStringContainsString((new Lang())->text('he', 'recovery_block_unknown'), $this->last()['text']);
+        self::assertFalse($this->hasButton('sb:pa:'));
+        $this->telegram->onGet = null;
+        $this->click($this->button('sb:pr:'));
+        self::assertTrue($this->hasButton('sb:pa:'));
+        self::assertSame(0, $this->telegram->writes);
+    }
+
     public static function languageActions(): array
     {
         $cases = [];

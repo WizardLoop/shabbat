@@ -12,10 +12,10 @@ The JewishPulse comparison used commit d7b06eb1acb206543dcff35a7c14ebce4760b4e5,
 
 | Set | Locked base | Baseline SHA-256 | Approved output SHA-256 |
 |---|---|---|---|
-| [Fresh full-peer evidence](../patches/madelineproto-fresh-peer/manifest.json) | MadelineProto 8.11.10, 49d3d8460257c7bfb1a7e12708e1bfdd59e898c1 | 6caa058975e7122eeb84409542a7c8241a2da5c63ca4c63e1ec2392c7b3f7314 | 78187d7216c069d47d1c05d8128834603b958b55bc8478576850bce9e86489df |
+| [Fresh full-peer evidence](../patches/madelineproto-fresh-peer/manifest.json) | MadelineProto 8.23.1, 2bcfa934f7bbb89f8509f9d0ba52d06e5bf3ef51 | 6caa058975e7122eeb84409542a7c8241a2da5c63ca4c63e1ec2392c7b3f7314 | 78187d7216c069d47d1c05d8128834603b958b55bc8478576850bce9e86489df |
 | [BroadcastManager](../patches/broadcastmanager/manifest.json) | 3.2.2, f2792a383416b66bb68e55f09414563e540538d6 | 2a9a42dc6e3f6d7b51c178e7d9db962a5b5ac424046af18afcfcdb12d41dc6e8 | d665b24009aabfb5b09e00edad1271f1501bf0ef797d5a2593129da91c8cc435 |
 
-The PeerHandler derivative preserves the upstream public signature and 8.11.10 community/invalid-peer handling, while exposing raw per-call response evidence when full-info caching is disabled. This supports permission validation without treating a stale combined cache record as current RPC evidence. It is a local correction, not an upstream attribution.
+The PeerHandler derivative preserves the upstream public signature and 8.23.1 community/invalid-peer handling, while exposing raw per-call response evidence when full-info caching is disabled. This supports permission validation without treating a stale combined cache record as current RPC evidence. It is a local correction, not an upstream attribution.
 
 BroadcastManager retains original source, dev.3 presentation source (3d9425f7911b12c69faae5e87954db134dc3fb7c2f7d654a72f972ebeb84e424), dev.8 transport source (08db35c271f671041257ebe79d1010cdd7c33c4d5868e4553c78612f9e8bf0f3) and guarded transition diffs. The approved derivative includes lifecycle admission/cancellation guards, tracked worker/progress draining and bounded flood handling. These are behavior changes, not merely presentation. Unknown source bytes fail verification.
 
@@ -35,9 +35,9 @@ The unmodified igbinary 3.2.16 extension is built from the official PECL archive
 
 ## Current SDK preferred source
 
-The [source manifest](../resources/release/source-manifest.json) binds 4,095 files from 83 exact runtime distributions, with only the two approved patched outputs differing from upstream. Two public Amp TLS example private keys are omitted by exact hash. All other runtime files, resources and notices remain inventoried; no extension-based source filtering is used.
+The [source manifest](../resources/release/source-manifest.json) binds 4,272 files from 83 exact runtime distributions, with only the two approved patched outputs differing from upstream. Two public Amp TLS example private keys are omitted by exact hash. All other runtime files, resources and notices remain inventoried; no extension-based source filtering is used.
 
-The MadelineProto supplement has **84 files** at SDK commit 49d3d8460257c7bfb1a7e12708e1bfdd59e898c1, schema submodule 1d027e48ce9196d86110f8324e23a5c78fc4ef6a and documentation submodule 10ea0769245a3d080c3e501b12603e804ad9f3af. Original Git blobs and SHA-256 values accompany each file. It includes TL/secret parser builders, file-reference-map generators, current TL232/MTProto/secret schemas, all language inputs and the local language generator. The runtime package supplies their referenced parser/runtime classes. No generator was executed.
+The MadelineProto supplement has **87 files** at SDK commit 2bcfa934f7bbb89f8509f9d0ba52d06e5bf3ef51, schema submodule b822b65d1c1abf8211d4aae92a1dda4e6edafe0f and documentation submodule bdfa54ff6843ebaada5f958dd1326849b8a5c86c. Original Git blobs and SHA-256 values accompany each file. It includes TL/secret parser builders, file-reference-map generators, current TL234/MTProto/secret schemas, all language inputs and the local language generator. The runtime package supplies their referenced parser/runtime classes. No generator was executed.
 
 Full historical schema regeneration, complete generated upstream documentation, its development toolchain and historical mutable RPC responses are outside this collection. No separate license file was present in the pinned schema/documentation submodule trees; their bytes and the parent MadelineProto notices are preserved without inventing a new grant.
 

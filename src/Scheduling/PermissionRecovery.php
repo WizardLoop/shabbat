@@ -43,7 +43,8 @@ final class PermissionRecovery
         if (!$this->authorized($actor, $group)) {
             return $this->blocked('forbidden');
         }
-        $safe = $safe && ($this->safeToRecover)($group) === true;
+        $recheck = $this->localSafeToRecover ?? $this->safeToRecover;
+        $safe = $safe && $recheck($group) === true;
         if ($binding !== $this->binding($group)) {
             return $this->blocked('stale');
         }

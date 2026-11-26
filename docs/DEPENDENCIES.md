@@ -2,13 +2,13 @@
 
 [dependencies.json](dependencies.json) is generated from the exact Composer lock and installed license files by php scripts/dependencies.php. It records 83 runtime and 26 development packages, versions, commits, runtime/dev scope, metadata, original license hashes and unresolved findings. LICENSE_TEXT_PRESENT is text evidence, not an authorship or legal-compatibility certificate.
 
-MadelineProto is constrained by ^8.11.10 and locked at **8.11.10**, commit **49d3d8460257c7bfb1a7e12708e1bfdd59e898c1**, with TL layer 232. BroadcastManager ~3.2.2 resolves to **3.2.2**, commit f2792a383416b66bb68e55f09414563e540538d6. Install from composer.lock; a normal upgrade does not run composer update. [PATCHES](PATCHES.md) describes the two active reviewed modifications.
+MadelineProto is pinned to **8.23.1**, commit **2bcfa934f7bbb89f8509f9d0ba52d06e5bf3ef51**, with TL layer 234. BroadcastManager ~3.2.2 resolves to **3.2.2**, commit f2792a383416b66bb68e55f09414563e540538d6. Install from composer.lock; a normal upgrade does not run composer update. [PATCHES](PATCHES.md) describes the two active reviewed modifications.
 
 The Docker image also builds the unmodified igbinary 3.2.16 PHP extension. It is outside Composer and does not change `composer.lock`. Its exact source URL, SHA-256 and retained license are recorded as `igbinary_source` in the [source manifest](../resources/release/source-manifest.json); the image verifies that hash before installation.
 
 ## Reproduce the evidence
 
-Run in an isolated repository root with the locked dependencies installed, using the documented PHP requirements and Composer 2.10.3:
+Run in an isolated repository root with the locked dependencies installed, using the documented PHP requirements and Composer 2.11.3:
 
     composer validate --strict --no-check-all
     composer show --locked --format=json
@@ -25,7 +25,7 @@ The first five commands inspect configuration, inventory, advisories or platform
 
 MadelineProto metadata says AGPL-3.0-only while source headers allow version 3 or later; both remain unchanged. The new php-rtc-av metadata says MIT but its distributed LICENSE/PHP headers state BSD-3-Clause. The inventory leaves the declared MIT grant NOT VERIFIED. Checked-in AV FFI declarations are included verbatim; no native FFmpeg binary or generator output is inferred from that metadata, and external derivation provenance is not established.
 
-The corresponding-source collection contains all 83 locked runtime package trees, with two exact public Amp TLS example-key omissions, approved local patch outputs, original notices and 105 preferred-source inputs, including the official igbinary 3.2.16 source archive and its original BSD-3-Clause COPYING. It excludes the 26 development packages and generated Composer autoload/bin metadata. PHPStan's PHAR is not called preferred source. External PHP, SQLite, optional FFmpeg and operating-system/container source are outside this collection. See [LICENSING](LICENSING.md), [THIRD_PARTY_DETAILS](THIRD_PARTY_DETAILS.md) and the [source manifest](../resources/release/source-manifest.json).
+The corresponding-source collection contains all 83 locked runtime package trees, with two exact public Amp TLS example-key omissions, approved local patch outputs, original notices and 108 preferred-source inputs, including the official igbinary 3.2.16 source archive and its original BSD-3-Clause COPYING. It excludes the 26 development packages and generated Composer autoload/bin metadata. PHPStan's PHAR is not called preferred source. External PHP, SQLite, optional FFmpeg and operating-system/container source are outside this collection. See [LICENSING](LICENSING.md), [THIRD_PARTY_DETAILS](THIRD_PARTY_DETAILS.md) and the [source manifest](../resources/release/source-manifest.json).
 
 The omitted Amp HTTP Server tools/tls/localhost.pem and tools/tls/localhost.key.pem are public development examples unused by the bot; exact paths and SHA-256 remain recorded. This packaging omission does not change installed vendor. All other unknown runtime files and credential patterns fail source packaging.
 

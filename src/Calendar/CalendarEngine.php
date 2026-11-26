@@ -80,6 +80,7 @@ final class CalendarEngine
                 'close_at' => $candles - (int)($settings['close_before_candles_minutes'] ?? 0) * 60,
                 'open_at' => $havdalah + (int)($settings['open_after_havdalah_minutes'] ?? 0) * 60,
                 'is_shabbat' => $saturday,'is_yom_tov' => $holidays !== [], 'enabled' => $enabled,
+                'close_is_yom_tov' => $holidays !== [], 'open_is_yom_tov' => $holidays !== [],
                 'title' => $holidays !== [] ? implode(' / ', array_column($holidays, ($settings['language'] ?? 'he') === 'he' ? 'hebrew' : 'title')) : (($settings['language'] ?? 'he') === 'he' ? 'שבת' : 'Shabbat'),
                 'days' => [$day], 'intermediate' => [],
             ];
@@ -160,6 +161,7 @@ final class CalendarEngine
                 $merged[$last]['days'] = array_merge($merged[$last]['days'], $event['days']);
                 $merged[$last]['end_at'] = max($merged[$last]['end_at'], $event['end_at']);
                 $merged[$last]['havdalah_at'] = $event['havdalah_at'];
+                $merged[$last]['open_is_yom_tov'] = $event['open_is_yom_tov'];
                 $merged[$last]['open_at'] = max($merged[$last]['open_at'], $event['open_at']);
                 $merged[$last]['is_shabbat'] = $merged[$last]['is_shabbat'] || $event['is_shabbat'];
                 $merged[$last]['is_yom_tov'] = $merged[$last]['is_yom_tov'] || $event['is_yom_tov'];

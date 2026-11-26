@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.2.0 - 2026-11-26
+
+- My Groups lists manageable groups, five per page, and only offers a next page when more results exist.
+- Permission recovery can refresh current evidence before confirmation. The bot checks the administrator, group rights and allowed time window before changes.
+- Authorized group /settings opens the private panel, confirms delivery in the group, and attempts to remove the command.
+- Separate Shabbat and Yom Tov opening and closing templates. Migration 017 copies existing customizations. Verified transitions and their configured notices are recorded together.
+- MadelineProto 8.23.1 (Telegram layer 234), updated locked dependencies, and refreshed PHP, Composer and GitHub Actions build pins.
+
+
 PHP 8.3 compatibility: module-delivery bookkeeping now uses the database-owned `BEGIN IMMEDIATE` transaction state and exact connection identity; native callback/message fixtures initialize inherited readonly properties from their declaring class. Regression tests cover rejected foreign/outside transactions, rollback and state reset.
 
 ## 3.1.1

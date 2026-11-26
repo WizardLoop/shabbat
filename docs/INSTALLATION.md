@@ -2,24 +2,24 @@
 
 [English overview](../README.md) | [עברית](../readme-he.md) | [Configuration](CONFIGURATION.md) | [Migration](MIGRATION.md)
 
-This documents version 3.1.1; check [acceptance status](IMPLEMENTATION_STATUS.md) before deployment. Install the matching release deployment ZIP or exact tagged checkout. The owner confirmed dev.9 live locking, unlocking, original-permission restoration and restart; acceptance on your host and remaining feature-specific tests are separate. See [publication status](PUBLICATION_STATUS.md).
+This documents version 3.2.0; check [acceptance status](IMPLEMENTATION_STATUS.md) before deployment. Install the matching release deployment ZIP or exact tagged checkout. The owner confirmed dev.9 live locking, unlocking, original-permission restoration and restart; acceptance on your host and remaining feature-specific tests are separate. See [publication status](PUBLICATION_STATUS.md).
 
 ## Requirements and command context
 
 Run the following commands in the unpacked project root on Linux. Docker commands require access to the Docker daemon and Compose v2; that access is privileged. PHP maintenance commands run as the image's non-root user. The only Compose service is `shabbat`; there is no `composer` service.
 
-The Dockerfile pins PHP 8.4.27 and Composer 2.10.3 images by digest and builds checksum-verified SQLite 3.51.3. It installs dependencies from `composer.lock`, applies and verifies the two active local patch sets before startup, and runs without root as UID/GID 10001. Image building uses network access but no bot credentials. CI uses the same Composer version, including the upstream [GitHub Actions token-validation and disclosure fix](https://github.com/composer/composer/security/advisories/GHSA-f9f8-rm49-7jv2); authentication and all validation gates remain enabled. Runtime requires a separate configured bot, Telegram access and calendar provider access.
+The Dockerfile pins PHP 8.4.28 and Composer 2.11.3 images by digest and builds checksum-verified SQLite 3.51.3. It installs dependencies from `composer.lock`, applies and verifies the two active local patch sets before startup, and runs without root as UID/GID 10001. Image building uses network access but no bot credentials. CI uses the same Composer version, including the upstream [GitHub Actions token-validation and disclosure fix](https://github.com/composer/composer/security/advisories/GHSA-f9f8-rm49-7jv2); authentication and all validation gates remain enabled. Runtime requires a separate configured bot, Telegram access and calendar provider access.
 
-Existing MadelineProto sessions written with igbinary need the extension to read them. The 3.1.1 Docker image includes pinned igbinary 3.2.16 and retains its source and license. `php bin/igbinary-check.php` verifies a synthetic round trip and offline SDK initialization; it does not open the private session or establish a Telegram connection. Do not reset or convert a session to work around a missing extension.
+Existing MadelineProto sessions written with igbinary need the extension to read them. The 3.2.0 Docker image includes pinned igbinary 3.2.16 and retains its source and license. `php bin/igbinary-check.php` verifies a synthetic round trip and offline SDK initialization; it does not open the private session or establish a Telegram connection. Do not reset or convert a session to work around a missing extension.
 
-Manual installation requires 64-bit PHP **8.3.36+, 8.4.27+ or 8.5.12+** within the 8.3/8.4/8.5 branches, Composer 2.10.3, the extensions required by `composer check-platform-reqs`, enabled igbinary (3.2.16 is the pinned Docker baseline), and a patched PHP-loaded SQLite version accepted by `php bin/self-check.php --release`. That gate accepts SQLite >=3.51.3 or the explicitly reviewed 3.44.6/3.50.7 backports. A newer standalone `sqlite3` executable does not change the library loaded by PHP PDO. The image is the documented deployment baseline; native process supervision is operator-managed.
+Manual installation requires 64-bit PHP **8.3.36+, 8.4.27+ or 8.5.12+** within the 8.3/8.4/8.5 branches, Composer 2.11.3, the extensions required by `composer check-platform-reqs`, enabled igbinary (3.2.16 is the pinned Docker baseline), and a patched PHP-loaded SQLite version accepted by `php bin/self-check.php --release`. That gate accepts SQLite >=3.51.3 or the explicitly reviewed 3.44.6/3.50.7 backports. A newer standalone `sqlite3` executable does not change the library loaded by PHP PDO. The image is the documented deployment baseline; native process supervision is operator-managed.
 
 <a id="php-security-baseline"></a>
 ## PHP security baseline — 22 October 2026
 
 PHP's [official changelog](https://www.php.net/ChangeLog-8.php) dates the current patched releases 8.3.36, 8.4.27 and 8.5.12 to 22 October 2026. The [security notice published on 21 October](https://www.php.net/archive/2026.php) identifies fixes for [CVE-2026-109618](https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w) and [CVE-2026-109619](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp). These versions are this release's minimum patch levels. Use maintained patch releases within the supported branches and recheck upstream advisories when deploying.
 
-The Docker baseline stays on the 8.4 branch and pins `php:8.4.27-cli-bookworm` by digest. Release checks must record the actual interpreter version and pass on the patched runtime. The advisory describes web-request SAPIs; it does not establish a demonstrated remote exploit against this CLI bot. Meeting these minimums addresses the identified upstream fixes and does not guarantee the absence of other vulnerabilities in PHP, extensions or the operating system.
+The Docker baseline stays on the 8.4 branch and pins `php:8.4.28-cli-bookworm` by digest. Release checks must record the actual interpreter version and pass on the patched runtime. The advisory describes web-request SAPIs; it does not establish a demonstrated remote exploit against this CLI bot. Meeting these minimums addresses the identified upstream fixes and does not guarantee the absence of other vulnerabilities in PHP, extensions or the operating system.
 
 ## New isolated Docker installation
 
@@ -67,6 +67,8 @@ docker compose -p shabbat-test ps
 Health requires recent permission and notification heartbeats, as well as database/schema checks. An offline database alone cannot produce a successful live-health result. `--deep` adds integrity and foreign-key scans; use the ordinary probe for frequent monitoring.
 
 ## Updating an existing SQLite deployment
+
+For a running production bot, follow the [3.2.0 update instructions](UPDATE_3_2.md), including the stopped-service backup and template migration.
 
 Run as the operator from the new matching source root, retaining the existing private `.env`, Compose project name and volumes. Stop all writers before patching or migration. Do not reuse this procedure as a substitute for [file-based legacy import](MIGRATION.md).
 
